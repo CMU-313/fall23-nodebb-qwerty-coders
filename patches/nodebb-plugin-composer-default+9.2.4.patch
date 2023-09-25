@@ -77,8 +77,36 @@ index e9a8ca6..ab81fb5 100644
  	}
  
  	.display-scheduler {
+diff --git a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
+index 46334e7..b4b8471 100644
+--- a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
++++ b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
+@@ -470,6 +470,7 @@ define('composer', [
+ 				// 	text: 'Text Label',
+ 				// }
+ 			],
++			isPrivate: postData.isPrivate
+ 		};
+ 
+ 		if (data.mobile) {
+@@ -631,6 +632,7 @@ define('composer', [
+ 		var thumbEl = postContainer.find('input#topic-thumb-url');
+ 		var onComposeRoute = postData.hasOwnProperty('template') && postData.template.compose === true;
+ 		const submitBtn = postContainer.find('.composer-submit');
++		var privateBtn = postContainer.find('.private-toggle'); 
+ 
+ 		titleEl.val(titleEl.val().trim());
+ 		bodyEl.val(utils.rtrim(bodyEl.val()));
+@@ -696,6 +698,7 @@ define('composer', [
+ 				cid: categoryList.getSelectedCid(),
+ 				tags: tags.getTags(post_uuid),
+ 				timestamp: scheduler.getTimestamp(),
++				privateTopic: privateBtn.is(':checked'),
+ 			};
+ 		} else if (action === 'posts.reply') {
+ 			route = `/topics/${postData.tid}`;
 diff --git a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
-index cf9de24..a3aa41b 100644
+index cf9de24..0c36e2f 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 +++ b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 @@ -51,6 +51,14 @@
@@ -86,10 +114,10 @@ index cf9de24..a3aa41b 100644
  			</div>
  
 +			<div class="private-toggle">
-+				Make Private
++				Private
 +				<label class="switch">
-+				<input type="checkbox">
-+				<span class="slider round"></span>
++					<input type="checkbox">
++					<span class="slider round"></span>
 +				</label>
 +			</div>
 +
