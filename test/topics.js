@@ -95,8 +95,8 @@ describe('Topic\'s', () => {
                 topic.tid = result.topicData.tid;
                 assert.equal(result.topicData.isAnon, 'true');
                 done();
-            })
-        })
+            });
+        });
 
         it('should get post count', (done) => {
             socketTopics.postcount({ uid: adminUid }, topic.tid, (err, count) => {
