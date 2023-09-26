@@ -93,7 +93,7 @@ describe('Topic\'s', () => {
                 assert.ifError(err);
                 assert(result);
                 topic.tid = result.topicData.tid;
-                assert.strictEqual(result.topicData.isPrivate, 'true');
+                assert.equal(result.topicData.isPrivate, true);
                 done();
             });
         });
@@ -401,7 +401,7 @@ describe('Topic\'s', () => {
                 assert.strictEqual(topicData.deleted, 0);
                 assert.strictEqual(topicData.locked, 0);
                 assert.strictEqual(topicData.pinned, 0);
-                assert.strictEqual(topicData.isPrivate, 'false');
+                assert.strictEqual(topicData.isPrivate, false);
                 done();
             });
         });
