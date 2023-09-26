@@ -158,6 +158,8 @@ TopicObject:
           type: boolean
         unread:
           type: boolean
+        isEndorsed:
+          type: boolean
         bookmark:
           nullable: true
           type: number

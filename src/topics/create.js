@@ -33,6 +33,7 @@ module.exports = function (Topics) {
             lastposttime: 0,
             postcount: 0,
             viewcount: 0,
+            isEndorsed: data.isEndorsed,
         };
 
         if (Array.isArray(data.tags) && data.tags.length) {
