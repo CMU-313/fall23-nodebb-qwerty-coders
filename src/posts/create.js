@@ -19,6 +19,7 @@ module.exports = function (Posts) {
         const content = data.content.toString();
         const timestamp = data.timestamp || Date.now();
         const isMain = data.isMain || false;
+        const isAnon = data.isAnon === null ? false : data.isAnon;
 
         if (!uid && parseInt(uid, 10) !== 0) {
             throw new Error('[[error:invalid-uid]]');
@@ -35,6 +36,7 @@ module.exports = function (Posts) {
             tid: tid,
             content: content,
             timestamp: timestamp,
+            isAnon: isAnon,
         };
 
         if (data.toPid) {
