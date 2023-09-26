@@ -401,7 +401,7 @@ describe('Topic\'s', () => {
                 assert.strictEqual(topicData.deleted, 0);
                 assert.strictEqual(topicData.locked, 0);
                 assert.strictEqual(topicData.pinned, 0);
-                assert.strictEqual(topicData.isPrivate, 'false');
+                assert.strictEqual(topicData.isPrivate, false);
                 done();
             });
         });
