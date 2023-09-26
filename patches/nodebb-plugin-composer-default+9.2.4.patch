@@ -78,7 +78,7 @@ index e9a8ca6..ab81fb5 100644
  
  	.display-scheduler {
 diff --git a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
-index 46334e7..10de294 100644
+index 46334e7..315f065 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 +++ b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 @@ -206,6 +206,7 @@ define('composer', [
@@ -101,7 +101,7 @@ index 46334e7..10de294 100644
  				// 	text: 'Text Label',
  				// }
  			],
-+			isPrivate: postData.isPrivate
++			isPrivate: isPrivate,
  		};
  
  		if (data.mobile) {
@@ -109,11 +109,11 @@ index 46334e7..10de294 100644
  		var thumbEl = postContainer.find('input#topic-thumb-url');
  		var onComposeRoute = postData.hasOwnProperty('template') && postData.template.compose === true;
  		const submitBtn = postContainer.find('.composer-submit');
-+		var privateBtn = postContainer.find('.private-toggle'); 
++		var privateBtn = postContainer.find('.isPrivate'); 
  
  		titleEl.val(titleEl.val().trim());
  		bodyEl.val(utils.rtrim(bodyEl.val()));
-+		privateBtn.val(privateBtn[0].checked);
++
  		if (thumbEl.length) {
  			thumbEl.val(thumbEl.val().trim());
  		}
@@ -129,12 +129,12 @@ index 46334e7..10de294 100644
  				cid: categoryList.getSelectedCid(),
  				tags: tags.getTags(post_uuid),
  				timestamp: scheduler.getTimestamp(),
-+				privateTopic: privateBtn.is(':checked'),
++				isPrivate: privateBtn.is(':checked'),
  			};
  		} else if (action === 'posts.reply') {
  			route = `/topics/${postData.tid}`;
 diff --git a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
-index cf9de24..0c36e2f 100644
+index cf9de24..4034838 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 +++ b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 @@ -51,6 +51,14 @@
@@ -144,7 +144,7 @@ index cf9de24..0c36e2f 100644
 +			<div class="private-toggle">
 +				Private
 +				<label class="switch">
-+					<input type="checkbox">
++					<input type="checkbox" class="isPrivate">
 +					<span class="slider round"></span>
 +				</label>
 +			</div>
