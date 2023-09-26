@@ -20,8 +20,7 @@
     "nyc": {
         "exclude": [
             "src/upgrades/*",
-            "test/*",
-            "patch-package"
+            "test/*"
         ]
     },
     "lint-staged": {

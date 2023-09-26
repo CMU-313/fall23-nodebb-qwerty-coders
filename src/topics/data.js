@@ -15,9 +15,6 @@ const intFields = [
     'deleterUid',
 ];
 
-const boolFields = [
-    'isPrivate',
-]
 
 module.exports = function (Topics) {
     Topics.getTopicsFields = async function (tids, fields) {
