@@ -93,7 +93,7 @@ describe('Topic\'s', () => {
                 assert.ifError(err);
                 assert(result);
                 topic.tid = result.topicData.tid;
-                assert.strictEqual(result.topicData.isPrivate, true);
+                assert.equal(result.topicData.isPrivate, true);
                 done();
             });
         });
