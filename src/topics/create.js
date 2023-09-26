@@ -33,6 +33,7 @@ module.exports = function (Topics) {
             lastposttime: 0,
             postcount: 0,
             viewcount: 0,
+            isAnon: data.isAnon == null ? false : data.isAnon,
         };
 
         if (Array.isArray(data.tags) && data.tags.length) {
@@ -220,7 +221,7 @@ module.exports = function (Topics) {
             topicInfo,
         ] = await Promise.all([
             posts.getUserInfoForPosts([postData.uid], uid),
-            Topics.getTopicFields(tid, ['tid', 'uid', 'title', 'slug', 'cid', 'postcount', 'mainPid', 'scheduled']),
+            Topics.getTopicFields(tid, ['tid', 'uid', 'title', 'slug', 'cid', 'postcount', 'mainPid', 'scheduled', 'isAnon']),
             Topics.addParentPosts([postData]),
             Topics.syncBacklinks(postData),
             posts.parsePost(postData),
