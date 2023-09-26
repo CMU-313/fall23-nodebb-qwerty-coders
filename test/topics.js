@@ -73,6 +73,7 @@ describe('Topic\'s', () => {
                 title: topic.title,
                 content: topic.content,
                 cid: topic.categoryId,
+                isAnon: topic.isAnon,
             }, (err, result) => {
                 assert.ifError(err);
                 assert(result);
@@ -80,6 +81,22 @@ describe('Topic\'s', () => {
                 done();
             });
         });
+
+        it('should create anonymous topic', (done) => {
+            topics.post({
+                uid: topic.userId,
+                title: topic.title,
+                content: topic.content,
+                cid: topic.categoryId,
+                isAnon: true,
+            }, (err, result) => {
+                assert.ifError(err);
+                assert(result);
+                topic.tid = result.topicData.tid;
+                assert.equal(result.topicData.isAnon, 'true');
+                done();
+            })
+        })
 
         it('should get post count', (done) => {
             socketTopics.postcount({ uid: adminUid }, topic.tid, (err, count) => {
