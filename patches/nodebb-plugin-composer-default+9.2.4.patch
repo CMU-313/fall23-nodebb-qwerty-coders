@@ -1,91 +1,95 @@
 diff --git a/node_modules/nodebb-plugin-composer-default/static/less/composer.less b/node_modules/nodebb-plugin-composer-default/static/less/composer.less
-index e9a8ca6..988350c 100644
+index e9a8ca6..ab81fb5 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/less/composer.less
 +++ b/node_modules/nodebb-plugin-composer-default/static/less/composer.less
-@@ -137,6 +137,74 @@
- 		margin: 0;
+@@ -115,6 +115,74 @@
+ 				}
+ 			}
+ 		}
++		
++		.private-toggle {
++			display: flex;
++		}
++   .anonSwitch {
++     display: flex;
++   }
++
++		// from https://www.w3schools.com/howto/howto_css_switch.asp
++		/* The switch - the box around the slider */
++		.switch {
++			position: relative;
++			display: inline-block;
++			width: 60px;
++			height: 34px;
++		}
++		
++		/* Hide default HTML checkbox */
++		.switch input {
++			opacity: 0;
++			width: 0;
++			height: 0;
++		}
++		
++		/* The slider */
++		.slider {
++			position: absolute;
++			cursor: pointer;
++			top: 0;
++			left: 0;
++			right: 0;
++			bottom: 0;
++			background-color: #ccc;
++			-webkit-transition: .4s;
++			transition: .4s;
++		}
++		
++		.slider:before {
++			position: absolute;
++			content: "";
++			height: 26px;
++			width: 26px;
++			left: 4px;
++			bottom: 4px;
++			background-color: white;
++			-webkit-transition: .4s;
++			transition: .4s;
++		}
++		
++		input:checked + .slider {
++			background-color: #2196F3;
++		}
++		
++		input:focus + .slider {
++			box-shadow: 0 0 1px #2196F3;
++		}
++		
++		input:checked + .slider:before {
++			-webkit-transform: translateX(26px);
++			-ms-transform: translateX(26px);
++			transform: translateX(26px);
++		}
++		
++		/* Rounded sliders */
++		.slider.round {
++			border-radius: 34px;
++		}
++		
++		.slider.round:before {
++			border-radius: 50%;
++		}
  	}
  
-+  .anonSwitch {
-+    display: flex;
-+  }
-+
-+  // https://www.w3schools.com/howto/howto_css_switch.asp
-+  /* The switch - the box around the slider */
-+  .switch {
-+    position: relative;
-+    display: inline-block;
-+    width: 60px;
-+    height: 34px;
-+  }
-+
-+  /* Hide default HTML checkbox */
-+  .switch input {
-+    opacity: 0;
-+    width: 0;
-+    height: 0;
-+  }
-+
-+  /* The slider */
-+  .slider {
-+    position: absolute;
-+    cursor: pointer;
-+    top: 0;
-+    left: 0;
-+    right: 0;
-+    bottom: 0;
-+    background-color: #ccc;
-+    -webkit-transition: .4s;
-+    transition: .4s;
-+  }
-+
-+  .slider:before {
-+    position: absolute;
-+    content: "";
-+    height: 26px;
-+    width: 26px;
-+    left: 4px;
-+    bottom: 4px;
-+    background-color: white;
-+    -webkit-transition: .4s;
-+    transition: .4s;
-+  }
-+
-+  input:checked + .slider {
-+    background-color: #2196F3;
-+  }
-+
-+  input:focus + .slider {
-+    box-shadow: 0 0 1px #2196F3;
-+  }
-+
-+  input:checked + .slider:before {
-+    -webkit-transform: translateX(26px);
-+    -ms-transform: translateX(26px);
-+    transform: translateX(26px);
-+  }
-+
-+  /* Rounded sliders */
-+  .slider.round {
-+    border-radius: 34px;
-+  }
-+
-+  .slider.round:before {
-+    border-radius: 50%;
-+  }
-+
- 	.formatting-bar {
- 		margin: 0;
- 
+ 	.display-scheduler {
 diff --git a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
-index 46334e7..46b9011 100644
+index 46334e7..315f065 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 +++ b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 @@ -206,6 +206,7 @@ define('composer', [
  			tags: data.tags || [],
  			modified: !!((data.title && data.title.length) || (data.body && data.body.length)),
  			isMain: true,
-+      isAnon: data.isAnon
++			isPrivate: data.isPrivate,
++     isAnon: data.isAnon
  		};
  
  		({ pushData } = await hooks.fire('filter:composer.topic.push', {
@@ -100,51 +104,74 @@ index 46334e7..46b9011 100644
  			$(this).attr('disabled', true);
  			post(post_uuid);
  		});
-@@ -431,6 +434,7 @@ define('composer', [
+@@ -431,6 +432,7 @@ define('composer', [
  		var isEditing = postData ? !!postData.pid : false;
  		var isGuestPost = postData ? parseInt(postData.uid, 10) === 0 : false;
  		const isScheduled = postData.timestamp > Date.now();
-+    var isAnon = postData ? !!postData.isAnon : false;
++		var isPrivate = postData ? !!postData.isPrivate : false;
++   var isAnon = postData ? !!postData.isAnon : false;
  
  		// see
  		// https://github.com/NodeBB/NodeBB/issues/2994 and
-@@ -470,6 +474,7 @@ define('composer', [
+@@ -470,6 +472,7 @@ define('composer', [
  				// 	text: 'Text Label',
  				// }
  			],
-+      isAnon: isAnon,
++			isPrivate: isPrivate,
++     isAnon: isAnon,
  		};
  
  		if (data.mobile) {
-@@ -631,6 +636,7 @@ define('composer', [
+@@ -631,9 +634,11 @@ define('composer', [
  		var thumbEl = postContainer.find('input#topic-thumb-url');
  		var onComposeRoute = postData.hasOwnProperty('template') && postData.template.compose === true;
  		const submitBtn = postContainer.find('.composer-submit');
-+    var anonBtn = postContainer.find('.isAnon');
++		var privateBtn = postContainer.find('.isPrivate'); 
++   var anonBtn = postContainer.find('.isAnon');
  
  		titleEl.val(titleEl.val().trim());
  		bodyEl.val(utils.rtrim(bodyEl.val()));
-@@ -652,6 +658,7 @@ define('composer', [
++
+ 		if (thumbEl.length) {
+ 			thumbEl.val(thumbEl.val().trim());
+ 		}
+@@ -652,6 +657,7 @@ define('composer', [
  			titleLen: titleEl.val().length,
  			bodyEl: bodyEl,
  			bodyLen: bodyEl.val().length,
-+      anonBtn: anonBtn,
++			privateBtn: privateBtn,
++     anonBtn: anonBtn,
  		};
  
  		await hooks.fire('filter:composer.check', payload);
-@@ -696,6 +703,7 @@ define('composer', [
+@@ -696,6 +702,7 @@ define('composer', [
  				cid: categoryList.getSelectedCid(),
  				tags: tags.getTags(post_uuid),
  				timestamp: scheduler.getTimestamp(),
-+        isAnon: anonBtn.is(':checked'),
++				isPrivate: privateBtn.is(':checked'),
++       isAnon: anonBtn.is(':checked'),
  			};
  		} else if (action === 'posts.reply') {
  			route = `/topics/${postData.tid}`;
 diff --git a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
-index cf9de24..67d7439 100644
+index cf9de24..4034838 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 +++ b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
-@@ -94,6 +94,14 @@
+@@ -51,6 +51,14 @@
+ 				<i class="fa fa-clock-o"></i>
+ 			</div>
+ 
++			<div class="private-toggle">
++				Private
++				<label class="switch">
++					<input type="checkbox" class="isPrivate">
++					<span class="slider round"></span>
++				</label>
++			</div>
++
+ 			<div class="btn-group pull-right action-bar hidden-sm hidden-xs">
+ 				<button class="btn btn-default composer-discard" data-action="discard" tabindex="-1"><i class="fa fa-times"></i> [[topic:composer.discard]]</button>
+ @@ -94,6 +94,14 @@
  			</div>
  		</div>
  
