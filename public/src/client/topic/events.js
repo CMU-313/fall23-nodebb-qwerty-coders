@@ -18,6 +18,7 @@ define('forum/topic/events', [
         'event:user_status_change': onUserStatusChange,
         'event:voted': updatePostVotesAndUserReputation,
         'event:bookmarked': updateBookmarkCount,
+        'event:endorsed': togglePostEndorse,
 
         'event:topic_deleted': threadTools.setDeleteState,
         'event:topic_restored': threadTools.setDeleteState,
@@ -219,6 +220,17 @@ define('forum/topic/events', [
 
         el.find('[component="post/bookmark/on"]').toggleClass('hidden', !data.isBookmarked);
         el.find('[component="post/bookmark/off"]').toggleClass('hidden', data.isBookmarked);
+    }
+
+    function togglePostEndorse(data) {
+        const post = $('[data-pid="'+data.post.pid+'"]');
+        post.find('[component="post/endorse"]').filter(function (index, el) {
+            return parseInt($(el).closest('[data-pid]').attr('data-pid'), 10) === parseInt(data.post.pid, 10);
+        }).html(data.isEndorsed ? 'Unendorse' : 'Endorse').attr('data-endorsed', data.isEndorsed);
+
+        post.find('.endorse-msg').filter(function (index, el) {
+            return parseInt($(el).closest('[data-pid]').attr('data-pid'), 10) === parseInt(data.post.pid, 10);
+        }).attr('data-endorsed', data.isEndorsed).attr('hidden', !data.isEndorsed);
     }
 
     function togglePostVote(data) {
