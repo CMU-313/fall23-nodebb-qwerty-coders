@@ -1,8 +1,8 @@
 diff --git a/node_modules/nodebb-plugin-composer-default/static/less/composer.less b/node_modules/nodebb-plugin-composer-default/static/less/composer.less
-index e9a8ca6..ab81fb5 100644
+index e9a8ca6..12a1d7c 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/less/composer.less
 +++ b/node_modules/nodebb-plugin-composer-default/static/less/composer.less
-@@ -115,6 +115,74 @@
+@@ -115,6 +115,78 @@
  				}
  			}
  		}
@@ -10,6 +10,10 @@ index e9a8ca6..ab81fb5 100644
 +		.private-toggle {
 +			display: flex;
 +		}
++
++    .anon-switch {
++      display: flex;
++    }
 +
 +		// from https://www.w3schools.com/howto/howto_css_switch.asp
 +		/* The switch - the box around the slider */
@@ -78,38 +82,53 @@ index e9a8ca6..ab81fb5 100644
  
  	.display-scheduler {
 diff --git a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
-index 46334e7..315f065 100644
+index 46334e7..caa39b9 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 +++ b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
-@@ -206,6 +206,7 @@ define('composer', [
+@@ -206,6 +206,8 @@ define('composer', [
  			tags: data.tags || [],
  			modified: !!((data.title && data.title.length) || (data.body && data.body.length)),
  			isMain: true,
 +			isPrivate: data.isPrivate,
++      isAnon: data.isAnon,
  		};
  
  		({ pushData } = await hooks.fire('filter:composer.topic.push', {
-@@ -431,6 +432,7 @@ define('composer', [
+@@ -343,7 +345,9 @@ define('composer', [
+ 		submitBtn.on('click', function (e) {
+ 			e.preventDefault();
+ 			e.stopPropagation();	// Other click events bring composer back to active state which is undesired on submit
+-
++      if ($('.isAnon').is(':checked')) {
++        console.log('The anonymous switch is checked');
++      }
+ 			$(this).attr('disabled', true);
+ 			post(post_uuid);
+ 		});
+@@ -431,6 +435,8 @@ define('composer', [
  		var isEditing = postData ? !!postData.pid : false;
  		var isGuestPost = postData ? parseInt(postData.uid, 10) === 0 : false;
  		const isScheduled = postData.timestamp > Date.now();
 +		var isPrivate = postData ? !!postData.isPrivate : false;
++    var isAnon = postData ? !!postData.isAnon : false;
  
  		// see
  		// https://github.com/NodeBB/NodeBB/issues/2994 and
-@@ -470,6 +472,7 @@ define('composer', [
+@@ -470,6 +476,8 @@ define('composer', [
  				// 	text: 'Text Label',
  				// }
  			],
 +			isPrivate: isPrivate,
++      isAnon: isAnon,
  		};
  
  		if (data.mobile) {
-@@ -631,9 +634,11 @@ define('composer', [
+@@ -631,9 +639,12 @@ define('composer', [
  		var thumbEl = postContainer.find('input#topic-thumb-url');
  		var onComposeRoute = postData.hasOwnProperty('template') && postData.template.compose === true;
  		const submitBtn = postContainer.find('.composer-submit');
 +		var privateBtn = postContainer.find('.isPrivate'); 
++    var anonBtn = postContainer.find('.isAnon');
  
  		titleEl.val(titleEl.val().trim());
  		bodyEl.val(utils.rtrim(bodyEl.val()));
@@ -117,24 +136,26 @@ index 46334e7..315f065 100644
  		if (thumbEl.length) {
  			thumbEl.val(thumbEl.val().trim());
  		}
-@@ -652,6 +657,7 @@ define('composer', [
+@@ -652,6 +663,8 @@ define('composer', [
  			titleLen: titleEl.val().length,
  			bodyEl: bodyEl,
  			bodyLen: bodyEl.val().length,
 +			privateBtn: privateBtn,
++      anonBtn: anonBtn,
  		};
  
  		await hooks.fire('filter:composer.check', payload);
-@@ -696,6 +702,7 @@ define('composer', [
+@@ -696,6 +709,8 @@ define('composer', [
  				cid: categoryList.getSelectedCid(),
  				tags: tags.getTags(post_uuid),
  				timestamp: scheduler.getTimestamp(),
 +				isPrivate: privateBtn.is(':checked'),
++        isAnon: anonBtn.is(':checked'),
  			};
  		} else if (action === 'posts.reply') {
  			route = `/topics/${postData.tid}`;
 diff --git a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
-index cf9de24..4034838 100644
+index cf9de24..c6ee97f 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 +++ b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 @@ -51,6 +51,14 @@
@@ -152,3 +173,18 @@ index cf9de24..4034838 100644
  			<div class="btn-group pull-right action-bar hidden-sm hidden-xs">
  				<button class="btn btn-default composer-discard" data-action="discard" tabindex="-1"><i class="fa fa-times"></i> [[topic:composer.discard]]</button>
  
+@@ -94,6 +102,14 @@
+ 			</div>
+ 		</div>
+ 
++    <div class='anonSwitch'>
++      Anonymous
++      <label class="switch">
++        <input type="checkbox" class="isAnon">
++        <span class="slider round"></span>
++      </label>
++    </div>
++
+ 		<div class="row write-preview-container">
+ 			<div class="write-container">
+ 				<div class="help-text">
