@@ -223,7 +223,7 @@ define('forum/topic/events', [
     }
 
     function togglePostEndorse(data) {
-        const post = $('[data-pid="'+data.post.pid+'"]');
+        const post = $('[data-pid="' + data.post.pid + '"]');
         post.find('[component="post/endorse"]').filter(function (index, el) {
             return parseInt($(el).closest('[data-pid]').attr('data-pid'), 10) === parseInt(data.post.pid, 10);
         }).html(data.isEndorsed ? 'Unendorse' : 'Endorse').attr('data-endorsed', data.isEndorsed);

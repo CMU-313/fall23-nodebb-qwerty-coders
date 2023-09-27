@@ -29,13 +29,16 @@ function default_1(Posts) {
                 throw new Error('[[error:already-unendorsed]]');
             }
             if (isEndorsing) {
-                yield db.sortedSetAdd(`uid:${uid}:bookmarks`, Date.now(), pid);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                yield db.sortedSetAdd(`uid:${uid}:endorsed`, Date.now(), pid);
             }
             else {
-                yield db.sortedSetRemove(`uid:${uid}:bookmarks`, pid);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                yield db.sortedSetRemove(`uid:${uid}:endorsed`, pid);
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             yield db[isEndorsing ? 'setAdd' : 'setRemove'](`pid:${pid}:users_endorsed`, uid);
-            plugins.hooks.fire(`action:post.${type}`, {
+            yield plugins.hooks.fire(`action:post.${type}`, {
                 pid: pid,
                 uid: uid,
                 owner: postData.uid,
@@ -63,12 +66,12 @@ function default_1(Posts) {
     };
     Posts.endorse = function (pid, uid) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield toggleEndorse("endorse", pid, uid);
+            return yield toggleEndorse('endorse', pid, uid);
         });
     };
     Posts.unendorse = function (pid, uid) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield toggleEndorse("unendorse", pid, uid);
+            return yield toggleEndorse('unendorse', pid, uid);
         });
     };
 }

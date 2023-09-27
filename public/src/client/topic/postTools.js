@@ -295,7 +295,6 @@ define('forum/topic/postTools', [
     async function onEndorseClicked(button, pid) {
         const isEndorsed = button.attr('data-endorsed');
         const method = isEndorsed === 'false' || isEndorsed === '' ? 'put' : 'del';
-        console.log("endorsed clicked")
         api[method](`/posts/${pid}/endorse`, undefined, function (err) {
             if (err) {
                 return alerts.error(err);

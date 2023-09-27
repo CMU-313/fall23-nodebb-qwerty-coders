@@ -34,25 +34,27 @@ export default function (Posts: PostsType) {
         if (isEndorsing && hasEndorsed) {
             throw new Error('[[error:already-endorsed]]');
         }
-        
-    
+
         if (!isEndorsing && !hasEndorsed) {
             throw new Error('[[error:already-unendorsed]]');
         }
-    
+
         if (isEndorsing) {
-                await db.sortedSetAdd(`uid:${uid}:bookmarks`, Date.now(), pid);
-            } else {
-                await db.sortedSetRemove(`uid:${uid}:bookmarks`, pid);
-            }
-            await db[isEndorsing ? 'setAdd' : 'setRemove'](`pid:${pid}:users_endorsed`, uid);
-    
-            plugins.hooks.fire(`action:post.${type}`, {
-                pid: pid,
-                uid: uid,
-                owner: postData.uid,
-                current: isEndorsing ? 'endorsed' : 'unendorsed',
-            });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+            await db.sortedSetAdd(`uid:${uid}:endorsed`, Date.now(), pid);
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+            await db.sortedSetRemove(`uid:${uid}:endorsed`, pid);
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        await db[isEndorsing ? 'setAdd' : 'setRemove'](`pid:${pid}:users_endorsed`, uid);
+
+        await plugins.hooks.fire(`action:post.${type}`, {
+            pid: pid,
+            uid: uid,
+            owner: postData.uid,
+            current: isEndorsing ? 'endorsed' : 'unendorsed',
+        });
 
         return {
             post: postData,
@@ -75,10 +77,10 @@ export default function (Posts: PostsType) {
     };
 
     Posts.endorse = async function (pid: string, uid: string) {
-        return await toggleEndorse("endorse", pid, uid);
+        return await toggleEndorse('endorse', pid, uid);
     };
 
     Posts.unendorse = async function (pid: string, uid: string) {
-        return await toggleEndorse("unendorse", pid, uid);
+        return await toggleEndorse('unendorse', pid, uid);
     };
 }
