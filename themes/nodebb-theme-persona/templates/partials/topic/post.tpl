@@ -83,6 +83,8 @@
             <a component="post/quote" href="#" class="no-select <!-- IF !privileges.topics:reply -->hidden<!-- ENDIF !privileges.topics:reply -->">[[topic:quote]]</a>
         </span>
 
+        <!-- IMPORT partials/topic/endorse-toggle.tpl -->
+
         <!-- IF !reputation:disabled -->
         <span class="votes">
             <a component="post/upvote" href="#" class="<!-- IF posts.upvoted -->upvoted<!-- ENDIF posts.upvoted -->">
