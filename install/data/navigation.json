@@ -50,6 +50,14 @@
 		"text": "[[global:header.users]]"
 	},
 	{
+		"route": "/instructors",
+		"title": "[[global:header.instructors]]",
+		"enabled": true,
+		"iconClass": "fa-instructors",
+		"textClass": "visible-xs-inline",
+		"text": "[[global:header.instructors]]"
+	},
+	{
 		"route": "/groups",
 		"title": "[[global:header.groups]]",
 		"enabled": true,
