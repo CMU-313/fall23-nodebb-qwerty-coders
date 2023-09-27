@@ -73,6 +73,7 @@ describe('Topic\'s', () => {
                 title: topic.title,
                 content: topic.content,
                 cid: topic.categoryId,
+                isPrivate: topic.isPrivate,
             }, (err, result) => {
                 assert.ifError(err);
                 assert(result);
@@ -80,6 +81,22 @@ describe('Topic\'s', () => {
                 done();
             });
         });
+
+        // it('should create a new private topic with proper parameters', (done) => {
+        //     topics.post({
+        //         uid: topic.userId,
+        //         title: topic.title,
+        //         content: topic.content,
+        //         cid: topic.categoryId,
+        //         isPrivate: true,
+        //     }, (err, result) => {
+        //         assert.ifError(err);
+        //         assert(result);
+        //         topic.tid = result.topicData.tid;
+        //         assert.equal(result.topicData.isPrivate, true);
+        //         done();
+        //     });
+        // });
 
         it('should get post count', (done) => {
             socketTopics.postcount({ uid: adminUid }, topic.tid, (err, count) => {
@@ -354,6 +371,7 @@ describe('Topic\'s', () => {
                 title: topic.title,
                 content: topic.content,
                 cid: topic.categoryId,
+                isPrivate: topic.isPrivate,
             }, (err, result) => {
                 if (err) {
                     return done(err);
@@ -383,6 +401,7 @@ describe('Topic\'s', () => {
                 assert.strictEqual(topicData.deleted, 0);
                 assert.strictEqual(topicData.locked, 0);
                 assert.strictEqual(topicData.pinned, 0);
+                // assert.strictEqual(topicData.isPrivate, false);
                 done();
             });
         });
