@@ -74,10 +74,27 @@ describe('Topic\'s', () => {
                 content: topic.content,
                 cid: topic.categoryId,
                 isPrivate: topic.isPrivate,
+                isAnon: topic.isAnon,
             }, (err, result) => {
                 assert.ifError(err);
                 assert(result);
                 topic.tid = result.topicData.tid;
+                done();
+            });
+        });
+
+        it('should create anonymous topic', (done) => {
+            topics.post({
+                uid: topic.userId,
+                title: topic.title,
+                content: topic.content,
+                cid: topic.categoryId,
+                isAnon: true,
+            }, (err, result) => {
+                assert.ifError(err);
+                assert(result);
+                topic.tid = result.topicData.tid;
+                assert(result.topicData.isAnon);
                 done();
             });
         });

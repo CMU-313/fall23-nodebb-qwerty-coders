@@ -1,19 +1,16 @@
 diff --git a/node_modules/nodebb-plugin-composer-default/static/less/composer.less b/node_modules/nodebb-plugin-composer-default/static/less/composer.less
-index e9a8ca6..12a1d7c 100644
+index e9a8ca6..28bf565 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/less/composer.less
 +++ b/node_modules/nodebb-plugin-composer-default/static/less/composer.less
-@@ -115,6 +115,78 @@
+@@ -115,7 +115,134 @@
  				}
  			}
  		}
+-	}
 +		
 +		.private-toggle {
 +			display: flex;
 +		}
-+
-+    .anon-switch {
-+      display: flex;
-+    }
 +
 +		// from https://www.w3schools.com/howto/howto_css_switch.asp
 +		/* The switch - the box around the slider */
@@ -78,9 +75,69 @@ index e9a8ca6..12a1d7c 100644
 +		.slider.round:before {
 +			border-radius: 50%;
 +		}
- 	}
++	}
++
++  .anon-switch {
++    display: flex;
++  }
++
++  /* The switch - the box around the slider */
++  // https://www.w3schools.com/howto/howto_css_switch.asp
++  .switch {
++    position: relative;
++    display: inline-block;
++    width: 60px;
++    height: 34px;
++  }
++
++  /* Hide default HTML checkbox */
++  .switch input {
++    opacity: 0;
++    width: 0;
++    height: 0;
++  }
++
++  /* The slider */
++  .slider {
++    position: absolute;
++    cursor: pointer;
++    top: 0;
++    left: 0;
++    right: 0;
++    bottom: 0;
++    background-color: #ccc;
++    -webkit-transition: .4s;
++    transition: .4s;
++  }
++
++  .slider:before {
++    position: absolute;
++    content: "";
++    height: 26px;
++    width: 26px;
++    left: 4px;
++    bottom: 4px;
++    background-color: white;
++    -webkit-transition: .4s;
++    transition: .4s;
++  }
++
++  input:checked + .slider {
++    background-color: #2196F3;
++  }
++
++  input:focus + .slider {
++    box-shadow: 0 0 1px #2196F3;
++  }
++
++  input:checked + .slider:before {
++    -webkit-transform: translateX(26px);
++    -ms-transform: translateX(26px);
++    transform: translateX(26px);
++  }
  
  	.display-scheduler {
+         display: flex;
 diff --git a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 index 46334e7..caa39b9 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
@@ -155,7 +212,7 @@ index 46334e7..caa39b9 100644
  		} else if (action === 'posts.reply') {
  			route = `/topics/${postData.tid}`;
 diff --git a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
-index cf9de24..c6ee97f 100644
+index cf9de24..a6f23b9 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 +++ b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 @@ -51,6 +51,14 @@
@@ -177,11 +234,11 @@ index cf9de24..c6ee97f 100644
  			</div>
  		</div>
  
-+    <div class='anonSwitch'>
++    <div class="anonSwitch">
 +      Anonymous
 +      <label class="switch">
 +        <input type="checkbox" class="isAnon">
-+        <span class="slider round"></span>
++        <span class="slider"></span>
 +      </label>
 +    </div>
 +
