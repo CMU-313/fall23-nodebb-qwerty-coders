@@ -170,6 +170,8 @@ TopicObject:
             description: HTML injected into the theme
         isPrivate:
           type: boolean
+        isAnon:
+          type: boolean
     - type: object
       description: Optional properties that may or may not be present (except for `tid`, which is always present, and is only here as a hack to pass validation)
       properties:
