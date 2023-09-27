@@ -8,6 +8,7 @@ const user = require('../user');
 const privileges = require('../privileges');
 const plugins = require('../plugins');
 
+
 const Posts = module.exports;
 
 require('./data')(Posts);
@@ -26,6 +27,7 @@ require('./bookmarks')(Posts);
 require('./queue')(Posts);
 require('./diffs')(Posts);
 require('./uploads')(Posts);
+require('./endorse').default(Posts);
 
 Posts.exists = async function (pids) {
     return await db.exists(
