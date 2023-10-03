@@ -321,6 +321,8 @@ get:
                         type: boolean
                       posts:delete:
                         type: boolean
+                      posts:endorse:
+                        type: boolean
                       posts:view_deleted:
                         type: boolean
                       read:
