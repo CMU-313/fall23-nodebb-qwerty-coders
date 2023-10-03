@@ -15,6 +15,10 @@ const intFields = [
     'deleterUid',
 ];
 
+const boolFields = [
+    'isAnon',
+];
+
 
 module.exports = function (Topics) {
     Topics.getTopicsFields = async function (tids, fields) {
@@ -97,6 +101,7 @@ function modifyTopic(topic, fields) {
     }
 
     db.parseIntFields(topic, intFields, fields);
+    db.parseBoolFields(topic, boolFields, fields);
 
     if (topic.hasOwnProperty('title')) {
         topic.titleRaw = topic.title;
