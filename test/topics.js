@@ -111,9 +111,9 @@ describe('Topic\'s', () => {
                 assert(result);
                 topic.tid = result.topicData.tid;
                 assert.equal(result.topicData.isAnon, 'false');
-                done()
-            })
-        })
+                done();
+            });
+        });
 
         // it('should create a new private topic with proper parameters', (done) => {
         //     topics.post({
