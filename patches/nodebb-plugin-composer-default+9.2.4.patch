@@ -139,7 +139,7 @@ index e9a8ca6..28bf565 100644
  	.display-scheduler {
          display: flex;
 diff --git a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
-index 46334e7..caa39b9 100644
+index 46334e7..5bb95c1 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 +++ b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 @@ -206,6 +206,8 @@ define('composer', [
@@ -151,18 +151,15 @@ index 46334e7..caa39b9 100644
  		};
  
  		({ pushData } = await hooks.fire('filter:composer.topic.push', {
-@@ -343,7 +345,9 @@ define('composer', [
+@@ -343,7 +345,6 @@ define('composer', [
  		submitBtn.on('click', function (e) {
  			e.preventDefault();
  			e.stopPropagation();	// Other click events bring composer back to active state which is undesired on submit
 -
-+      if ($('.isAnon').is(':checked')) {
-+        console.log('The anonymous switch is checked');
-+      }
  			$(this).attr('disabled', true);
  			post(post_uuid);
  		});
-@@ -431,6 +435,8 @@ define('composer', [
+@@ -431,6 +432,8 @@ define('composer', [
  		var isEditing = postData ? !!postData.pid : false;
  		var isGuestPost = postData ? parseInt(postData.uid, 10) === 0 : false;
  		const isScheduled = postData.timestamp > Date.now();
@@ -171,7 +168,7 @@ index 46334e7..caa39b9 100644
  
  		// see
  		// https://github.com/NodeBB/NodeBB/issues/2994 and
-@@ -470,6 +476,8 @@ define('composer', [
+@@ -470,6 +473,8 @@ define('composer', [
  				// 	text: 'Text Label',
  				// }
  			],
@@ -180,7 +177,7 @@ index 46334e7..caa39b9 100644
  		};
  
  		if (data.mobile) {
-@@ -631,9 +639,12 @@ define('composer', [
+@@ -631,9 +636,12 @@ define('composer', [
  		var thumbEl = postContainer.find('input#topic-thumb-url');
  		var onComposeRoute = postData.hasOwnProperty('template') && postData.template.compose === true;
  		const submitBtn = postContainer.find('.composer-submit');
@@ -193,7 +190,7 @@ index 46334e7..caa39b9 100644
  		if (thumbEl.length) {
  			thumbEl.val(thumbEl.val().trim());
  		}
-@@ -652,6 +663,8 @@ define('composer', [
+@@ -652,6 +660,8 @@ define('composer', [
  			titleLen: titleEl.val().length,
  			bodyEl: bodyEl,
  			bodyLen: bodyEl.val().length,
@@ -202,7 +199,7 @@ index 46334e7..caa39b9 100644
  		};
  
  		await hooks.fire('filter:composer.check', payload);
-@@ -696,6 +709,8 @@ define('composer', [
+@@ -696,6 +706,8 @@ define('composer', [
  				cid: categoryList.getSelectedCid(),
  				tags: tags.getTags(post_uuid),
  				timestamp: scheduler.getTimestamp(),

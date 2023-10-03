@@ -99,6 +99,22 @@ describe('Topic\'s', () => {
             });
         });
 
+        it('should create a not anonymous topic', (done) => {
+            topics.post({
+                uid: topic.userId,
+                title: topic.title,
+                content: topic.content,
+                cid: topic.categoryId,
+                isAnon: false,
+            }, (err, result) => {
+                assert.ifError(err);
+                assert(result);
+                topic.tid = result.topicData.tid;
+                assert.equal(result.topicData.isAnon, 'false');
+                done()
+            })
+        })
+
         // it('should create a new private topic with proper parameters', (done) => {
         //     topics.post({
         //         uid: topic.userId,
