@@ -57,8 +57,10 @@
     {{{ if posts.user.signature }}}
     <div component="post/signature" data-uid="{posts.user.uid}" class="post-signature">{posts.user.signature}</div>
     {{{ end }}}
+    
 
     <div class="clearfix">
+    <!-- IMPORT partials/topic/endorse-msg.tpl -->
     {{{ if !hideReplies }}}
     <a component="post/reply-count" data-target-component="post/replies/container" href="#" class="threaded-replies no-select pull-left {{{ if !posts.replies.count }}}hidden{{{ end }}}">
         <span component="post/reply-count/avatars" class="avatars {{{ if posts.replies.hasMore }}}hasMore{{{ end }}}">
@@ -81,7 +83,10 @@
         <span class="post-tools">
             <a component="post/reply" href="#" class="no-select <!-- IF !privileges.topics:reply -->hidden<!-- ENDIF !privileges.topics:reply -->">[[topic:reply]]</a>
             <a component="post/quote" href="#" class="no-select <!-- IF !privileges.topics:reply -->hidden<!-- ENDIF !privileges.topics:reply -->">[[topic:quote]]</a>
+            <!-- IMPORT partials/topic/endorse-toggle.tpl -->
         </span>
+
+        
 
         <!-- IF !reputation:disabled -->
         <span class="votes">

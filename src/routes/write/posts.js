@@ -26,6 +26,9 @@ module.exports = function () {
     setupApiRoute(router, 'put', '/:pid/bookmark', [...middlewares, middleware.assert.post], controllers.write.posts.bookmark);
     setupApiRoute(router, 'delete', '/:pid/bookmark', [...middlewares, middleware.assert.post], controllers.write.posts.unbookmark);
 
+    setupApiRoute(router, 'put', '/:pid/endorse', [...middlewares, middleware.assert.post], controllers.write.posts.endorse);
+    setupApiRoute(router, 'delete', '/:pid/endorse', [...middlewares, middleware.assert.post], controllers.write.posts.unendorse);
+
     setupApiRoute(router, 'get', '/:pid/diffs', [middleware.assert.post], controllers.write.posts.getDiffs);
     setupApiRoute(router, 'get', '/:pid/diffs/:since', [middleware.assert.post], controllers.write.posts.loadDiff);
     setupApiRoute(router, 'put', '/:pid/diffs/:since', [...middlewares, middleware.assert.post], controllers.write.posts.restoreDiff);
