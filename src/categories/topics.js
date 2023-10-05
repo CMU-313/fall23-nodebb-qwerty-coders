@@ -155,10 +155,14 @@ module.exports = function (Categories) {
     };
 
     Categories.modifyTopicsByPrivilege = function (topics, privileges) {
+        // Since admin can view deleted topics this function just returns the original
+        // topics array so it never reaches the topics.forEach for admin
         if (!Array.isArray(topics) || !topics.length || privileges.view_deleted) {
+            topics.forEach((topic) => {
+                topic.accessible = (topic.isOwner || !topic.isPrivate || privileges.isAdminOrMod);
+            });
             return;
         }
-
         topics.forEach((topic) => {
             if (!topic.scheduled && topic.deleted && !topic.isOwner) {
                 topic.title = '[[topic:topic_is_deleted]]';
@@ -170,6 +174,7 @@ module.exports = function (Categories) {
                 topic.noAnchor = true;
                 topic.tags = [];
             }
+            topic.accessible = (topic.isOwner || !topic.isPrivate || privileges.isAdminOrMod);
         });
     };
 
