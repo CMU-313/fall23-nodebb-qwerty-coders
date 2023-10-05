@@ -155,14 +155,14 @@ module.exports = function (Categories) {
     };
 
     Categories.modifyTopicsByPrivilege = function (topics, privileges) {
-        // Since admin can view deleted topics this function just returns the original
-        // topics array so it never reaches the topics.forEach for admin
+        // add accessible field in this conditional for admin accounts
         if (!Array.isArray(topics) || !topics.length || privileges.view_deleted) {
             topics.forEach((topic) => {
                 topic.accessible = (topic.isOwner || !topic.isPrivate || privileges.isAdminOrMod);
             });
             return;
         }
+        // "Normal" users would go into this iteration
         topics.forEach((topic) => {
             if (!topic.scheduled && topic.deleted && !topic.isOwner) {
                 topic.title = '[[topic:topic_is_deleted]]';
