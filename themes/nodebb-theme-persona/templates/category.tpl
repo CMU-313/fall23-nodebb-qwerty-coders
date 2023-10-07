@@ -37,7 +37,7 @@
         <!-- ENDIF privileges.topics:create -->
         <!-- ENDIF !topics.length -->
 
-        <!-- IMPORT partials/topics_list_category.tpl -->
+        <!-- IMPORT partials/topics_list.tpl -->
 
         <!-- IF config.usePagination -->
             <!-- IMPORT partials/paginator.tpl -->
