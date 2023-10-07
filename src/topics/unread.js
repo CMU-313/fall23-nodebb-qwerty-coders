@@ -46,7 +46,7 @@ module.exports = function (Topics) {
             topic.accessible = (topic.isOwner || !topic.isPrivate || isAdmin);
         });
         // filter out topics that are not accessible
-        topicData = topicData.filter((topic) => {return topic.accessible});
+        topicData = topicData.filter(topic => topic.accessible);
         unreadTopics.topicCount = topicData.length;
 
         Topics.calculateTopicIndices(topicData, params.start);
