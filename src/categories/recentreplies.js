@@ -96,6 +96,7 @@ module.exports = function (Categories) {
     };
 
     async function getTopics(tids, uid) {
+        const isAdmin = await privileges.users.isAdministrator(uid);
         const topicData = await topics.getTopicsFields(
             tids,
             ['tid', 'uid', 'mainPid', 'slug', 'title', 'teaserPid', 'cid', 'postcount', 'isPrivate']
@@ -104,6 +105,7 @@ module.exports = function (Categories) {
             if (topic) {
                 topic.teaserPid = topic.teaserPid || topic.mainPid;
                 topic.isOwner = uid === topic.uid;
+                topic.accessible = !topic.isPrivate || topic.isOwner || isAdmin;
             }
         });
         const cids = _.uniq(topicData.map(t => t && t.cid).filter(cid => parseInt(cid, 10)));
@@ -114,7 +116,6 @@ module.exports = function (Categories) {
         ]);
         const cidToRoot = _.zipObject(cids, toRoot);
 
-        const isAdmin = await privileges.users.isAdministrator(uid);
         teasers.forEach((teaser, index) => {
             if (teaser) {
                 teaser.cid = topicData[index].cid;
@@ -125,11 +126,11 @@ module.exports = function (Categories) {
                     slug: topicData[index].slug,
                     title: topicData[index].title,
                 };
-                teaser.accessible = !topicData[index].isPrivate || topicData[index].isOwner || isAdmin;
+                teaser.accessible = topicData[index].accessible;
             }
         });
-        const privateteasers = teasers.filter(teaser => teaser.accessible);
-        return privateteasers.filter(Boolean);
+
+        return teasers.filter(Boolean);
     }
 
     function assignTopicsToCategories(categories, topics) {
