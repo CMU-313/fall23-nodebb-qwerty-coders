@@ -80,18 +80,10 @@ index e9a8ca6..472e020 100644
  
  	.display-scheduler {
 diff --git a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
-index 46334e7..a595797 100644
+index 46334e7..616d9cf 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 +++ b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
-@@ -206,6 +206,7 @@ define('composer', [
- 			tags: data.tags || [],
- 			modified: !!((data.title && data.title.length) || (data.body && data.body.length)),
- 			isMain: true,
-+			isPrivateTopic: data.isPrivateTopic,
- 		};
- 
- 		({ pushData } = await hooks.fire('filter:composer.topic.push', {
-@@ -470,6 +471,7 @@ define('composer', [
+@@ -470,6 +470,7 @@ define('composer', [
  				// 	text: 'Text Label',
  				// }
  			],
@@ -99,7 +91,7 @@ index 46334e7..a595797 100644
  		};
  
  		if (data.mobile) {
-@@ -631,9 +633,11 @@ define('composer', [
+@@ -631,9 +632,11 @@ define('composer', [
  		var thumbEl = postContainer.find('input#topic-thumb-url');
  		var onComposeRoute = postData.hasOwnProperty('template') && postData.template.compose === true;
  		const submitBtn = postContainer.find('.composer-submit');
@@ -111,7 +103,7 @@ index 46334e7..a595797 100644
  		if (thumbEl.length) {
  			thumbEl.val(thumbEl.val().trim());
  		}
-@@ -696,6 +700,7 @@ define('composer', [
+@@ -696,6 +699,7 @@ define('composer', [
  				cid: categoryList.getSelectedCid(),
  				tags: tags.getTags(post_uuid),
  				timestamp: scheduler.getTimestamp(),
@@ -120,7 +112,7 @@ index 46334e7..a595797 100644
  		} else if (action === 'posts.reply') {
  			route = `/topics/${postData.tid}`;
 diff --git a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
-index cf9de24..4034838 100644
+index cf9de24..54dfed2 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 +++ b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 @@ -51,6 +51,14 @@
@@ -130,7 +122,7 @@ index cf9de24..4034838 100644
 +			<div class="private-toggle">
 +				Private
 +				<label class="switch">
-+					<input type="checkbox" class="isPrivate">
++					<input type="checkbox" class="isPrivateTopic">
 +					<span class="slider round"></span>
 +				</label>
 +			</div>
