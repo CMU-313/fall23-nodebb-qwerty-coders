@@ -73,7 +73,7 @@ describe('Topic\'s', () => {
                 title: topic.title,
                 content: topic.content,
                 cid: topic.categoryId,
-                isPrivateTopic: topic.isPrivateTopic,
+                isPrivate: topic.isPrivate,
             }, (err, result) => {
                 assert.ifError(err);
                 assert(result);
@@ -88,12 +88,12 @@ describe('Topic\'s', () => {
         //         title: topic.title,
         //         content: topic.content,
         //         cid: topic.categoryId,
-        //         isPrivateTopic: true,
+        //         isPrivate: true,
         //     }, (err, result) => {
         //         assert.ifError(err);
         //         assert(result);
         //         topic.tid = result.topicData.tid;
-        //         assert.equal(result.topicData.isPrivateTopic, true);
+        //         assert.equal(result.topicData.isPrivate, true);
         //         done();
         //     });
         // });
@@ -371,7 +371,7 @@ describe('Topic\'s', () => {
                 title: topic.title,
                 content: topic.content,
                 cid: topic.categoryId,
-                isPrivateTopic: topic.isPrivateTopic,
+                isPrivate: topic.isPrivate,
             }, (err, result) => {
                 if (err) {
                     return done(err);
@@ -401,7 +401,7 @@ describe('Topic\'s', () => {
                 assert.strictEqual(topicData.deleted, 0);
                 assert.strictEqual(topicData.locked, 0);
                 assert.strictEqual(topicData.pinned, 0);
-                // assert.strictEqual(topicData.isPrivateTopic, false);
+                // assert.strictEqual(topicData.isPrivate, false);
                 done();
             });
         });
