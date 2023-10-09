@@ -80,14 +80,14 @@ index e9a8ca6..472e020 100644
  
  	.display-scheduler {
 diff --git a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
-index 46334e7..616d9cf 100644
+index 46334e7..cb9406b 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 +++ b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 @@ -470,6 +470,7 @@ define('composer', [
  				// 	text: 'Text Label',
  				// }
  			],
-+			isPrivateTopic: postData.isPrivateTopic,
++			isPrivate: postData.isPrivate,
  		};
  
  		if (data.mobile) {
@@ -95,7 +95,7 @@ index 46334e7..616d9cf 100644
  		var thumbEl = postContainer.find('input#topic-thumb-url');
  		var onComposeRoute = postData.hasOwnProperty('template') && postData.template.compose === true;
  		const submitBtn = postContainer.find('.composer-submit');
-+		var privateBtn = postContainer.find('.isPrivateTopic'); 
++		var privateBtn = postContainer.find('.isPrivate'); 
  
  		titleEl.val(titleEl.val().trim());
  		bodyEl.val(utils.rtrim(bodyEl.val()));
@@ -107,12 +107,12 @@ index 46334e7..616d9cf 100644
  				cid: categoryList.getSelectedCid(),
  				tags: tags.getTags(post_uuid),
  				timestamp: scheduler.getTimestamp(),
-+				isPrivateTopic: privateBtn.is(':checked'),
++				isPrivate: privateBtn.is(':checked'),
  			};
  		} else if (action === 'posts.reply') {
  			route = `/topics/${postData.tid}`;
 diff --git a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
-index cf9de24..54dfed2 100644
+index cf9de24..4034838 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 +++ b/node_modules/nodebb-plugin-composer-default/static/templates/composer.tpl
 @@ -51,6 +51,14 @@
@@ -122,7 +122,7 @@ index cf9de24..54dfed2 100644
 +			<div class="private-toggle">
 +				Private
 +				<label class="switch">
-+					<input type="checkbox" class="isPrivateTopic">
++					<input type="checkbox" class="isPrivate">
 +					<span class="slider round"></span>
 +				</label>
 +			</div>
