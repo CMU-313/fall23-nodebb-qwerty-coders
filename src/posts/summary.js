@@ -38,6 +38,8 @@ module.exports = function (Posts) {
         const tidToTopic = toObject('tid', topicsAndCategories.topics);
         const cidToCategory = toObject('cid', topicsAndCategories.categories);
 
+        const isAdmin = await user.isAdministrator(uid);
+
         posts.forEach((post) => {
             // If the post author isn't represented in the retrieved users' data,
             // then it means they were deleted, assume guest.
@@ -52,6 +54,8 @@ module.exports = function (Posts) {
             post.isMainPost = post.topic && post.pid === post.topic.mainPid;
             post.deleted = post.deleted === 1;
             post.timestampISO = utils.toISOString(post.timestamp);
+            const isOwner = uid === post.topic.uid;
+            post.accessible = !post.topic.isPrivate || isOwner || isAdmin;
         });
 
         posts = posts.filter(post => tidToTopic[post.tid]);
@@ -79,6 +83,7 @@ module.exports = function (Posts) {
         const topicsData = await topics.getTopicsFields(tids, [
             'uid', 'tid', 'title', 'cid', 'tags', 'slug',
             'deleted', 'scheduled', 'postcount', 'mainPid', 'teaserPid',
+            'isPrivate',
         ]);
         const cids = _.uniq(topicsData.map(topic => topic && topic.cid));
         const categoriesData = await categories.getCategoriesFields(cids, [
