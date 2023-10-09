@@ -96,13 +96,16 @@ module.exports = function (Categories) {
     };
 
     async function getTopics(tids, uid) {
+        const isAdmin = await privileges.users.isAdministrator(uid);
         const topicData = await topics.getTopicsFields(
             tids,
-            ['tid', 'mainPid', 'slug', 'title', 'teaserPid', 'cid', 'postcount']
+            ['tid', 'uid', 'mainPid', 'slug', 'title', 'teaserPid', 'cid', 'postcount', 'isPrivate']
         );
         topicData.forEach((topic) => {
             if (topic) {
                 topic.teaserPid = topic.teaserPid || topic.mainPid;
+                topic.isOwner = uid === topic.uid;
+                topic.accessible = !topic.isPrivate || topic.isOwner || isAdmin;
             }
         });
         const cids = _.uniq(topicData.map(t => t && t.cid).filter(cid => parseInt(cid, 10)));
@@ -123,8 +126,10 @@ module.exports = function (Categories) {
                     slug: topicData[index].slug,
                     title: topicData[index].title,
                 };
+                teaser.accessible = topicData[index].accessible;
             }
         });
+
         return teasers.filter(Boolean);
     }
 

@@ -124,6 +124,10 @@ function modifyTopic(topic, fields) {
         topic.votes = topic.upvotes - topic.downvotes;
     }
 
+    if (topic.hasOwnProperty('isPrivate')) {
+        topic.isPrivate = topic.isPrivate === 'true';
+    }
+
     if (fields.includes('teaserPid') || !fields.length) {
         topic.teaserPid = topic.teaserPid || null;
     }

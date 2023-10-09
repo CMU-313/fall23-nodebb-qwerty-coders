@@ -34,6 +34,11 @@ module.exports = function (Topics) {
         data.topicCount = data.tids.length;
         data.topics = await getTopics(data.tids, params);
         data.nextStart = params.stop + 1;
+
+        const isAdmin = await user.isAdministrator(params.uid);
+        data.topics.forEach((topic) => {
+            topic.accessible = (topic.isOwner || !topic.isPrivate || isAdmin);
+        });
         return data;
     };
 
