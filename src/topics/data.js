@@ -17,8 +17,8 @@ const intFields = [
 
 const boolFields = [
     'isAnon',
+    'isPrivate',
 ];
-
 
 module.exports = function (Topics) {
     Topics.getTopicsFields = async function (tids, fields) {

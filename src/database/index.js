@@ -28,6 +28,7 @@ primaryDB.parseBoolFields = function (data, booleanFields, requestedFields) {
     });
 };
 
+
 primaryDB.initSessionStore = async function () {
     const sessionStoreConfig = nconf.get('session_store') || nconf.get('redis') || nconf.get(databaseName);
     let sessionStoreDB = primaryDB;

@@ -10,6 +10,8 @@ index e9a8ca6..28bf565 100644
 +		
 +		.private-toggle {
 +			display: flex;
++			align-items: center;
++			margin-right: 4em;
 +		}
 +
 +		// from https://www.w3schools.com/howto/howto_css_switch.asp
@@ -139,6 +141,7 @@ index e9a8ca6..28bf565 100644
  	.display-scheduler {
          display: flex;
 diff --git a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
+
 index 46334e7..5bb95c1 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 +++ b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
@@ -147,7 +150,7 @@ index 46334e7..5bb95c1 100644
  			modified: !!((data.title && data.title.length) || (data.body && data.body.length)),
  			isMain: true,
 +			isPrivate: data.isPrivate,
-+      isAnon: data.isAnon,
++     isAnon: data.isAnon,
  		};
  
  		({ pushData } = await hooks.fire('filter:composer.topic.push', {
@@ -164,7 +167,7 @@ index 46334e7..5bb95c1 100644
  		var isGuestPost = postData ? parseInt(postData.uid, 10) === 0 : false;
  		const isScheduled = postData.timestamp > Date.now();
 +		var isPrivate = postData ? !!postData.isPrivate : false;
-+    var isAnon = postData ? !!postData.isAnon : false;
++   var isAnon = postData ? !!postData.isAnon : false;
  
  		// see
  		// https://github.com/NodeBB/NodeBB/issues/2994 and
@@ -173,16 +176,17 @@ index 46334e7..5bb95c1 100644
  				// }
  			],
 +			isPrivate: isPrivate,
-+      isAnon: isAnon,
++     isAnon: isAnon,
  		};
  
  		if (data.mobile) {
 @@ -631,9 +636,12 @@ define('composer', [
+
  		var thumbEl = postContainer.find('input#topic-thumb-url');
  		var onComposeRoute = postData.hasOwnProperty('template') && postData.template.compose === true;
  		const submitBtn = postContainer.find('.composer-submit');
 +		var privateBtn = postContainer.find('.isPrivate'); 
-+    var anonBtn = postContainer.find('.isAnon');
++   var anonBtn = postContainer.find('.isAnon');
  
  		titleEl.val(titleEl.val().trim());
  		bodyEl.val(utils.rtrim(bodyEl.val()));
@@ -190,12 +194,13 @@ index 46334e7..5bb95c1 100644
  		if (thumbEl.length) {
  			thumbEl.val(thumbEl.val().trim());
  		}
+    
 @@ -652,6 +660,8 @@ define('composer', [
  			titleLen: titleEl.val().length,
  			bodyEl: bodyEl,
  			bodyLen: bodyEl.val().length,
 +			privateBtn: privateBtn,
-+      anonBtn: anonBtn,
++     anonBtn: anonBtn,
  		};
  
  		await hooks.fire('filter:composer.check', payload);
@@ -204,7 +209,7 @@ index 46334e7..5bb95c1 100644
  				tags: tags.getTags(post_uuid),
  				timestamp: scheduler.getTimestamp(),
 +				isPrivate: privateBtn.is(':checked'),
-+        isAnon: anonBtn.is(':checked'),
++       isAnon: anonBtn.is(':checked'),
  			};
  		} else if (action === 'posts.reply') {
  			route = `/topics/${postData.tid}`;
