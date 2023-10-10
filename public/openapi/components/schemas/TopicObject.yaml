@@ -233,6 +233,8 @@ TopicObjectSlim:
             category
         isAnon:
           type: boolean
+        isPrivate:
+          type: boolean
         timestamp:
           type: number
         timestampISO:

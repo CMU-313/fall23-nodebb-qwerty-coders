@@ -101,6 +101,8 @@ PostObject:
           type: string
         isMainPost:
           type: boolean
+        isPrivate:
+          type: boolean
         renamed:
           type: boolean
         # isAnon:
@@ -144,3 +146,5 @@ PostObject:
       type: boolean
     replies:
       type: number
+    accessible:
+      type: boolean
