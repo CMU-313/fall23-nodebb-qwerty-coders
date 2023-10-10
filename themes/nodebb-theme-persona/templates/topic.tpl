@@ -6,6 +6,8 @@
 <div class="row">
     <div class="topic <!-- IF widgets.sidebar.length -->col-lg-9 col-sm-12<!-- ELSE -->col-lg-12<!-- ENDIF widgets.sidebar.length -->">
         <div class="topic-header">
+            <!-- IF !privileges.accessible -->
+            <!-- ELSE -->
             <h1 component="post/header" class="" itemprop="name">
                 <span class="topic-title">
                     <span component="topic/labels">
@@ -46,6 +48,7 @@
 
                 <!-- IMPORT partials/post_bar.tpl -->
             </div>
+            <!-- ENDIF !privileges.accessible -->
         </div>
         <!-- IF merger -->
         <div component="topic/merged/message" class="alert alert-warning clearfix">
@@ -59,40 +62,49 @@
         </div>
         <!-- ENDIF merger -->
 
-        {{{ if !scheduled }}}
-        <!-- IMPORT partials/topic/deleted-message.tpl -->
-        {{{ end }}}
+        <!-- IF !privileges.accessible -->
+            <div component="topic/private/message" class="alert alert-warning clearfix">
+                <span class="pull-left">You don't have access to the content of this topic.</span>
+            </div>            
+        <!-- ELSE -->
 
-        <ul component="topic" class="posts timeline" data-tid="{tid}" data-cid="{cid}">
-            {{{each posts}}}
-                <li component="post" class="{{{ if posts.deleted }}}deleted{{{ end }}} {{{ if posts.selfPost }}}self-post{{{ end }}} {{{ if posts.topicOwnerPost }}}topic-owner-post{{{ end }}}" <!-- IMPORT partials/data/topic.tpl -->>
-                    <a component="post/anchor" data-index="{posts.index}" id="{posts.index}"></a>
+            {{{ if !scheduled }}}
+            <!-- IMPORT partials/topic/deleted-message.tpl -->
+            {{{ end }}}
 
-                    <meta itemprop="datePublished" content="{posts.timestampISO}">
-                    <meta itemprop="dateModified" content="{posts.editedISO}">
+            <ul component="topic" class="posts timeline" data-tid="{tid}" data-cid="{cid}">
+                {{{each posts}}}
+                    <li component="post" class="{{{ if posts.deleted }}}deleted{{{ end }}} {{{ if posts.selfPost }}}self-post{{{ end }}} {{{ if posts.topicOwnerPost }}}topic-owner-post{{{ end }}}" <!-- IMPORT partials/data/topic.tpl -->>
+                        <a component="post/anchor" data-index="{posts.index}" id="{posts.index}"></a>
 
-                    <!-- IMPORT partials/topic/post.tpl -->
-                </li>
-                {renderTopicEvents(@index, config.topicPostSort)}
-            {{{end}}}
-        </ul>
+                        <meta itemprop="datePublished" content="{posts.timestampISO}">
+                        <meta itemprop="dateModified" content="{posts.editedISO}">
 
-        {{{ if browsingUsers }}}
-        <div class="visible-xs">
-            <!-- IMPORT partials/topic/browsing-users.tpl -->
-            <hr/>
-        </div>
-        {{{ end }}}
+                        <!-- IMPORT partials/topic/post.tpl -->
+                    </li>
+                    {renderTopicEvents(@index, config.topicPostSort)}
+                {{{end}}}
+            </ul>
 
-        <!-- IF config.enableQuickReply -->
-        <!-- IMPORT partials/topic/quickreply.tpl -->
-        <!-- ENDIF config.enableQuickReply -->
+            {{{ if browsingUsers }}}
+            <div class="visible-xs">
+                <!-- IMPORT partials/topic/browsing-users.tpl -->
+                <hr/>
+            </div>
+            {{{ end }}}
 
-        <!-- IF config.usePagination -->
-        <!-- IMPORT partials/paginator.tpl -->
-        <!-- ENDIF config.usePagination -->
+            <!-- IF config.enableQuickReply -->
+            <!-- IMPORT partials/topic/quickreply.tpl -->
+            <!-- ENDIF config.enableQuickReply -->
 
-        <!-- IMPORT partials/topic/navigator.tpl -->
+            <!-- IF config.usePagination -->
+            <!-- IMPORT partials/paginator.tpl -->
+            <!-- ENDIF config.usePagination -->
+
+            <!-- IMPORT partials/topic/navigator.tpl -->
+
+        <!-- ENDIF !privileges.accessible -->
+
     </div>
     <div data-widget-area="sidebar" class="col-lg-3 col-sm-12 <!-- IF !widgets.sidebar.length -->hidden<!-- ENDIF !widgets.sidebar.length -->">
         {{{each widgets.sidebar}}}
