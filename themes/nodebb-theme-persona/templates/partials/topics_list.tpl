@@ -60,6 +60,8 @@
                 </span>
                 {{{ end }}}
 
+                <!-- IMPORT private-tag-preview.tpl -->
+
                 <small class="hidden-xs"><span class="timeago" title="{topics.timestampISO}"></span> &bull; <a href="<!-- IF topics.user.userslug -->{config.relative_path}/user/{topics.user.userslug}<!-- ELSE -->#<!-- ENDIF topics.user.userslug -->">{topics.user.displayname}</a></small>
                 <small class="visible-xs-inline">
                     <!-- IF topics.teaser.timestamp -->

@@ -19,7 +19,7 @@
                 </span>
             </h1>
 
-            <!-- IMPORT private-tag.tpl -->
+            <!-- IMPORT private-tag-topic.tpl -->
 
             <div class="topic-info clearfix">
                 <div class="category-item inline-block">
