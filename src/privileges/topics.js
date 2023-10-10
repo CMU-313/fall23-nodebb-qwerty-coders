@@ -22,7 +22,9 @@ privsTopics.get = async function (tid, uid) {
         'posts:delete', 'posts:view_deleted', 'read', 'purge',
     ];
     const topicData = await topics.getTopicFields(tid, ['cid', 'uid', 'locked', 'deleted', 'scheduled', 'isPrivate']);
+
     const userData = await user.getUserFields(uid, ['accounttype']);
+
     const [userPrivileges, isAdministrator, isModerator, disabled] = await Promise.all([
         helpers.isAllowedTo(privs, uid, topicData.cid),
         user.isAdministrator(uid),
