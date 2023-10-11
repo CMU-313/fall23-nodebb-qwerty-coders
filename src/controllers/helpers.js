@@ -377,6 +377,7 @@ helpers.setCategoryTeaser = function (category) {
             timestampISO: category.posts[0].timestampISO,
             pid: category.posts[0].pid,
             topic: category.posts[0].topic,
+            accessible: category.posts[0].accessible,
         };
     }
 };

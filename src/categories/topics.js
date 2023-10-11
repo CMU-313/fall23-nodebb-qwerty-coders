@@ -155,10 +155,14 @@ module.exports = function (Categories) {
     };
 
     Categories.modifyTopicsByPrivilege = function (topics, privileges) {
+        // add accessible field in this conditional for admin accounts
         if (!Array.isArray(topics) || !topics.length || privileges.view_deleted) {
+            topics.forEach((topic) => {
+                topic.accessible = (topic.isOwner || !topic.isPrivate || privileges.isAdminOrMod);
+            });
             return;
         }
-
+        // "Normal" users would go into this iteration
         topics.forEach((topic) => {
             if (!topic.scheduled && topic.deleted && !topic.isOwner) {
                 topic.title = '[[topic:topic_is_deleted]]';
@@ -170,6 +174,7 @@ module.exports = function (Categories) {
                 topic.noAnchor = true;
                 topic.tags = [];
             }
+            topic.accessible = (topic.isOwner || !topic.isPrivate || privileges.isAdminOrMod);
         });
     };
 
