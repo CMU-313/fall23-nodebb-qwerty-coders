@@ -58,13 +58,12 @@ function default_1(Posts) {
             if (Array.isArray(pid)) {
                 const sets = pid.map(pid => `pid:${pid}:users_endorsed`);
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-                const counts = yield db.setsCount(sets);
-                return counts.map(function (v) {
-                    return v > 0;
-                });
+                const counts = yield db.setsCount(sets); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+                return counts.map(v => v > 0); // eslint-disable-line @typescript-eslint/no-unsafe-member-access
             }
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            const count = yield db.setCount(`pid:${pid}:users_endorsed`);
+            const count = yield db.setCount(`pid:${pid}:users_endorsed`); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
             return count > 0;
         });
     };

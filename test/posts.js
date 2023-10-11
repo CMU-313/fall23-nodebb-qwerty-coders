@@ -318,8 +318,12 @@ describe('Post\'s', () => {
         });
 
         it('should fail if user does not have admin or mod privilege', async () => {
-            const data = await apiPosts.unendorse({ uid: voterUid }, { pid: postData.pid, room_id: `topic_${postData.tid}` });
-            assert.equal(err.message, '[[error:no-privileges]]');
+            try {
+                await apiPosts.unendorse({ uid: voterUid }, { pid: postData.pid, room_id: `topic_${postData.tid}` });
+            } catch (err) {
+                return assert.equal(err.message, '[[error:no-privileges]]');
+            }
+            assert(false);
         });
     });
 
