@@ -80,34 +80,18 @@ index e9a8ca6..472e020 100644
  
  	.display-scheduler {
 diff --git a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
-index 46334e7..011a72e 100644
+index 46334e7..94d8f47 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 +++ b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
-@@ -206,6 +206,7 @@ define('composer', [
- 			tags: data.tags || [],
- 			modified: !!((data.title && data.title.length) || (data.body && data.body.length)),
- 			isMain: true,
-+            isPrivate: data.isPrivate,
- 		};
- 
- 		({ pushData } = await hooks.fire('filter:composer.topic.push', {
-@@ -431,6 +432,7 @@ define('composer', [
- 		var isEditing = postData ? !!postData.pid : false;
- 		var isGuestPost = postData ? parseInt(postData.uid, 10) === 0 : false;
- 		const isScheduled = postData.timestamp > Date.now();
-+		var isPrivate = postData ? !!postData.isPrivate : false;
- 
- 		// see
- 		// https://github.com/NodeBB/NodeBB/issues/2994 and
-@@ -470,6 +472,7 @@ define('composer', [
+@@ -470,6 +470,7 @@ define('composer', [
  				// 	text: 'Text Label',
  				// }
  			],
-+			isPrivate: isPrivate,
++			isPrivate: postData.isPrivate,
  		};
  
  		if (data.mobile) {
-@@ -631,9 +634,11 @@ define('composer', [
+@@ -631,9 +632,11 @@ define('composer', [
  		var thumbEl = postContainer.find('input#topic-thumb-url');
  		var onComposeRoute = postData.hasOwnProperty('template') && postData.template.compose === true;
  		const submitBtn = postContainer.find('.composer-submit');
@@ -119,15 +103,7 @@ index 46334e7..011a72e 100644
  		if (thumbEl.length) {
  			thumbEl.val(thumbEl.val().trim());
  		}
-@@ -652,6 +657,7 @@ define('composer', [
- 			titleLen: titleEl.val().length,
- 			bodyEl: bodyEl,
- 			bodyLen: bodyEl.val().length,
-+            privateBtn: privateBtn,
- 		};
- 
- 		await hooks.fire('filter:composer.check', payload);
-@@ -696,6 +702,7 @@ define('composer', [
+@@ -696,6 +699,7 @@ define('composer', [
  				cid: categoryList.getSelectedCid(),
  				tags: tags.getTags(post_uuid),
  				timestamp: scheduler.getTimestamp(),
