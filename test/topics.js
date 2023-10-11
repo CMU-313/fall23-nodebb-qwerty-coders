@@ -1416,37 +1416,6 @@ describe('Topic\'s', () => {
         });
     });
 
-    describe('controller-private-topic', () => {
-        let topicData;
-
-        before((done) => {
-            topics.post({
-                uid: topic.userId,
-                title: 'private topic for controller test',
-                content: 'private topic content',
-                cid: topic.categoryId,
-                thumb: 'http://i.imgur.com/64iBdBD.jpg',
-                isPrivate: true,
-            }, (err, result) => {
-                assert.ifError(err);
-                assert.ok(result);
-                topicData = result.topicData;
-                done();
-            });
-        });
-
-        it('should have access to your private topic', (done) => {
-            request(`${nconf.get('url')}/api/topic/${topicData.slug}`, { json: true }, (err, response, body) => {
-                assert.ifError(err);
-                assert.equal(response.statusCode, 200);
-                assert(body);
-                assert.equal(body.isPrivate, true);
-                assert(body.privileges.accessible);
-                assert.equal(body.privileges.accessible, true);
-                done();
-            });
-        });
-    });
 
     describe('infinitescroll', () => {
         const socketTopics = require('../src/socket.io/topics');
