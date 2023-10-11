@@ -2315,7 +2315,8 @@ describe('Topic\'s', () => {
         // it('should get teaser endorsed', (done) => {
         //     async.waterfall([
         //         function (next) {
-        //             topics.reply({ uid: adminUid, content: 'reply 1 content', tid: topic1.topicData.tid, endorsed: true }, next);
+        //             topics.reply({ uid: adminUid, content: 'reply 1 content',
+        //                tid: topic1.topicData.tid, endorsed: true }, next);
         //         },
         //         function (next) {
         //             topics.hasEndorsed(topic1.tid, next);
@@ -2330,7 +2331,8 @@ describe('Topic\'s', () => {
         // it('should get teaser not endorsed', (done) => {
         //     async.waterfall([
         //         function (next) {
-        //             topics.reply({ uid: adminUid, content: 'reply 1 content', tid: topic1.topicData.tid, endorsed: false }, next);
+        //             topics.reply({ uid: adminUid, content: 'reply 1 content',
+        //                tid: topic1.topicData.tid, endorsed: false }, next);
         //         },
         //         function (next) {
         //             topics.hasEndorsed(topic1.tid, next);
