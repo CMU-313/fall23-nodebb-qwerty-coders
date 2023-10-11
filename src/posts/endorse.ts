@@ -70,10 +70,14 @@ export default function (Posts: PostsType) {
         if (Array.isArray(pid)) {
             const sets = pid.map(pid => `pid:${pid}:users_endorsed`);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            return await db.setsCount(sets) as boolean[];
+            const counts = await db.setsCount(sets)
+            return counts.map(function(v) {
+                return v > 0;
+              });
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        return await db.setCount(`pid:${pid}:users_endorsed`) as boolean;
+        const count = await db.setCount(`pid:${pid}:users_endorsed`)
+        return count > 0;
     };
 
     Posts.endorse = async function (pid: string, uid: string) {
