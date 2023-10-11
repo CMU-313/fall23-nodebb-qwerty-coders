@@ -58,10 +58,13 @@ function default_1(Posts) {
             if (Array.isArray(pid)) {
                 const sets = pid.map(pid => `pid:${pid}:users_endorsed`);
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-                return yield db.isMemberOfSets(sets, uid);
+                const counts = yield db.setsCount(sets); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+                return counts.map(v => v > 0); // eslint-disable-line @typescript-eslint/no-unsafe-member-access
             }
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            return yield db.isSetMember(`pid:${pid}:users_endorsed`, uid);
+            const count = yield db.setCount(`pid:${pid}:users_endorsed`); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+            return count > 0;
         });
     };
     Posts.endorse = function (pid, uid) {
