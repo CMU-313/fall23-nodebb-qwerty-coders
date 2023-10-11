@@ -68,6 +68,11 @@
                     <span class="timeago" title="{topics.timestampISO}"></span>
                     <!-- ENDIF topics.teaser.timestamp -->
                 </small>
+                <small>
+                <!-- IF topics.teaser.endorsed -->
+                    <div class="teaser-status-endorsed">! Instructor endorsed answer !</div>
+                <!-- ENDIF topics.teaser.endorsed -->
+                </small>
             </h2>
         </div>
 
@@ -75,9 +80,7 @@
             <span class="human-readable-number">{topics.postcount}</span> <a href="{config.relative_path}/topic/{topics.slug}/{topics.teaser.index}"><i class="fa fa-arrow-circle-right"></i></a>
         </div>
 
-        <!-- IF !topics.teaser.endorsed -->
-        <div class="teaser-status-endorsed">i</div>
-        <!-- ENDIF !topics.teaser.endorsed -->
+
 
         <div class="col-md-1 hidden-sm hidden-xs stats stats-votes">
             <!-- IF !reputation:disabled -->

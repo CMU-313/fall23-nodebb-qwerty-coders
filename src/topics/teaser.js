@@ -72,8 +72,6 @@ module.exports = function (Topics) {
             tidToPost[post.tid] = post;
         });
         await Promise.all(postData.map(p => posts.parsePost(p)));
-        console.log(tidToPost)
-        console.log(postData)
         const { tags } = await plugins.hooks.fire('filter:teasers.configureStripTags', { tags: utils.stripTags.slice(0) });
 
         const teasers = topics.map((topic, index) => {
@@ -111,6 +109,7 @@ module.exports = function (Topics) {
         const subposts = await Topics.getPids(tid);
         const endorsed = await posts.hasEndorsed(subposts)
         const isTrue = (element) => element === true;
+        console.log(endorsed)
         return endorsed.some(isTrue)
     }
 
