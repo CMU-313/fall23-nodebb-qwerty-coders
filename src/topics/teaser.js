@@ -48,7 +48,7 @@ module.exports = function (Topics) {
             posts.hasEndorsed(teaserPids, uid),
             user.getSettings(uid),
         ]);
-        console.log(allPostData)
+
         let postData = allPostData.filter(post => post && post.pid);
         postData = await handleBlocks(uid, postData);
         postData = postData.filter(Boolean);
@@ -109,7 +109,6 @@ module.exports = function (Topics) {
         const subposts = await Topics.getPids(tid);
         const endorsed = await posts.hasEndorsed(subposts)
         const isTrue = (element) => element === true;
-        console.log(endorsed)
         return endorsed.some(isTrue)
     }
 
