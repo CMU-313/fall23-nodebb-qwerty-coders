@@ -76,7 +76,7 @@
         </div>
 
         <!-- IF !topics.teaser.endorsed -->
-        <div>hi</div>
+        <div class="teaser-status-endorsed">i</div>
         <!-- ENDIF !topics.teaser.endorsed -->
 
         <div class="col-md-1 hidden-sm hidden-xs stats stats-votes">

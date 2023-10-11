@@ -10,6 +10,7 @@ const posts = require('../posts');
 const plugins = require('../plugins');
 const utils = require('../utils');
 
+
 module.exports = function (Topics) {
     Topics.getTeasers = async function (topics, options) {
         if (!Array.isArray(topics) || !topics.length) {
@@ -44,8 +45,10 @@ module.exports = function (Topics) {
 
         const [allPostData, callerSettings] = await Promise.all([
             posts.getPostsFields(teaserPids, ['pid', 'uid', 'timestamp', 'tid', 'content']),
+            posts.hasEndorsed(teaserPids, uid),
             user.getSettings(uid),
         ]);
+        console.log(allPostData)
         let postData = allPostData.filter(post => post && post.pid);
         postData = await handleBlocks(uid, postData);
         postData = postData.filter(Boolean);
@@ -69,7 +72,8 @@ module.exports = function (Topics) {
             tidToPost[post.tid] = post;
         });
         await Promise.all(postData.map(p => posts.parsePost(p)));
-
+        console.log(tidToPost)
+        console.log(postData)
         const { tags } = await plugins.hooks.fire('filter:teasers.configureStripTags', { tags: utils.stripTags.slice(0) });
 
         const teasers = topics.map((topic, index) => {
@@ -83,10 +87,10 @@ module.exports = function (Topics) {
                 if (topicPost.content) {
                     topicPost.content = utils.stripHTMLTags(replaceImgWithAltText(topicPost.content), tags);
                 }
+                topicPost.endorsed = checkEndorse(topic.tid);
             }
             return topicPost;
         });
-
         const result = await plugins.hooks.fire('filter:teasers.get', { teasers: teasers, uid: uid });
         return result.teasers;
     };
@@ -100,6 +104,14 @@ module.exports = function (Topics) {
             return Math.min(2, postCountInTopic);
         }
         return postCountInTopic;
+    }
+
+    // look through all posts corresponding to tid and return if endorsed or not
+    async function checkEndorse(tid) {
+        const subposts = await Topics.getPids(tid);
+        const endorsed = await posts.hasEndorsed(subposts)
+        const isTrue = (element) => element === true;
+        return endorsed.some(isTrue)
     }
 
     function replaceImgWithAltText(str) {
