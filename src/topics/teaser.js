@@ -85,7 +85,7 @@ module.exports = function (Topics) {
                 if (topicPost.content) {
                     topicPost.content = utils.stripHTMLTags(replaceImgWithAltText(topicPost.content), tags);
                 }
-                topicPost.endorsed = checkEndorse(topic.tid);
+                topicPost.endorsed = Topics.hasEndorsed(topic.tid);
             }
             return topicPost;
         });
@@ -102,14 +102,6 @@ module.exports = function (Topics) {
             return Math.min(2, postCountInTopic);
         }
         return postCountInTopic;
-    }
-
-    // look through all posts corresponding to tid and return if endorsed or not
-    async function checkEndorse(tid) {
-        const subposts = await Topics.getPids(tid);
-        const endorsed = await posts.hasEndorsed(subposts)
-        const isTrue = (element) => element === true;
-        return endorsed.some(isTrue)
     }
 
     function replaceImgWithAltText(str) {
@@ -182,5 +174,25 @@ module.exports = function (Topics) {
         } else {
             await Topics.deleteTopicField(tid, 'teaserPid');
         }
+    };
+
+    async function isAdmin(elem) {
+        const is = await user.isAdministrator(elem.uid);
+        return is;
+    }
+
+    // look through all posts corresponding to tid and return if endorsed or not
+    Topics.hasEndorsed = async function (tid) {
+        const subposts = await Topics.getPids(tid);
+        const endorsed = await posts.hasEndorsed(subposts);
+        const isTrue = element => element === true;
+        return endorsed.some(isTrue);
+    };
+
+    // not implemented fully
+    Topics.hasInstructor = async function (tid) {
+        const subposts = await Topics.getPids(tid);
+        const data = await posts.getPostsFields(subposts);
+        return data.some(isAdmin);
     };
 };
