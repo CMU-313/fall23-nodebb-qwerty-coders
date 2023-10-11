@@ -33,4 +33,6 @@ We added tests regarding this feature in the `test/topics.js` file in the reposi
 * Added test of creating a new private topic with `isPrivate` as `true`
 * Tested if topics are created with `isPrivate` as `false` by default
 
+These tests are sufficient because the view restriction is built upon existing conditions and restriction is achieved in the UI/views of the application.
+
 ## Instructor and TA
