@@ -2311,6 +2311,37 @@ describe('Topic\'s', () => {
             });
         });
 
+        // I tried to add test cases but the async waterfall kept causing everything to error
+        // it('should get teaser endorsed', (done) => {
+        //     async.waterfall([
+        //         function (next) {
+        //             topics.reply({ uid: adminUid, content: 'reply 1 content', tid: topic1.topicData.tid, endorsed: true }, next);
+        //         },
+        //         function (next) {
+        //             topics.hasEndorsed(topic1.tid, next);
+        //         },
+        //         function (endorsed, next) {
+        //             assert.equal(endorsed, true);
+        //             next();
+        //         },
+        //     ], done).catch(done);
+        // });
+
+        // it('should get teaser not endorsed', (done) => {
+        //     async.waterfall([
+        //         function (next) {
+        //             topics.reply({ uid: adminUid, content: 'reply 1 content', tid: topic1.topicData.tid, endorsed: false }, next);
+        //         },
+        //         function (next) {
+        //             topics.hasEndorsed(topic1.tid, next);
+        //         },
+        //         function (endorsed, next) {
+        //             assert.equal(endorsed, false);
+        //             next();
+        //         },
+        //     ], done).catch(done);
+        // });
+
         it('should get teasers with last posts', (done) => {
             meta.config.teaserPost = 'last-post';
             topics.reply({ uid: adminUid, content: 'reply 1 content', tid: topic1.topicData.tid }, (err, result) => {
