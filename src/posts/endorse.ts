@@ -70,10 +70,10 @@ export default function (Posts: PostsType) {
         if (Array.isArray(pid)) {
             const sets = pid.map(pid => `pid:${pid}:users_endorsed`);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            return await db.isMemberOfSets(sets, uid) as boolean[];
+            return await db.setsCount(sets) as boolean[];
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        return await db.isSetMember(`pid:${pid}:users_endorsed`, uid) as boolean;
+        return await db.setCount(`pid:${pid}:users_endorsed`) as boolean;
     };
 
     Posts.endorse = async function (pid: string, uid: string) {

@@ -75,6 +75,10 @@
             <span class="human-readable-number">{topics.postcount}</span> <a href="{config.relative_path}/topic/{topics.slug}/{topics.teaser.index}"><i class="fa fa-arrow-circle-right"></i></a>
         </div>
 
+        <!-- IF !topics.teaser.endorsed -->
+        <div>hi</div>
+        <!-- ENDIF !topics.teaser.endorsed -->
+
         <div class="col-md-1 hidden-sm hidden-xs stats stats-votes">
             <!-- IF !reputation:disabled -->
             <span class="human-readable-number" title="{topics.votes}">{topics.votes}</span><br />
