@@ -304,17 +304,22 @@ describe('Post\'s', () => {
 
     describe('endorsing', () => {
         it('should endorse a post', async () => {
-            const data = await apiPosts.endorse({ uid: voterUid }, { pid: postData.pid, room_id: `topic_${postData.tid}` });
+            const data = await apiPosts.endorse({ uid: globalModUid }, { pid: postData.pid, room_id: `topic_${postData.tid}` });
             assert.equal(data.isEndorsed, true);
             const hasEndorsed = await posts.hasEndorsed(postData.pid, voterUid);
             assert.equal(hasEndorsed, true);
         });
 
         it('should unendorse a post', async () => {
-            const data = await apiPosts.unendorse({ uid: voterUid }, { pid: postData.pid, room_id: `topic_${postData.tid}` });
+            const data = await apiPosts.unendorse({ uid: globalModUid }, { pid: postData.pid, room_id: `topic_${postData.tid}` });
             assert.equal(data.isEndorsed, false);
             const hasEndorsed = await posts.hasEndorsed([postData.pid], voterUid);
             assert.equal(hasEndorsed[0], false);
+        });
+
+        it('should fail if user does not have admin or mod privilege', async () => {
+            const data = await apiPosts.unendorse({ uid: voterUid }, { pid: postData.pid, room_id: `topic_${postData.tid}` });
+            assert.equal(err.message, '[[error:no-privileges]]');
         });
     });
 
