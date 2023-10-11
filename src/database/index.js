@@ -20,6 +20,15 @@ primaryDB.parseIntFields = function (data, intFields, requestedFields) {
     });
 };
 
+primaryDB.parseBoolFields = function (data, booleanFields, requestedFields) {
+    booleanFields.forEach((field) => {
+        if (!requestedFields || !requestedFields.length || requestedFields.includes(field)) {
+            data[field] = (typeof data[field] === 'boolean' && data[field]) || data[field] === 'true';
+        }
+    });
+};
+
+
 primaryDB.initSessionStore = async function () {
     const sessionStoreConfig = nconf.get('session_store') || nconf.get('redis') || nconf.get(databaseName);
     let sessionStoreDB = primaryDB;

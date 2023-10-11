@@ -1,5 +1,6 @@
 <div class="card background-link-container" style="border-color: {../bgColor}">
     {{{each ./posts}}}
+    {{{if ../accessible}}}
     <!-- IF @first -->
     <div component="category/posts">
         <a class="background-link" href="{config.relative_path}/topic/{../topic.slug}<!-- IF ../index -->/{../index}<!-- ENDIF ../index -->"></a>
@@ -14,6 +15,11 @@
         </div>
     </div>
     <!-- ENDIF @first -->
+    {{{else}}}
+        <div component="category/posts">
+            <span class="private-post">You have no access to the last post.</span>
+        </div>
+    {{{end}}}
     {{{end}}}
 
     <!-- IF !../posts.length -->

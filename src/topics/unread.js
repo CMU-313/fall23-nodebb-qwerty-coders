@@ -36,10 +36,19 @@ module.exports = function (Topics) {
 
         tids = tids.slice(params.start, params.stop !== -1 ? params.stop + 1 : undefined);
 
-        const topicData = await Topics.getTopicsByTids(tids, params.uid);
+        let topicData = await Topics.getTopicsByTids(tids, params.uid);
         if (!topicData.length) {
             return unreadTopics;
         }
+
+        const isAdmin = await user.isAdministrator(params.uid);
+        topicData.forEach((topic) => {
+            topic.accessible = (topic.isOwner || !topic.isPrivate || isAdmin);
+        });
+        // filter out topics that are not accessible
+        topicData = topicData.filter(topic => topic.accessible);
+        unreadTopics.topicCount = topicData.length;
+
         Topics.calculateTopicIndices(topicData, params.start);
         unreadTopics.topics = topicData;
         unreadTopics.nextStart = params.stop + 1;
