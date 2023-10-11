@@ -129,7 +129,7 @@ function modifyTopic(topic, fields) {
     }
 
     if (topic.hasOwnProperty('isPrivate')) {
-        topic.isPrivate = topic.isPrivate === 'true';
+        topic.isPrivate = topic.isPrivate === true;
     }
 
     if (fields.includes('teaserPid') || !fields.length) {
