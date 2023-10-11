@@ -80,7 +80,7 @@ index e9a8ca6..472e020 100644
  
  	.display-scheduler {
 diff --git a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
-index 46334e7..cb9406b 100644
+index 46334e7..94d8f47 100644
 --- a/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 +++ b/node_modules/nodebb-plugin-composer-default/static/lib/composer.js
 @@ -470,6 +470,7 @@ define('composer', [

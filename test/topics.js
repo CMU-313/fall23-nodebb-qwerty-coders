@@ -1368,6 +1368,17 @@ describe('Topic\'s', () => {
             });
         });
 
+        // Private post view limitation related
+        it('should have access to your public topic', (done) => {
+            request(`${nconf.get('url')}/api/topic/${topicData.slug}`, { json: true }, (err, response, body) => {
+                assert.ifError(err);
+                assert.equal(response.statusCode, 200);
+                assert(body);
+                assert(body.privileges.accessible);
+                assert.equal(body.privileges.accessible, true);
+                done();
+            });
+        });
 
         it('should 404 if tid is not a number', (done) => {
             request(`${nconf.get('url')}/api/topic/pagination/nan`, { json: true }, (err, response) => {
