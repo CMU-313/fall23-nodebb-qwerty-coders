@@ -28,5 +28,9 @@ User story: As a student, I want to be able to privately post so that I can ask 
 3. Run `npm run test` in the terminal.
 
 ### New automated test
+We added tests regarding this feature in the `test/topics.js` file in the repository.
+* Added `isPrivate` field in "create a new topic with proper parameters" test
+* Added test of creating a new private topic with `isPrivate` as `true`
+* Tested if topics are created with `isPrivate` as `false` by default
 
 ## Instructor and TA
