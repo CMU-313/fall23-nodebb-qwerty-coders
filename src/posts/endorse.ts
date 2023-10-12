@@ -71,12 +71,14 @@ export default function (Posts: PostsType) {
             const sets = pid.map(pid => `pid:${pid}:users_endorsed`);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const counts = await db.setsCount(sets); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+            console.log("counts:" + counts)
             // The next line calls a function in a module that has not been updated to TS yet
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-            return counts.map(v => v > 0); // eslint-disable-line @typescript-eslint/no-unsafe-call
+            return counts.map(v => (v > 0)); // eslint-disable-line @typescript-eslint/no-unsafe-call
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         const count = await db.setCount(`pid:${pid}:users_endorsed`); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        console.log(count)
         return count > 0;
     };
 

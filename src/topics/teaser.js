@@ -45,7 +45,6 @@ module.exports = function (Topics) {
 
         const [allPostData, callerSettings] = await Promise.all([
             posts.getPostsFields(teaserPids, ['pid', 'uid', 'timestamp', 'tid', 'content']),
-            posts.hasEndorsed(teaserPids, uid),
             user.getSettings(uid),
         ]);
 
@@ -74,7 +73,7 @@ module.exports = function (Topics) {
         await Promise.all(postData.map(p => posts.parsePost(p)));
         const { tags } = await plugins.hooks.fire('filter:teasers.configureStripTags', { tags: utils.stripTags.slice(0) });
 
-        const teasers = topics.map((topic, index) => {
+        const teasers = await Promise.all(topics.map(async (topic, index) => {
             if (!topic) {
                 return null;
             }
@@ -85,10 +84,10 @@ module.exports = function (Topics) {
                 if (topicPost.content) {
                     topicPost.content = utils.stripHTMLTags(replaceImgWithAltText(topicPost.content), tags);
                 }
-                topicPost.endorsed = Topics.hasEndorsed(topic.tid);
+                topicPost.endorsed = await Topics.hasEndorsed(topic.tid);
             }
             return topicPost;
-        });
+        }));
         const result = await plugins.hooks.fire('filter:teasers.get', { teasers: teasers, uid: uid });
         return result.teasers;
     };
@@ -186,6 +185,8 @@ module.exports = function (Topics) {
         const subposts = await Topics.getPids(tid);
         const endorsed = await posts.hasEndorsed(subposts);
         const isTrue = element => element === true;
+        console.log(endorsed)
+        console.log(endorsed.some(isTrue))
         return endorsed.some(isTrue);
     };
 
