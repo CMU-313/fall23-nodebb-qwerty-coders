@@ -188,7 +188,7 @@ module.exports = function (Topics) {
 
 
 
-    // Look through all posts corresponding to tid and return whether or not the 
+    // Look through all posts corresponding to tid and return whether or not the
     // user ID is an admin
     Topics.hasInstructor = async function (tid) {
         const subposts = await Topics.getPids(tid);
