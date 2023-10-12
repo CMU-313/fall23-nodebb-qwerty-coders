@@ -1,5 +1,6 @@
 <ul component="category" class="topic-list" itemscope itemtype="http://www.schema.org/ItemList" data-nextstart="{nextStart}" data-set="{set}">
     {{{each topics}}}
+    {{{if ../accessible}}}
     <li component="category/topic" class="row clearfix category-item {function.generateTopicClass}" <!-- IMPORT partials/data/category.tpl -->>
         <link itemprop="url" content="{config.relative_path}/topic/{../slug}" />
         <meta itemprop="name" content="{function.stripTags, ../title}" />
@@ -59,6 +60,8 @@
                     <small>&bull;</small>
                 </span>
                 {{{ end }}}
+
+                <!-- IMPORT private-tag-preview.tpl -->
 
                 <small class="hidden-xs"><span class="timeago" title="{topics.timestampISO}"></span> &bull; <a href="<!-- IF topics.user.userslug -->{config.relative_path}/user/{topics.user.userslug}<!-- ELSE -->#<!-- ENDIF topics.user.userslug -->">{topics.user.displayname}</a></small>
                 <small class="visible-xs-inline">
@@ -127,5 +130,6 @@
             </div>
         </div>
     </li>
+    {{{end}}}
     {{{end}}}
 </ul>
