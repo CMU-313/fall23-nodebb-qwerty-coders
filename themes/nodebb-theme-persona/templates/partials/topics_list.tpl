@@ -52,14 +52,26 @@
                     </small>
                     <!-- ENDIF !template.category -->
 
-                    {{{ if topics.tags.length }}}
-                    <span class="tag-list hidden-xs">
-                        {{{each topics.tags}}}
-                        <a href="{config.relative_path}/tags/{topics.tags.valueEncoded}"><span class="tag tag-item tag-class-{topics.tags.class}">{topics.tags.valueEscaped}</span></a>
-                        {{{end}}}
-                        <small>&bull;</small>
-                    </span>
-                    {{{ end }}}
+                <small class="hidden-xs"><span class="timeago" title="{topics.timestampISO}"></span> &bull; <a href="<!-- IF topics.user.userslug -->{config.relative_path}/user/{topics.user.userslug}<!-- ELSE -->#<!-- ENDIF topics.user.userslug -->">{topics.user.displayname}</a></small>
+                <small class="visible-xs-inline">
+                    <!-- IF topics.teaser.timestamp -->
+                    <span class="timeago" title="{topics.teaser.timestampISO}"></span>
+                    <!-- ELSE -->
+                    <span class="timeago" title="{topics.timestampISO}"></span>
+                    <!-- ENDIF topics.teaser.timestamp -->
+                </small>
+                <small>
+                <!-- IF topics.teaser.endorsed -->
+                    <div class="teaser-status-endorsed">! Instructor endorsed answer !</div>
+                <!-- ENDIF topics.teaser.endorsed -->
+                </small>
+                <small>
+                <!-- IF topics.teaser.instructorResp -->
+                    <div class="teaser-status-instructor">! Instructor answer !</div>
+                <!-- ENDIF topics.teaser.instructorResp -->
+                </small>
+            </h2>
+        </div>
 
                     <!-- IMPORT private-tag-preview.tpl -->
                 
@@ -73,18 +85,6 @@
                     </small>
                 </h2>
             </div>
-
-            <div class="mobile-stat col-xs-2 visible-xs text-right">
-                <span class="human-readable-number">{topics.postcount}</span> <a href="{config.relative_path}/topic/{topics.slug}/{topics.teaser.index}"><i class="fa fa-arrow-circle-right"></i></a>
-            </div>
-        
-            <div class="col-md-1 hidden-sm hidden-xs stats stats-votes">
-                <!-- IF !reputation:disabled -->
-                <span class="human-readable-number" title="{topics.votes}">{topics.votes}</span><br />
-                <small>[[global:votes]]</small>
-                <!-- END -->
-            </div>
-
 
             <div class="col-md-1 hidden-sm hidden-xs stats stats-postcount">
                 <span class="human-readable-number" title="{topics.postcount}">{topics.postcount}</span><br />

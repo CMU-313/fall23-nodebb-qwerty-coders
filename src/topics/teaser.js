@@ -10,6 +10,7 @@ const posts = require('../posts');
 const plugins = require('../plugins');
 const utils = require('../utils');
 
+
 module.exports = function (Topics) {
     Topics.getTeasers = async function (topics, options) {
         if (!Array.isArray(topics) || !topics.length) {
@@ -46,6 +47,7 @@ module.exports = function (Topics) {
             posts.getPostsFields(teaserPids, ['pid', 'uid', 'timestamp', 'tid', 'content']),
             user.getSettings(uid),
         ]);
+
         let postData = allPostData.filter(post => post && post.pid);
         postData = await handleBlocks(uid, postData);
         postData = postData.filter(Boolean);
@@ -69,10 +71,9 @@ module.exports = function (Topics) {
             tidToPost[post.tid] = post;
         });
         await Promise.all(postData.map(p => posts.parsePost(p)));
-
         const { tags } = await plugins.hooks.fire('filter:teasers.configureStripTags', { tags: utils.stripTags.slice(0) });
 
-        const teasers = topics.map((topic, index) => {
+        const teasers = await Promise.all(topics.map(async (topic, index) => {
             if (!topic) {
                 return null;
             }
@@ -83,10 +84,11 @@ module.exports = function (Topics) {
                 if (topicPost.content) {
                     topicPost.content = utils.stripHTMLTags(replaceImgWithAltText(topicPost.content), tags);
                 }
+                topicPost.endorsed = await Topics.hasEndorsed(topic.tid);
+                topicPost.instructorResp = await Topics.hasInstructor(topic.tid);
             }
             return topicPost;
-        });
-
+        }));
         const result = await plugins.hooks.fire('filter:teasers.get', { teasers: teasers, uid: uid });
         return result.teasers;
     };
@@ -172,5 +174,39 @@ module.exports = function (Topics) {
         } else {
             await Topics.deleteTopicField(tid, 'teaserPid');
         }
+    };
+
+
+
+    // Look through all posts corresponding to tid and return if endorsed or not
+    Topics.hasEndorsed = async function (tid) {
+        const subposts = await Topics.getPids(tid);
+        const endorsed = await posts.hasEndorsed(subposts);
+        const isTrue = element => element === true;
+        return endorsed.some(isTrue);
+    };
+
+
+
+    // Look through all posts corresponding to tid and return whether or not the 
+    // user ID is an admin
+    Topics.hasInstructor = async function (tid) {
+        const subposts = await Topics.getPids(tid);
+        const data = await posts.getPostsFields(subposts);
+
+        async function isAdmin(elem) {
+            const is = await user.isAdministrator(elem.uid);
+            return is;
+        }
+
+        const asyncSome = async (arr, predicate) => {
+            for (const e of arr) {
+                if (await predicate(e)) return true;
+            }
+            return false;
+        };
+
+        const result = asyncSome(data, isAdmin);
+        return result;
     };
 };
