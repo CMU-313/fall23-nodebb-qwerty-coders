@@ -178,7 +178,7 @@ module.exports = function (Topics) {
 
 
 
-    // look through all posts corresponding to tid and return if endorsed or not
+    // Look through all posts corresponding to tid and return if endorsed or not
     Topics.hasEndorsed = async function (tid) {
         const subposts = await Topics.getPids(tid);
         const endorsed = await posts.hasEndorsed(subposts);
@@ -188,7 +188,8 @@ module.exports = function (Topics) {
 
 
 
-    // Not fully working
+    // Look through all posts corresponding to tid and return whether or not the 
+    // user ID is an admin
     Topics.hasInstructor = async function (tid) {
         const subposts = await Topics.getPids(tid);
         const data = await posts.getPostsFields(subposts);
