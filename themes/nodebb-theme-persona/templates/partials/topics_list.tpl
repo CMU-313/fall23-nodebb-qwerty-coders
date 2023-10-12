@@ -73,6 +73,11 @@
                     <div class="teaser-status-endorsed">! Instructor endorsed answer !</div>
                 <!-- ENDIF topics.teaser.endorsed -->
                 </small>
+                <small>
+                <!-- IF topics.teaser.instructorResp -->
+                    <div class="teaser-status-instructor">! Instructor answer !</div>
+                <!-- ENDIF topics.teaser.instructorResp -->
+                </small>
             </h2>
         </div>
 
