@@ -199,13 +199,13 @@ module.exports = function (Topics) {
         }
 
         const asyncSome = async (arr, predicate) => {
-            for (let e of arr) {
+            for (const e of arr) {
                 if (await predicate(e)) return true;
             }
             return false;
         };
 
         const result = asyncSome(data, isAdmin);
-        return result
+        return result;
     };
 };
