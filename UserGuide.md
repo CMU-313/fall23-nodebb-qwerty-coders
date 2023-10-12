@@ -2,6 +2,35 @@
 
 ## Post Endorsement
 
+User story: As a student, I want to be able to see the status of my questions, such as whether they are pending, answered, in the Q&A forum, so that I can see when to open the question answers after I ask.
+
+### How to use / test
+1. Login or sign up as an admin on one tab(since instructors could not be implemented in time, we used this as a placeholder). (A) indicates admin tab actions.
+2. Login or sign up as a student on another tab. (S) indicates student tab actions.
+3. (S) Make a new topic.
+<img width="901" alt="Screen Shot 2023-10-12 at 2 29 57 PM" src="https://github.com/CMU-313/fall23-nodebb-qwerty-coders/assets/84979255/bba7d391-ddb7-4af9-8ed7-8981c0bed249">
+4. (S) Reply to yourself.
+<img width="1263" alt="Screen Shot 2023-10-12 at 2 31 34 PM" src="https://github.com/CMU-313/fall23-nodebb-qwerty-coders/assets/84979255/c8eeda84-f797-40e2-a6f8-aac5ab55d70f">
+5. (A) Endorse the student reply by clicking on the endorse button.
+<img width="1310" alt="Screen Shot 2023-10-12 at 2 32 10 PM" src="https://github.com/CMU-313/fall23-nodebb-qwerty-coders/assets/84979255/bb60528d-f698-4ab0-84c6-beedf5a6ad45">
+6. (A) Go back to the topics screen to see indicator for endorsement.
+<img width="1240" alt="Screen Shot 2023-10-12 at 2 33 19 PM" src="https://github.com/CMU-313/fall23-nodebb-qwerty-coders/assets/84979255/d5dc75a9-bc6b-4368-afec-df90bce23b99">
+7. (A) Go back into the post and reply to it as an admin.
+<img width="1278" alt="Screen Shot 2023-10-12 at 2 33 37 PM" src="https://github.com/CMU-313/fall23-nodebb-qwerty-coders/assets/84979255/04870788-3c9d-4c31-95ce-2911293e6aa4">
+8. (A) Go back to the topics screen to see indicator for instructor response.
+<img width="1190" alt="Screen Shot 2023-10-12 at 2 33 43 PM" src="https://github.com/CMU-313/fall23-nodebb-qwerty-coders/assets/84979255/9a6e7a2b-d2aa-4302-b614-f41b5c6a11b7">
+
+
+### How to run test suite
+1. Open terminal.
+2. Navigate to the root directory of the application.
+3. Run `npm run test` in the terminal.
+
+### New automated test
+We added tests for this feature in the `test/posts.js` file in the repository.
+* Added tests for checking endorse and unendorse
+* Added tests to make sure invalid permissions causes error in endorse and function
+
 ## Private Topic
 
 User story: As a student, I want to be able to privately post so that I can ask questions that are private to my own work and only instructors should see.
