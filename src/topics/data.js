@@ -15,6 +15,10 @@ const intFields = [
     'deleterUid',
 ];
 
+const boolFields = [
+    'isPrivate',
+];
+
 module.exports = function (Topics) {
     Topics.getTopicsFields = async function (tids, fields) {
         if (!Array.isArray(tids) || !tids.length) {
@@ -96,6 +100,7 @@ function modifyTopic(topic, fields) {
     }
 
     db.parseIntFields(topic, intFields, fields);
+    db.parseBoolFields(topic, boolFields, fields);
 
     if (topic.hasOwnProperty('title')) {
         topic.titleRaw = topic.title;
@@ -121,6 +126,10 @@ function modifyTopic(topic, fields) {
 
     if (topic.hasOwnProperty('upvotes') && topic.hasOwnProperty('downvotes')) {
         topic.votes = topic.upvotes - topic.downvotes;
+    }
+
+    if (topic.hasOwnProperty('isPrivate')) {
+        topic.isPrivate = topic.isPrivate === true;
     }
 
     if (fields.includes('teaserPid') || !fields.length) {
