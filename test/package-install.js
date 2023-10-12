@@ -72,16 +72,16 @@ describe('Package install lib', () => {
         });
 
         it('should deep merge nested objects', async () => {
-            current.scripts.postinstall = 'echo "I am a silly bean";';
+            current.scripts.testpostinstall = 'echo "I am a silly bean";';
             await fs.writeFile(packageFilePath, JSON.stringify(current, null, 4));
             source.scripts.preinstall = 'echo "What are you?";';
             await fs.writeFile(sourcePackagePath, JSON.stringify(source, null, 4));
-            source.scripts.postinstall = 'echo "I am a silly bean";';
+            source.scripts.testpostinstall = 'echo "I am a silly bean";';
 
             pkgInstall.updatePackageFile();
             const updated = JSON.parse(await fs.readFile(packageFilePath, 'utf8'));
             assert.deepStrictEqual(updated, source);
-            assert.strictEqual(updated.scripts.postinstall, 'echo "I am a silly bean";');
+            assert.strictEqual(updated.scripts.testpostinstall, 'echo "I am a silly bean";');
             assert.strictEqual(updated.scripts.preinstall, 'echo "What are you?";');
         });
 
