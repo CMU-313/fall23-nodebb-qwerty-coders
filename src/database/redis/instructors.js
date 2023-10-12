@@ -23,7 +23,6 @@ const savePerson = (person) => __awaiter(void 0, void 0, void 0, function* () {
 exports.savePerson = savePerson;
 const getPerson = (role, username) => __awaiter(void 0, void 0, void 0, function* () {
     // The next line calls a function in a module that has not been updated to TS yet
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const data = yield redis_1.default.hget(role, username);
     if (data) {
