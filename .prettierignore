@@ -1,3 +1,9 @@
+*.yaml
+*.yml
+*.md
+*.less
+*.json
+
 dist/
 yarn.lock
 npm-debug.log
