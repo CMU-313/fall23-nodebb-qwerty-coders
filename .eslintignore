@@ -29,7 +29,4 @@ test/files
 /public/src/client/test.js
 themes/
 
-/lib/controllers/composer.js
-/lib/database/redis/instructors.js
-/lib/posts/endorse.js
-/lib/social.js
+/lib/
