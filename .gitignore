@@ -84,4 +84,4 @@ theme/.vscode
 theme/node_modules/
 
 # Flow 
-# /lib/
+/lib/
