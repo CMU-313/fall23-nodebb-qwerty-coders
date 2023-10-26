@@ -46,7 +46,7 @@ function find_compiled_js() {
         root: true,
         ignorePatterns: find_compiled_js(),
         rules: {
-            "indent": ["error", 4]
+            
         },
         overrides: [
             {

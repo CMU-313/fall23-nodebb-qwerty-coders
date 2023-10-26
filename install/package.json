@@ -174,7 +174,10 @@
         "nyc": "15.1.0",
         "smtp-server": "3.11.0",
         "typescript": "^4.9.4",
-        "patch-package": "6.5.1"
+        "patch-package": "6.5.1",
+        "prettier": "3.0.3",
+        "eslint-config-prettier": "9.0.0",
+        "prettier-eslint-cli": "8.0.1"
     },
     "resolutions": {
         "*/jquery": "3.6.3"
