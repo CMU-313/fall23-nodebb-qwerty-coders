@@ -14,7 +14,10 @@ let worker;
 
 env.NODE_ENV = env.NODE_ENV || 'development';
 
-const configFile = path.resolve(__dirname, nconf.any(['config', 'CONFIG']) || 'config.json');
+const configFile = path.resolve(
+    __dirname,
+    nconf.any(['config', 'CONFIG']) || 'config.json'
+);
 const prestart = require('./src/prestart');
 
 prestart.loadConfig(configFile);
@@ -50,22 +53,49 @@ module.exports = function (grunt) {
             }
         }
 
-        const styleUpdated_Client = pluginList.map(p => `node_modules/${p}/*.less`)
-            .concat(pluginList.map(p => `node_modules/${p}/*.css`))
-            .concat(pluginList.map(p => `node_modules/${p}/+(public|static|less)/**/*.less`))
-            .concat(pluginList.map(p => `node_modules/${p}/+(public|static)/**/*.css`));
+        const styleUpdated_Client = pluginList
+            .map((p) => `node_modules/${p}/*.less`)
+            .concat(pluginList.map((p) => `node_modules/${p}/*.css`))
+            .concat(
+                pluginList.map(
+                    (p) => `node_modules/${p}/+(public|static|less)/**/*.less`
+                )
+            )
+            .concat(
+                pluginList.map(
+                    (p) => `node_modules/${p}/+(public|static)/**/*.css`
+                )
+            );
 
-        const styleUpdated_Admin = pluginList.map(p => `node_modules/${p}/*.less`)
-            .concat(pluginList.map(p => `node_modules/${p}/*.css`))
-            .concat(pluginList.map(p => `node_modules/${p}/+(public|static|less)/**/*.less`))
-            .concat(pluginList.map(p => `node_modules/${p}/+(public|static)/**/*.css`));
+        const styleUpdated_Admin = pluginList
+            .map((p) => `node_modules/${p}/*.less`)
+            .concat(pluginList.map((p) => `node_modules/${p}/*.css`))
+            .concat(
+                pluginList.map(
+                    (p) => `node_modules/${p}/+(public|static|less)/**/*.less`
+                )
+            )
+            .concat(
+                pluginList.map(
+                    (p) => `node_modules/${p}/+(public|static)/**/*.css`
+                )
+            );
 
-        const clientUpdated = pluginList.map(p => `node_modules/${p}/+(public|static)/**/*.js`);
-        const serverUpdated = pluginList.map(p => `node_modules/${p}/*.js`)
-            .concat(pluginList.map(p => `node_modules/${p}/+(lib|src)/**/*.js`));
+        const clientUpdated = pluginList.map(
+            (p) => `node_modules/${p}/+(public|static)/**/*.js`
+        );
+        const serverUpdated = pluginList
+            .map((p) => `node_modules/${p}/*.js`)
+            .concat(
+                pluginList.map((p) => `node_modules/${p}/+(lib|src)/**/*.js`)
+            );
 
-        const templatesUpdated = pluginList.map(p => `node_modules/${p}/+(public|static|templates)/**/*.tpl`);
-        const langUpdated = pluginList.map(p => `node_modules/${p}/+(public|static|languages)/**/*.json`);
+        const templatesUpdated = pluginList.map(
+            (p) => `node_modules/${p}/+(public|static|templates)/**/*.tpl`
+        );
+        const langUpdated = pluginList.map(
+            (p) => `node_modules/${p}/+(public|static|languages)/**/*.json`
+        );
 
         grunt.config(['watch'], {
             styleUpdated_Client: {
@@ -160,7 +190,7 @@ module.exports = function (grunt) {
         }
 
         const execArgv = [];
-        const inspect = process.argv.find(a => a.startsWith('--inspect'));
+        const inspect = process.argv.find((a) => a.startsWith('--inspect'));
 
         if (inspect) {
             execArgv.push(inspect);
@@ -181,7 +211,10 @@ module.exports = function (grunt) {
             compiling = 'clientCSS';
         } else if (target === 'styleUpdated_Admin') {
             compiling = 'acpCSS';
-        } else if (target === 'clientUpdated' || target === 'typescriptUpdated') {
+        } else if (
+            target === 'clientUpdated' ||
+            target === 'typescriptUpdated'
+        ) {
             compiling = 'js';
         } else if (target === 'templatesUpdated') {
             compiling = 'tpl';
@@ -190,17 +223,21 @@ module.exports = function (grunt) {
         } else if (target === 'serverUpdated') {
             // empty require cache
             const paths = ['./src/meta/build.js', './src/meta/index.js'];
-            paths.forEach(p => delete require.cache[require.resolve(p)]);
+            paths.forEach((p) => delete require.cache[require.resolve(p)]);
             return run();
         }
 
-        require('./src/meta/build').build([compiling], { webpack: false }, (err) => {
-            if (err) {
-                winston.error(err.stack);
+        require('./src/meta/build').build(
+            [compiling],
+            { webpack: false },
+            (err) => {
+                if (err) {
+                    winston.error(err.stack);
+                }
+                if (worker) {
+                    worker.send({ compiling: compiling });
+                }
             }
-            if (worker) {
-                worker.send({ compiling: compiling });
-            }
-        });
+        );
     });
 };

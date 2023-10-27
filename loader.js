@@ -11,7 +11,10 @@ const mkdirp = require('mkdirp');
 const file = require('./src/file');
 const pkg = require('./package.json');
 
-const pathToConfig = path.resolve(__dirname, process.env.CONFIG || 'config.json');
+const pathToConfig = path.resolve(
+    __dirname,
+    process.env.CONFIG || 'config.json'
+);
 
 nconf.argv().env().file({
     file: pathToConfig,
@@ -19,15 +22,24 @@ nconf.argv().env().file({
 
 const pidFilePath = path.join(__dirname, 'pidfile');
 
-const outputLogFilePath = path.join(__dirname, nconf.get('logFile') || 'logs/output.log');
+const outputLogFilePath = path.join(
+    __dirname,
+    nconf.get('logFile') || 'logs/output.log'
+);
 
 const logDir = path.dirname(outputLogFilePath);
 if (!fs.existsSync(logDir)) {
     mkdirp.sync(path.dirname(outputLogFilePath));
 }
 
-const output = logrotate({ file: outputLogFilePath, size: '1m', keep: 3, compress: true });
-const silent = nconf.get('silent') === 'false' ? false : nconf.get('silent') !== false;
+const output = logrotate({
+    file: outputLogFilePath,
+    size: '1m',
+    keep: 3,
+    compress: true,
+});
+const silent =
+    nconf.get('silent') === 'false' ? false : nconf.get('silent') !== false;
 let numProcs;
 const workers = [];
 const Loader = {
@@ -48,10 +60,18 @@ Loader.init = function () {
 
 Loader.displayStartupMessages = function () {
     console.log('');
-    console.log(`NodeBB v${pkg.version} Copyright (C) 2013-${(new Date()).getFullYear()} NodeBB Inc.`);
+    console.log(
+        `NodeBB v${
+            pkg.version
+        } Copyright (C) 2013-${new Date().getFullYear()} NodeBB Inc.`
+    );
     console.log('This program comes with ABSOLUTELY NO WARRANTY.');
-    console.log('This is free software, and you are welcome to redistribute it under certain conditions.');
-    console.log('For the full license, please visit: http://www.gnu.org/copyleft/gpl.html');
+    console.log(
+        'This is free software, and you are welcome to redistribute it under certain conditions.'
+    );
+    console.log(
+        'For the full license, please visit: http://www.gnu.org/copyleft/gpl.html'
+    );
     console.log('');
 };
 
@@ -67,12 +87,18 @@ Loader.addWorkerEvents = function (worker) {
                     Loader.timesStarted = 0;
                 }, 10000);
             } else {
-                console.log(`${numProcs * 3} restarts in 10 seconds, most likely an error on startup. Halting.`);
+                console.log(
+                    `${
+                        numProcs * 3
+                    } restarts in 10 seconds, most likely an error on startup. Halting.`
+                );
                 process.exit();
             }
         }
 
-        console.log(`[cluster] Child Process (${worker.pid}) has exited (code: ${code}, signal: ${signal})`);
+        console.log(
+            `[cluster] Child Process (${worker.pid}) has exited (code: ${code}, signal: ${signal})`
+        );
         if (!(worker.suicide || code === 0)) {
             console.log('[cluster] Spinning up another process...');
 
@@ -83,22 +109,22 @@ Loader.addWorkerEvents = function (worker) {
     worker.on('message', (message) => {
         if (message && typeof message === 'object' && message.action) {
             switch (message.action) {
-            case 'restart':
-                console.log('[cluster] Restarting...');
-                Loader.restart();
-                break;
-            case 'pubsub':
-                workers.forEach((w) => {
-                    w.send(message);
-                });
-                break;
-            case 'socket.io':
-                workers.forEach((w) => {
-                    if (w !== worker) {
+                case 'restart':
+                    console.log('[cluster] Restarting...');
+                    Loader.restart();
+                    break;
+                case 'pubsub':
+                    workers.forEach((w) => {
                         w.send(message);
-                    }
-                });
-                break;
+                    });
+                    break;
+                case 'socket.io':
+                    workers.forEach((w) => {
+                        if (w !== worker) {
+                            w.send(message);
+                        }
+                    });
+                    break;
             }
         }
     });
@@ -118,7 +144,9 @@ function forkWorker(index, isPrimary) {
     const args = [];
 
     if (!ports[index]) {
-        return console.log(`[cluster] invalid port for worker : ${index} ports: ${ports.length}`);
+        return console.log(
+            `[cluster] invalid port for worker : ${index} ports: ${ports.length}`
+        );
     }
 
     process.env.isPrimary = isPrimary;
@@ -138,7 +166,12 @@ function forkWorker(index, isPrimary) {
     Loader.addWorkerEvents(worker);
 
     if (silent) {
-        const output = logrotate({ file: outputLogFilePath, size: '1m', keep: 3, compress: true });
+        const output = logrotate({
+            file: outputLogFilePath,
+            size: '1m',
+            keep: 3,
+            compress: true,
+        });
         worker.stdout.pipe(output);
         worker.stderr.pipe(output);
     }
@@ -147,7 +180,9 @@ function forkWorker(index, isPrimary) {
 function getPorts() {
     const _url = nconf.get('url');
     if (!_url) {
-        console.log('[cluster] url is undefined, please check your config.json');
+        console.log(
+            '[cluster] url is undefined, please check your config.json'
+        );
         process.exit();
     }
     const urlObject = url.parse(_url);
@@ -213,15 +248,21 @@ fs.open(pathToConfig, 'r', (err) => {
                 pid = fs.readFileSync(pidFilePath, { encoding: 'utf-8' });
                 if (pid) {
                     process.kill(pid, 0);
-                    console.info(`Process "${pid}" from pidfile already running, exiting`);
+                    console.info(
+                        `Process "${pid}" from pidfile already running, exiting`
+                    );
                     process.exit();
                 } else {
-                    console.info(`Invalid pid "${pid}" from pidfile, deleting pidfile`);
+                    console.info(
+                        `Invalid pid "${pid}" from pidfile, deleting pidfile`
+                    );
                     fs.unlinkSync(pidFilePath);
                 }
             } catch (err) {
                 if (err.code === 'ESRCH') {
-                    console.info(`Process "${pid}" from pidfile not found, deleting pidfile`);
+                    console.info(
+                        `Process "${pid}" from pidfile not found, deleting pidfile`
+                    );
                     fs.unlinkSync(pidFilePath);
                 } else {
                     console.error(err.stack);

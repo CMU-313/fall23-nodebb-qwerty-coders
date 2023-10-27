@@ -3,6 +3,7 @@
 *.md
 *.less
 *.json
+test
 
 dist/
 yarn.lock
