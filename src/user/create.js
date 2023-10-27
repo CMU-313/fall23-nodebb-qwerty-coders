@@ -74,7 +74,10 @@ module.exports = function (User) {
             userData.userslug = slugify(renamedUsername);
         }
 
-        const results = await plugins.hooks.fire('filter:user.create', { user: userData, data: data });
+        const results = await plugins.hooks.fire('filter:user.create', {
+            user: userData,
+            data: data,
+        });
         userData = results.user;
 
         const uid = await db.incrObjectField('global', 'nextUid');
@@ -85,8 +88,16 @@ module.exports = function (User) {
 
         const bulkAdd = [
             ['username:uid', userData.uid, userData.username],
-            [`user:${userData.uid}:usernames`, timestamp, `${userData.username}:${timestamp}`],
-            ['username:sorted', 0, `${userData.username.toLowerCase()}:${userData.uid}`],
+            [
+                `user:${userData.uid}:usernames`,
+                timestamp,
+                `${userData.username}:${timestamp}`,
+            ],
+            [
+                'username:sorted',
+                0,
+                `${userData.username.toLowerCase()}:${userData.uid}`,
+            ],
             ['userslug:uid', userData.uid, userData.userslug],
             ['users:joindate', timestamp, userData.uid],
             ['users:online', timestamp, userData.uid],
@@ -95,7 +106,11 @@ module.exports = function (User) {
         ];
 
         if (userData.fullname) {
-            bulkAdd.push(['fullname:sorted', 0, `${userData.fullname.toLowerCase()}:${userData.uid}`]);
+            bulkAdd.push([
+                'fullname:sorted',
+                0,
+                `${userData.fullname.toLowerCase()}:${userData.uid}`,
+            ]);
         }
 
         await Promise.all([
@@ -113,16 +128,32 @@ module.exports = function (User) {
         }
 
         if (userData.email && userData.uid > 1) {
-            await User.email.sendValidationEmail(userData.uid, {
-                email: userData.email,
-                template: 'welcome',
-                subject: `[[email:welcome-to, ${meta.config.title || meta.config.browserTitle || 'NodeBB'}]]`,
-            }).catch(err => winston.error(`[user.create] Validation email failed to send\n[emailer.send] ${err.stack}`));
+            await User.email
+                .sendValidationEmail(userData.uid, {
+                    email: userData.email,
+                    template: 'welcome',
+                    subject: `[[email:welcome-to, ${
+                        meta.config.title ||
+                        meta.config.browserTitle ||
+                        'NodeBB'
+                    }]]`,
+                })
+                .catch((err) =>
+                    winston.error(
+                        `[user.create] Validation email failed to send\n[emailer.send] ${err.stack}`
+                    )
+                );
         }
         if (userNameChanged) {
-            await User.notifications.sendNameChangeNotification(userData.uid, userData.username);
+            await User.notifications.sendNameChangeNotification(
+                userData.uid,
+                userData.username
+            );
         }
-        plugins.hooks.fire('action:user.create', { user: userData, data: data });
+        plugins.hooks.fire('action:user.create', {
+            user: userData,
+            data: data,
+        });
         return userData.uid;
     }
 
@@ -162,7 +193,10 @@ module.exports = function (User) {
     };
 
     User.isPasswordValid = function (password, minStrength) {
-        minStrength = (minStrength || minStrength === 0) ? minStrength : meta.config.minimumPasswordStrength;
+        minStrength =
+            minStrength || minStrength === 0
+                ? minStrength
+                : meta.config.minimumPasswordStrength;
 
         // Sanity checks: Checks if defined and is string
         if (!password || !utils.isPasswordValid(password)) {

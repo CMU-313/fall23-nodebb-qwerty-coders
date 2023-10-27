@@ -7,7 +7,7 @@ const flagsApi = module.exports;
 
 flagsApi.create = async (caller, data) => {
     const required = ['type', 'id', 'reason'];
-    if (!required.every(prop => !!data[prop])) {
+    if (!required.every((prop) => !!data[prop])) {
         throw new Error('[[error:invalid-data]]');
     }
 

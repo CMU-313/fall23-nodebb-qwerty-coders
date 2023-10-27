@@ -34,7 +34,10 @@ usersAPI.update = async function (caller, data) {
         throw new Error('[[error:invalid-data]]');
     }
 
-    const oldUserData = await user.getUserFields(data.uid, ['email', 'username']);
+    const oldUserData = await user.getUserFields(data.uid, [
+        'email',
+        'username',
+    ]);
     if (!oldUserData || !oldUserData.username) {
         throw new Error('[[error:invalid-data]]');
     }
@@ -91,7 +94,11 @@ usersAPI.deleteAccount = async function (caller, { uid, password }) {
 
 usersAPI.deleteMany = async function (caller, data) {
     if (await canDeleteUids(data.uids)) {
-        await Promise.all(data.uids.map(uid => processDeletion({ uid, method: 'delete', caller })));
+        await Promise.all(
+            data.uids.map((uid) =>
+                processDeletion({ uid, method: 'delete', caller })
+            )
+        );
     }
 };
 
@@ -121,7 +128,10 @@ usersAPI.updateSettings = async function (caller, data) {
 };
 
 usersAPI.changePassword = async function (caller, data) {
-    await user.changePassword(caller.uid, Object.assign(data, { ip: caller.ip }));
+    await user.changePassword(
+        caller.uid,
+        Object.assign(data, { ip: caller.ip })
+    );
     await events.log({
         type: 'password-change',
         uid: caller.uid,
@@ -137,7 +147,10 @@ usersAPI.follow = async function (caller, data) {
         toUid: data.uid,
     });
 
-    const userData = await user.getUserFields(caller.uid, ['username', 'userslug']);
+    const userData = await user.getUserFields(caller.uid, [
+        'username',
+        'userslug',
+    ]);
     const { displayname } = userData;
 
     const notifObj = await notifications.create({
@@ -164,17 +177,23 @@ usersAPI.unfollow = async function (caller, data) {
 };
 
 usersAPI.ban = async function (caller, data) {
-    if (!await privileges.users.hasBanPrivilege(caller.uid)) {
+    if (!(await privileges.users.hasBanPrivilege(caller.uid))) {
         throw new Error('[[error:no-privileges]]');
     } else if (await user.isAdministrator(data.uid)) {
         throw new Error('[[error:cant-ban-other-admins]]');
     }
 
     const banData = await user.bans.ban(data.uid, data.until, data.reason);
-    await db.setObjectField(`uid:${data.uid}:ban:${banData.timestamp}`, 'fromUid', caller.uid);
+    await db.setObjectField(
+        `uid:${data.uid}:ban:${banData.timestamp}`,
+        'fromUid',
+        caller.uid
+    );
 
     if (!data.reason) {
-        data.reason = await translator.translate('[[user:info.banned-no-reason]]');
+        data.reason = await translator.translate(
+            '[[user:info.banned-no-reason]]'
+        );
     }
 
     sockets.in(`uid_${data.uid}`).emit('event:banned', {
@@ -205,7 +224,7 @@ usersAPI.ban = async function (caller, data) {
 };
 
 usersAPI.unban = async function (caller, data) {
-    if (!await privileges.users.hasBanPrivilege(caller.uid)) {
+    if (!(await privileges.users.hasBanPrivilege(caller.uid))) {
         throw new Error('[[error:no-privileges]]');
     }
 
@@ -227,7 +246,7 @@ usersAPI.unban = async function (caller, data) {
 };
 
 usersAPI.mute = async function (caller, data) {
-    if (!await privileges.users.hasMutePrivilege(caller.uid)) {
+    if (!(await privileges.users.hasMutePrivilege(caller.uid))) {
         throw new Error('[[error:no-privileges]]');
     } else if (await user.isAdministrator(data.uid)) {
         throw new Error('[[error:cant-mute-other-admins]]');
@@ -267,11 +286,14 @@ usersAPI.mute = async function (caller, data) {
 };
 
 usersAPI.unmute = async function (caller, data) {
-    if (!await privileges.users.hasMutePrivilege(caller.uid)) {
+    if (!(await privileges.users.hasMutePrivilege(caller.uid))) {
         throw new Error('[[error:no-privileges]]');
     }
 
-    await db.deleteObjectFields(`user:${data.uid}`, ['mutedUntil', 'mutedReason']);
+    await db.deleteObjectFields(`user:${data.uid}`, [
+        'mutedUntil',
+        'mutedReason',
+    ]);
 
     await events.log({
         type: 'user-unmute',
@@ -296,7 +318,9 @@ async function isPrivilegedOrSelfAndPasswordMatch(caller, data) {
     }
     const [hasPassword, passwordMatch] = await Promise.all([
         user.hasPassword(data.uid),
-        data.password ? user.isPasswordCorrect(data.uid, data.password, caller.ip) : false,
+        data.password
+            ? user.isPasswordCorrect(data.uid, data.password, caller.ip)
+            : false,
     ]);
 
     if (isSelf && hasPassword && !passwordMatch) {
@@ -318,7 +342,10 @@ async function processDeletion({ uid, method, password, caller }) {
     }
 
     // Privilege checks -- only deleteAccount is available for non-admins
-    const hasAdminPrivilege = await privileges.admin.can('admin:users', caller.uid);
+    const hasAdminPrivilege = await privileges.admin.can(
+        'admin:users',
+        caller.uid
+    );
     if (!hasAdminPrivilege && ['delete', 'deleteContent'].includes(method)) {
         throw new Error('[[error:no-privileges]]');
     }
@@ -342,7 +369,10 @@ async function processDeletion({ uid, method, password, caller }) {
     }
     userData = userData || {};
 
-    sockets.server.sockets.emit('event:user_status_change', { uid: caller.uid, status: 'offline' });
+    sockets.server.sockets.emit('event:user_status_change', {
+        uid: caller.uid,
+        status: 'offline',
+    });
 
     plugins.hooks.fire('action:user.delete', {
         callerUid: caller.uid,
@@ -383,13 +413,13 @@ usersAPI.search = async function (caller, data) {
     ]);
     let filters = data.filters || [];
     filters = Array.isArray(filters) ? filters : [filters];
-    if (!allowed ||
-        ((
-            data.searchBy === 'ip' ||
+    if (
+        !allowed ||
+        ((data.searchBy === 'ip' ||
             data.searchBy === 'email' ||
             filters.includes('banned') ||
-            filters.includes('flagged')
-        ) && !isPrivileged)
+            filters.includes('flagged')) &&
+            !isPrivileged)
     ) {
         throw new Error('[[error:no-privileges]]');
     }
@@ -410,7 +440,11 @@ usersAPI.changePicture = async (caller, data) => {
     const { type, url } = data;
     let picture = '';
 
-    await user.checkMinReputation(caller.uid, data.uid, 'min:rep:profile-picture');
+    await user.checkMinReputation(
+        caller.uid,
+        data.uid,
+        'min:rep:profile-picture'
+    );
     const canEdit = await privileges.users.canEdit(caller.uid, data.uid);
     if (!canEdit) {
         throw new Error('[[error:no-privileges]]');
@@ -436,11 +470,15 @@ usersAPI.changePicture = async (caller, data) => {
         data.bgColor = validBackgrounds[0];
     }
 
-    await user.updateProfile(caller.uid, {
-        uid: data.uid,
-        picture: picture,
-        'icon:bgColor': data.bgColor,
-    }, ['picture', 'icon:bgColor']);
+    await user.updateProfile(
+        caller.uid,
+        {
+            uid: data.uid,
+            picture: picture,
+            'icon:bgColor': data.bgColor,
+        },
+        ['picture', 'icon:bgColor']
+    );
 };
 
 usersAPI.generateExport = async (caller, { uid, type }) => {
@@ -449,9 +487,13 @@ usersAPI.generateExport = async (caller, { uid, type }) => {
         throw new Error('[[error:already-exporting]]');
     }
 
-    const child = require('child_process').fork(`./src/user/jobs/export-${type}.js`, [], {
-        env: process.env,
-    });
+    const child = require('child_process').fork(
+        `./src/user/jobs/export-${type}.js`,
+        [],
+        {
+            env: process.env,
+        }
+    );
     child.send({ uid });
     child.on('error', async (err) => {
         winston.error(err.stack);
@@ -459,7 +501,10 @@ usersAPI.generateExport = async (caller, { uid, type }) => {
     });
     child.on('exit', async () => {
         await db.deleteObjectField('locks', `export:${uid}${type}`);
-        const userData = await user.getUserFields(uid, ['username', 'userslug']);
+        const userData = await user.getUserFields(uid, [
+            'username',
+            'userslug',
+        ]);
         const { displayname } = userData;
         const n = await notifications.create({
             bodyShort: `[[notifications:${type}-exported, ${displayname}]]`,

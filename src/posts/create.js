@@ -47,7 +47,10 @@ module.exports = function (Posts) {
             postData.handle = data.handle;
         }
 
-        let result = await plugins.hooks.fire('filter:post.create', { post: postData, data: data });
+        let result = await plugins.hooks.fire('filter:post.create', {
+            post: postData,
+            data: data,
+        });
         postData = result.post;
         await db.setObject(`post:${postData.pid}`, postData);
 
@@ -65,7 +68,10 @@ module.exports = function (Posts) {
             Posts.uploads.sync(postData.pid),
         ]);
 
-        result = await plugins.hooks.fire('filter:post.get', { post: postData, uid: data.uid });
+        result = await plugins.hooks.fire('filter:post.get', {
+            post: postData,
+            uid: data.uid,
+        });
         result.post.isMain = isMain;
         plugins.hooks.fire('action:post.save', { post: _.clone(result.post) });
         return result.post;
@@ -76,7 +82,11 @@ module.exports = function (Posts) {
             return;
         }
         await Promise.all([
-            db.sortedSetAdd(`pid:${postData.toPid}:replies`, timestamp, postData.pid),
+            db.sortedSetAdd(
+                `pid:${postData.toPid}:replies`,
+                timestamp,
+                postData.pid
+            ),
             db.incrObjectField(`post:${postData.toPid}`, 'replies'),
         ]);
     }

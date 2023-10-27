@@ -35,7 +35,9 @@ groupsController.details = async function (req, res, next) {
         if (res.locals.isAPI) {
             req.params.slug = lowercaseSlug;
         } else {
-            return res.redirect(`${nconf.get('relative_path')}/groups/${lowercaseSlug}`);
+            return res.redirect(
+                `${nconf.get('relative_path')}/groups/${lowercaseSlug}`
+            );
         }
     }
     const groupName = await groups.getGroupNameByGroupSlug(req.params.slug);
@@ -71,7 +73,8 @@ groupsController.details = async function (req, res, next) {
     if (!groupData) {
         return next();
     }
-    groupData.isOwner = groupData.isOwner || isAdmin || (isGlobalMod && !groupData.system);
+    groupData.isOwner =
+        groupData.isOwner || isAdmin || (isGlobalMod && !groupData.system);
 
     res.render('groups/details', {
         title: `[[pages:group, ${groupData.displayName}]]`,
@@ -80,7 +83,10 @@ groupsController.details = async function (req, res, next) {
         isAdmin: isAdmin,
         isGlobalMod: isGlobalMod,
         allowPrivateGroups: meta.config.allowPrivateGroups,
-        breadcrumbs: helpers.buildBreadcrumbs([{ text: '[[pages:groups]]', url: '/groups' }, { text: groupData.displayName }]),
+        breadcrumbs: helpers.buildBreadcrumbs([
+            { text: '[[pages:groups]]', url: '/groups' },
+            { text: groupData.displayName },
+        ]),
     });
 };
 
@@ -93,25 +99,37 @@ groupsController.members = async function (req, res, next) {
     if (!groupName) {
         return next();
     }
-    const [groupData, isAdminOrGlobalMod, isMember, isHidden] = await Promise.all([
-        groups.getGroupData(groupName),
-        user.isAdminOrGlobalMod(req.uid),
-        groups.isMember(req.uid, groupName),
-        groups.isHidden(groupName),
-    ]);
+    const [groupData, isAdminOrGlobalMod, isMember, isHidden] =
+        await Promise.all([
+            groups.getGroupData(groupName),
+            user.isAdminOrGlobalMod(req.uid),
+            groups.isMember(req.uid, groupName),
+            groups.isHidden(groupName),
+        ]);
 
     if (isHidden && !isMember && !isAdminOrGlobalMod) {
         return next();
     }
-    const users = await user.getUsersFromSet(`group:${groupName}:members`, req.uid, start, stop);
+    const users = await user.getUsersFromSet(
+        `group:${groupName}:members`,
+        req.uid,
+        start,
+        stop
+    );
 
     const breadcrumbs = helpers.buildBreadcrumbs([
         { text: '[[pages:groups]]', url: '/groups' },
-        { text: validator.escape(String(groupName)), url: `/groups/${req.params.slug}` },
+        {
+            text: validator.escape(String(groupName)),
+            url: `/groups/${req.params.slug}`,
+        },
         { text: '[[groups:details.members]]' },
     ]);
 
-    const pageCount = Math.max(1, Math.ceil(groupData.memberCount / usersPerPage));
+    const pageCount = Math.max(
+        1,
+        Math.ceil(groupData.memberCount / usersPerPage)
+    );
     res.render('groups/members', {
         users: users,
         pagination: pagination.create(page, pageCount, req.query),

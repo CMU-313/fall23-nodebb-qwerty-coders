@@ -10,28 +10,44 @@ module.exports = function (module) {
         if (counts.minCount === 0) {
             return 0;
         }
-        let items = await objects.find({ _key: counts.smallestSet }, {
-            projection: { _id: 0, value: 1 },
-        }).batchSize(counts.minCount + 1).toArray();
+        let items = await objects
+            .find(
+                { _key: counts.smallestSet },
+                {
+                    projection: { _id: 0, value: 1 },
+                }
+            )
+            .batchSize(counts.minCount + 1)
+            .toArray();
 
-        const otherSets = keys.filter(s => s !== counts.smallestSet);
+        const otherSets = keys.filter((s) => s !== counts.smallestSet);
         for (let i = 0; i < otherSets.length; i++) {
             /* eslint-disable no-await-in-loop */
-            const query = { _key: otherSets[i], value: { $in: items.map(i => i.value) } };
+            const query = {
+                _key: otherSets[i],
+                value: { $in: items.map((i) => i.value) },
+            };
             if (i === otherSets.length - 1) {
                 return await objects.countDocuments(query);
             }
-            items = await objects.find(query, { projection: { _id: 0, value: 1 } })
-                .batchSize(items.length + 1).toArray();
+            items = await objects
+                .find(query, { projection: { _id: 0, value: 1 } })
+                .batchSize(items.length + 1)
+                .toArray();
         }
     };
 
     async function countSets(sets, limit) {
         const objects = module.client.collection('objects');
         const counts = await Promise.all(
-            sets.map(s => objects.countDocuments({ _key: s }, {
-                limit: limit || 25000,
-            }))
+            sets.map((s) =>
+                objects.countDocuments(
+                    { _key: s },
+                    {
+                        limit: limit || 25000,
+                    }
+                )
+            )
         );
         const minCount = Math.min(...counts);
         const index = counts.indexOf(minCount);
@@ -66,7 +82,9 @@ module.exports = function (module) {
             return [];
         }
 
-        const simple = params.weights.filter(w => w === 1).length === 1 && params.limit !== 0;
+        const simple =
+            params.weights.filter((w) => w === 1).length === 1 &&
+            params.limit !== 0;
         if (params.counts.minCount < 25000 && simple) {
             return await intersectSingle(params);
         } else if (simple) {
@@ -82,9 +100,12 @@ module.exports = function (module) {
             return await intersectBatch(params);
         }
 
-        const cursorSmall = objects.find({ _key: params.counts.smallestSet }, {
-            projection: { _id: 0, value: 1 },
-        });
+        const cursorSmall = objects.find(
+            { _key: params.counts.smallestSet },
+            {
+                projection: { _id: 0, value: 1 },
+            }
+        );
         if (params.counts.minCount > 1) {
             cursorSmall.batchSize(params.counts.minCount + 1);
         }
@@ -93,23 +114,32 @@ module.exports = function (module) {
         if (params.withScores) {
             project.score = 1;
         }
-        const otherSets = params.sets.filter(s => s !== params.counts.smallestSet);
+        const otherSets = params.sets.filter(
+            (s) => s !== params.counts.smallestSet
+        );
         // move sortSet to the end of array
         otherSets.push(otherSets.splice(otherSets.indexOf(sortSet), 1)[0]);
         for (let i = 0; i < otherSets.length; i++) {
             /* eslint-disable no-await-in-loop */
-            const cursor = objects.find({ _key: otherSets[i], value: { $in: items.map(i => i.value) } });
+            const cursor = objects.find({
+                _key: otherSets[i],
+                value: { $in: items.map((i) => i.value) },
+            });
             cursor.batchSize(items.length + 1);
             // at the last step sort by sortSet
             if (i === otherSets.length - 1) {
-                cursor.project(project).sort({ score: params.sort }).skip(params.start).limit(params.limit);
+                cursor
+                    .project(project)
+                    .sort({ score: params.sort })
+                    .skip(params.start)
+                    .limit(params.limit);
             } else {
                 cursor.project({ _id: 0, value: 1 });
             }
             items = await cursor.toArray();
         }
         if (!params.withScores) {
-            items = items.map(i => i.value);
+            items = items.map((i) => i.value);
         }
         return items;
     }
@@ -121,12 +151,13 @@ module.exports = function (module) {
         }
         const sortSet = params.sets[params.weights.indexOf(1)];
         const batchSize = 10000;
-        const cursor = await module.client.collection('objects')
+        const cursor = await module.client
+            .collection('objects')
             .find({ _key: sortSet }, { projection: project })
             .sort({ score: params.sort })
             .batchSize(batchSize);
 
-        const otherSets = params.sets.filter(s => s !== sortSet);
+        const otherSets = params.sets.filter((s) => s !== sortSet);
         let inters = [];
         let done = false;
         while (!done) {
@@ -141,22 +172,36 @@ module.exports = function (module) {
                 items.push(nextItem);
             }
 
-            const members = await Promise.all(otherSets.map(async (s) => {
-                const data = await module.client.collection('objects').find({
-                    _key: s, value: { $in: items.map(i => i.value) },
-                }, {
-                    projection: { _id: 0, value: 1 },
-                }).batchSize(items.length + 1).toArray();
-                return new Set(data.map(i => i.value));
-            }));
-            inters = inters.concat(items.filter(item => members.every(arr => arr.has(item.value))));
+            const members = await Promise.all(
+                otherSets.map(async (s) => {
+                    const data = await module.client
+                        .collection('objects')
+                        .find(
+                            {
+                                _key: s,
+                                value: { $in: items.map((i) => i.value) },
+                            },
+                            {
+                                projection: { _id: 0, value: 1 },
+                            }
+                        )
+                        .batchSize(items.length + 1)
+                        .toArray();
+                    return new Set(data.map((i) => i.value));
+                })
+            );
+            inters = inters.concat(
+                items.filter((item) =>
+                    members.every((arr) => arr.has(item.value))
+                )
+            );
             if (inters.length >= params.stop) {
                 done = true;
                 inters = inters.slice(params.start, params.stop + 1);
             }
         }
         if (!params.withScores) {
-            inters = inters.map(item => item.value);
+            inters = inters.map((item) => item.value);
         }
         return inters;
     }
@@ -192,7 +237,13 @@ module.exports = function (module) {
             }
         });
 
-        pipeline.push({ $group: { _id: { value: '$value' }, totalScore: aggregate, count: { $sum: 1 } } });
+        pipeline.push({
+            $group: {
+                _id: { value: '$value' },
+                totalScore: aggregate,
+                count: { $sum: 1 },
+            },
+        });
         pipeline.push({ $match: { count: params.sets.length } });
         pipeline.push({ $sort: { totalScore: params.sort } });
 
@@ -210,9 +261,12 @@ module.exports = function (module) {
         }
         pipeline.push({ $project: project });
 
-        let data = await module.client.collection('objects').aggregate(pipeline).toArray();
+        let data = await module.client
+            .collection('objects')
+            .aggregate(pipeline)
+            .toArray();
         if (!params.withScores) {
-            data = data.map(item => item.value);
+            data = data.map((item) => item.value);
         }
         return data;
     }

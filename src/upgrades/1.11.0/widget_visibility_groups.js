@@ -13,7 +13,10 @@ module.exports = {
                 area.widgets = area.data;
                 area.widgets.forEach((widget) => {
                     if (widget && widget.data) {
-                        const groupsToShow = ['administrators', 'Global Moderators'];
+                        const groupsToShow = [
+                            'administrators',
+                            'Global Moderators',
+                        ];
                         if (widget.data['hide-guests'] !== 'on') {
                             groupsToShow.push('guests');
                         }

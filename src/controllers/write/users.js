@@ -37,7 +37,11 @@ Users.redirectBySlug = async (req, res) => {
     if (uid) {
         const path = req.path.split('/').slice(3).join('/');
         const urlObj = new URL(nconf.get('url') + req.url);
-        res.redirect(308, nconf.get('relative_path') + encodeURI(`/api/v3/users/${uid}/${path}${urlObj.search}`));
+        res.redirect(
+            308,
+            nconf.get('relative_path') +
+                encodeURI(`/api/v3/users/${uid}/${path}${urlObj.search}`)
+        );
     } else {
         helpers.formatApiResponse(404, res);
     }
@@ -60,7 +64,10 @@ Users.get = async (req, res) => {
 };
 
 Users.update = async (req, res) => {
-    const userObj = await api.users.update(req, { ...req.body, uid: req.params.uid });
+    const userObj = await api.users.update(req, {
+        ...req.body,
+        uid: req.params.uid,
+    });
     helpers.formatApiResponse(200, res, userObj);
 };
 
@@ -70,12 +77,18 @@ Users.delete = async (req, res) => {
 };
 
 Users.deleteContent = async (req, res) => {
-    await api.users.deleteContent(req, { ...req.params, password: req.body.password });
+    await api.users.deleteContent(req, {
+        ...req.params,
+        password: req.body.password,
+    });
     helpers.formatApiResponse(200, res);
 };
 
 Users.deleteAccount = async (req, res) => {
-    await api.users.deleteAccount(req, { ...req.params, password: req.body.password });
+    await api.users.deleteAccount(req, {
+        ...req.params,
+        password: req.body.password,
+    });
     helpers.formatApiResponse(200, res);
 };
 
@@ -91,7 +104,10 @@ Users.changePicture = async (req, res) => {
 };
 
 Users.updateSettings = async (req, res) => {
-    const settings = await api.users.updateSettings(req, { ...req.body, uid: req.params.uid });
+    const settings = await api.users.updateSettings(req, {
+        ...req.body,
+        uid: req.params.uid,
+    });
     helpers.formatApiResponse(200, res, settings);
 };
 
@@ -158,7 +174,9 @@ Users.deleteToken = async (req, res) => {
 
     const settings = await meta.settings.get('core.api');
     const beforeLen = settings.tokens.length;
-    settings.tokens = settings.tokens.filter(tokenObj => tokenObj.token !== req.params.token);
+    settings.tokens = settings.tokens.filter(
+        (tokenObj) => tokenObj.token !== req.params.token
+    );
     if (beforeLen !== settings.tokens.length) {
         await meta.settings.set('core.api', settings);
         helpers.formatApiResponse(200, res);
@@ -168,21 +186,34 @@ Users.deleteToken = async (req, res) => {
 };
 
 const getSessionAsync = util.promisify((sid, callback) => {
-    db.sessionStore.get(sid, (err, sessionObj) => callback(err, sessionObj || null));
+    db.sessionStore.get(sid, (err, sessionObj) =>
+        callback(err, sessionObj || null)
+    );
 });
 
 Users.revokeSession = async (req, res) => {
     // Only admins or global mods (besides the user themselves) can revoke sessions
-    if (parseInt(req.params.uid, 10) !== req.uid && !await user.isAdminOrGlobalMod(req.uid)) {
+    if (
+        parseInt(req.params.uid, 10) !== req.uid &&
+        !(await user.isAdminOrGlobalMod(req.uid))
+    ) {
         return helpers.formatApiResponse(404, res);
     }
 
-    const sids = await db.getSortedSetRange(`uid:${req.params.uid}:sessions`, 0, -1);
+    const sids = await db.getSortedSetRange(
+        `uid:${req.params.uid}:sessions`,
+        0,
+        -1
+    );
     let _id;
     for (const sid of sids) {
         /* eslint-disable no-await-in-loop */
         const sessionObj = await getSessionAsync(sid);
-        if (sessionObj && sessionObj.meta && sessionObj.meta.uuid === req.params.uuid) {
+        if (
+            sessionObj &&
+            sessionObj.meta &&
+            sessionObj.meta.uuid === req.params.uuid
+        ) {
             _id = sid;
             break;
         }
@@ -200,33 +231,60 @@ Users.invite = async (req, res) => {
     const { emails, groupsToJoin = [] } = req.body;
 
     if (!emails || !Array.isArray(groupsToJoin)) {
-        return helpers.formatApiResponse(400, res, new Error('[[error:invalid-data]]'));
+        return helpers.formatApiResponse(
+            400,
+            res,
+            new Error('[[error:invalid-data]]')
+        );
     }
 
     // For simplicity, this API route is restricted to self-use only. This can change if needed.
     if (parseInt(req.user.uid, 10) !== parseInt(req.params.uid, 10)) {
-        return helpers.formatApiResponse(403, res, new Error('[[error:no-privileges]]'));
+        return helpers.formatApiResponse(
+            403,
+            res,
+            new Error('[[error:no-privileges]]')
+        );
     }
 
     const canInvite = await privileges.users.hasInvitePrivilege(req.uid);
     if (!canInvite) {
-        return helpers.formatApiResponse(403, res, new Error('[[error:no-privileges]]'));
+        return helpers.formatApiResponse(
+            403,
+            res,
+            new Error('[[error:no-privileges]]')
+        );
     }
 
     const { registrationType } = meta.config;
     const isAdmin = await user.isAdministrator(req.uid);
     if (registrationType === 'admin-invite-only' && !isAdmin) {
-        return helpers.formatApiResponse(403, res, new Error('[[error:no-privileges]]'));
+        return helpers.formatApiResponse(
+            403,
+            res,
+            new Error('[[error:no-privileges]]')
+        );
     }
 
-    const inviteGroups = (await groups.getUserInviteGroups(req.uid)).map(group => group.name);
-    const cannotInvite = groupsToJoin.some(group => !inviteGroups.includes(group));
+    const inviteGroups = (await groups.getUserInviteGroups(req.uid)).map(
+        (group) => group.name
+    );
+    const cannotInvite = groupsToJoin.some(
+        (group) => !inviteGroups.includes(group)
+    );
     if (groupsToJoin.length > 0 && cannotInvite) {
-        return helpers.formatApiResponse(403, res, new Error('[[error:no-privileges]]'));
+        return helpers.formatApiResponse(
+            403,
+            res,
+            new Error('[[error:no-privileges]]')
+        );
     }
 
     const max = meta.config.maximumInvites;
-    const emailsArr = emails.split(',').map(email => email.trim()).filter(Boolean);
+    const emailsArr = emails
+        .split(',')
+        .map((email) => email.trim())
+        .filter(Boolean);
 
     for (const email of emailsArr) {
         /* eslint-disable no-await-in-loop */
@@ -235,7 +293,11 @@ Users.invite = async (req, res) => {
             invites = await user.getInvitesNumber(req.uid);
         }
         if (!isAdmin && max && invites >= max) {
-            return helpers.formatApiResponse(403, res, new Error(`[[error:invite-maximum-met, ${invites}, ${max}]]`));
+            return helpers.formatApiResponse(
+                403,
+                res,
+                new Error(`[[error:invite-maximum-met, ${invites}, ${max}]]`)
+            );
         }
 
         await user.sendInvitationEmail(req.uid, email, groupsToJoin);
@@ -250,7 +312,11 @@ Users.getInviteGroups = async function (req, res) {
     }
 
     const userInviteGroups = await groups.getUserInviteGroups(req.params.uid);
-    return helpers.formatApiResponse(200, res, userInviteGroups.map(group => group.displayName));
+    return helpers.formatApiResponse(
+        200,
+        res,
+        userInviteGroups.map((group) => group.displayName)
+    );
 };
 
 Users.listEmails = async (req, res) => {
@@ -261,7 +327,13 @@ Users.listEmails = async (req, res) => {
     const isSelf = req.uid === parseInt(req.params.uid, 10);
 
     if (isSelf || isPrivileged || showemail) {
-        const emails = await db.getSortedSetRangeByScore('email:uid', 0, 500, req.params.uid, req.params.uid);
+        const emails = await db.getSortedSetRangeByScore(
+            'email:uid',
+            0,
+            500,
+            req.params.uid,
+            req.params.uid
+        );
         helpers.formatApiResponse(200, res, { emails });
     } else {
         helpers.formatApiResponse(204, res);
@@ -294,11 +366,13 @@ Users.confirmEmail = async (req, res) => {
         return helpers.notAllowed(req, res);
     }
 
-    if (pending) { // has active confirmation request
+    if (pending) {
+        // has active confirmation request
         const code = await db.get(`confirm:byUid:${req.params.uid}`);
         await user.email.confirmByCode(code, req.session.id);
         helpers.formatApiResponse(200, res);
-    } else if (current && current === req.params.email) { // email in user hash (i.e. email passed into user.create)
+    } else if (current && current === req.params.email) {
+        // email in user hash (i.e. email passed into user.create)
         await user.email.confirmByUid(req.params.uid);
         helpers.formatApiResponse(200, res);
     } else {
@@ -310,10 +384,18 @@ const prepareExport = async (req, res) => {
     const [extension] = exportMetadata.get(req.params.type);
     const filename = `${req.params.uid}_${req.params.type}.${extension}`;
     try {
-        const stat = await fs.stat(path.join(__dirname, '../../../build/export', filename));
+        const stat = await fs.stat(
+            path.join(__dirname, '../../../build/export', filename)
+        );
         const modified = new Date(stat.mtimeMs);
         res.set('Last-Modified', modified.toUTCString());
-        res.set('ETag', `"${crypto.createHash('md5').update(String(stat.mtimeMs)).digest('hex')}"`);
+        res.set(
+            'ETag',
+            `"${crypto
+                .createHash('md5')
+                .update(String(stat.mtimeMs))
+                .digest('hex')}"`
+        );
         res.status(204);
         return true;
     } catch (e) {
@@ -337,17 +419,21 @@ Users.getExportByType = async (req, res) => {
     }
 
     res.status(200);
-    res.sendFile(filename, {
-        root: path.join(__dirname, '../../../build/export'),
-        headers: {
-            'Content-Type': mime,
-            'Content-Disposition': `attachment; filename=${filename}`,
+    res.sendFile(
+        filename,
+        {
+            root: path.join(__dirname, '../../../build/export'),
+            headers: {
+                'Content-Type': mime,
+                'Content-Disposition': `attachment; filename=${filename}`,
+            },
         },
-    }, (err) => {
-        if (err) {
-            throw err;
+        (err) => {
+            if (err) {
+                throw err;
+            }
         }
-    });
+    );
 };
 
 Users.generateExportsByType = async (req, res) => {

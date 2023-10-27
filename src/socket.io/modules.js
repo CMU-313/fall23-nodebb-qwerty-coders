@@ -25,7 +25,10 @@ SocketModules.chats.getRaw = async function (socket, data) {
     const roomId = await Messaging.getMessageField(data.mid, 'roomId');
     const [isAdmin, hasMessage, inRoom] = await Promise.all([
         user.isAdministrator(socket.uid),
-        db.isSortedSetMember(`uid:${socket.uid}:chat:room:${roomId}:mids`, data.mid),
+        db.isSortedSetMember(
+            `uid:${socket.uid}:chat:room:${roomId}:mids`,
+            data.mid
+        ),
         Messaging.isUserInRoom(socket.uid, roomId),
     ]);
 
@@ -113,7 +116,10 @@ SocketModules.chats.addUserToRoom = async function (socket, data) {
 };
 
 SocketModules.chats.removeUserFromRoom = async function (socket, data) {
-    sockets.warnDeprecated(socket, 'DELETE /api/v3/chats/:roomId/users OR DELETE /api/v3/chats/:roomId/users/:uid');
+    sockets.warnDeprecated(
+        socket,
+        'DELETE /api/v3/chats/:roomId/users OR DELETE /api/v3/chats/:roomId/users/:uid'
+    );
 
     if (!data || !data.roomId) {
         throw new Error('[[error:invalid-data]]');
@@ -127,7 +133,10 @@ SocketModules.chats.removeUserFromRoom = async function (socket, data) {
 };
 
 SocketModules.chats.leave = async function (socket, roomid) {
-    sockets.warnDeprecated(socket, 'DELETE /api/v3/chats/:roomId/users OR DELETE /api/v3/chats/:roomId/users/:uid');
+    sockets.warnDeprecated(
+        socket,
+        'DELETE /api/v3/chats/:roomId/users OR DELETE /api/v3/chats/:roomId/users/:uid'
+    );
 
     if (!socket.uid || !roomid) {
         throw new Error('[[error:invalid-data]]');
@@ -143,7 +152,12 @@ SocketModules.chats.edit = async function (socket, data) {
         throw new Error('[[error:invalid-data]]');
     }
     await Messaging.canEdit(data.mid, socket.uid);
-    await Messaging.editMessage(socket.uid, data.mid, data.roomId, data.message);
+    await Messaging.editMessage(
+        socket.uid,
+        data.mid,
+        data.roomId,
+        data.message
+    );
 };
 
 SocketModules.chats.delete = async function (socket, data) {
@@ -180,15 +194,18 @@ SocketModules.chats.markRead = async function (socket, roomId) {
     ]);
 
     Messaging.pushUnreadCount(socket.uid);
-    server.in(`uid_${socket.uid}`).emit('event:chats.markedAsRead', { roomId: roomId });
+    server
+        .in(`uid_${socket.uid}`)
+        .emit('event:chats.markedAsRead', { roomId: roomId });
 
     if (!uidsInRoom.includes(String(socket.uid))) {
         return;
     }
 
     // Mark notification read
-    const nids = uidsInRoom.filter(uid => parseInt(uid, 10) !== socket.uid)
-        .map(uid => `chat_${uid}_${roomId}`);
+    const nids = uidsInRoom
+        .filter((uid) => parseInt(uid, 10) !== socket.uid)
+        .map((uid) => `chat_${uid}_${roomId}`);
 
     await notifications.markReadMultiple(nids, socket.uid);
     await user.notifications.pushCount(socket.uid);

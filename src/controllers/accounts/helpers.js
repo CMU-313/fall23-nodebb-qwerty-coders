@@ -16,7 +16,11 @@ const categories = require('../../categories');
 
 const helpers = module.exports;
 
-helpers.getUserDataByUserSlug = async function (userslug, callerUID, query = {}) {
+helpers.getUserDataByUserSlug = async function (
+    userslug,
+    callerUID,
+    query = {}
+) {
     const uid = await user.getUidByUserslug(userslug);
     if (!uid) {
         return null;
@@ -38,7 +42,13 @@ helpers.getUserDataByUserSlug = async function (userslug, callerUID, query = {})
 
     userData.age = Math.max(
         0,
-        userData.birthday ? Math.floor((new Date().getTime() - new Date(userData.birthday).getTime()) / 31536000000) : 0
+        userData.birthday
+            ? Math.floor(
+                  (new Date().getTime() -
+                      new Date(userData.birthday).getTime()) /
+                      31536000000
+              )
+            : 0
     );
 
     userData = await user.hidePrivateData(userData, callerUID);
@@ -65,18 +75,26 @@ helpers.getUserDataByUserSlug = async function (userslug, callerUID, query = {})
     userData.isGlobalModerator = isGlobalModerator;
     userData.isModerator = isModerator;
     userData.isAdminOrGlobalModerator = isAdmin || isGlobalModerator;
-    userData.isAdminOrGlobalModeratorOrModerator = isAdmin || isGlobalModerator || isModerator;
-    userData.isSelfOrAdminOrGlobalModerator = isSelf || isAdmin || isGlobalModerator;
+    userData.isAdminOrGlobalModeratorOrModerator =
+        isAdmin || isGlobalModerator || isModerator;
+    userData.isSelfOrAdminOrGlobalModerator =
+        isSelf || isAdmin || isGlobalModerator;
     userData.canEdit = results.canEdit;
     userData.canBan = results.canBanUser;
     userData.canMute = results.canMuteUser;
-    userData.canFlag = (await privileges.users.canFlag(callerUID, userData.uid)).flag;
-    userData.canChangePassword = isAdmin || (isSelf && !meta.config['password:disableEdit']);
+    userData.canFlag = (
+        await privileges.users.canFlag(callerUID, userData.uid)
+    ).flag;
+    userData.canChangePassword =
+        isAdmin || (isSelf && !meta.config['password:disableEdit']);
     userData.isSelf = isSelf;
     userData.isFollowing = results.isFollowing;
     userData.hasPrivateChat = results.hasPrivateChat;
     userData.showHidden = results.canEdit; // remove in v1.19.0
-    userData.groups = Array.isArray(results.groups) && results.groups.length ? results.groups[0] : [];
+    userData.groups =
+        Array.isArray(results.groups) && results.groups.length
+            ? results.groups[0]
+            : [];
     userData.disableSignatures = meta.config.disableSignatures === 1;
     userData['reputation:disabled'] = meta.config['reputation:disabled'] === 1;
     userData['downvote:disabled'] = meta.config['downvote:disabled'] === 1;
@@ -94,32 +112,48 @@ helpers.getUserDataByUserSlug = async function (userslug, callerUID, query = {})
     userData.banned = Boolean(userData.banned);
     userData.muted = parseInt(userData.mutedUntil, 10) > Date.now();
     userData.website = escape(userData.website);
-    userData.websiteLink = !userData.website.startsWith('http') ? `http://${userData.website}` : userData.website;
-    userData.websiteName = userData.website.replace(validator.escape('http://'), '').replace(validator.escape('https://'), '');
+    userData.websiteLink = !userData.website.startsWith('http')
+        ? `http://${userData.website}`
+        : userData.website;
+    userData.websiteName = userData.website
+        .replace(validator.escape('http://'), '')
+        .replace(validator.escape('https://'), '');
 
     userData.fullname = escape(userData.fullname);
     userData.location = escape(userData.location);
     userData.signature = escape(userData.signature);
     userData.birthday = validator.escape(String(userData.birthday || ''));
-    userData.moderationNote = validator.escape(String(userData.moderationNote || ''));
+    userData.moderationNote = validator.escape(
+        String(userData.moderationNote || '')
+    );
 
     if (userData['cover:url']) {
-        userData['cover:url'] = userData['cover:url'].startsWith('http') ? userData['cover:url'] : (nconf.get('relative_path') + userData['cover:url']);
+        userData['cover:url'] = userData['cover:url'].startsWith('http')
+            ? userData['cover:url']
+            : nconf.get('relative_path') + userData['cover:url'];
     } else {
-        userData['cover:url'] = require('../../coverPhoto').getDefaultProfileCover(userData.uid);
+        userData['cover:url'] =
+            require('../../coverPhoto').getDefaultProfileCover(userData.uid);
     }
 
-    userData['cover:position'] = validator.escape(String(userData['cover:position'] || '50% 50%'));
-    userData['username:disableEdit'] = !userData.isAdmin && meta.config['username:disableEdit'];
-    userData['email:disableEdit'] = !userData.isAdmin && meta.config['email:disableEdit'];
+    userData['cover:position'] = validator.escape(
+        String(userData['cover:position'] || '50% 50%')
+    );
+    userData['username:disableEdit'] =
+        !userData.isAdmin && meta.config['username:disableEdit'];
+    userData['email:disableEdit'] =
+        !userData.isAdmin && meta.config['email:disableEdit'];
 
     await getCounts(userData, callerUID);
 
-    const hookData = await plugins.hooks.fire('filter:helpers.getUserDataByUserSlug', {
-        userData: userData,
-        callerUID: callerUID,
-        query: query,
-    });
+    const hookData = await plugins.hooks.fire(
+        'filter:helpers.getUserDataByUserSlug',
+        {
+            userData: userData,
+            callerUID: callerUID,
+            query: query,
+        }
+    );
     return hookData.userData;
 };
 
@@ -139,7 +173,10 @@ async function getAllData(uid, callerUID) {
         ips: user.getIPs(uid, 4),
         profile_menu: getProfileMenu(uid, callerUID),
         groups: groups.getUserGroups([uid]),
-        sso: plugins.hooks.fire('filter:auth.list', { uid: uid, associations: [] }),
+        sso: plugins.hooks.fire('filter:auth.list', {
+            uid: uid,
+            associations: [],
+        }),
         canEdit: privileges.users.canEdit(callerUID, uid),
         canBanUser: privileges.users.canBanUser(callerUID, uid),
         canMuteUser: privileges.users.canMuteUser(callerUID, uid),
@@ -151,12 +188,28 @@ async function getAllData(uid, callerUID) {
 
 async function getCounts(userData, callerUID) {
     const { uid } = userData;
-    const cids = await categories.getCidsByPrivilege('categories:cid', callerUID, 'topics:read');
+    const cids = await categories.getCidsByPrivilege(
+        'categories:cid',
+        callerUID,
+        'topics:read'
+    );
     const promises = {
-        posts: db.sortedSetsCardSum(cids.map(c => `cid:${c}:uid:${uid}:pids`)),
-        best: Promise.all(cids.map(async c => db.sortedSetCount(`cid:${c}:uid:${uid}:pids:votes`, 1, '+inf'))),
-        controversial: Promise.all(cids.map(async c => db.sortedSetCount(`cid:${c}:uid:${uid}:pids:votes`, '-inf', -1))),
-        topics: db.sortedSetsCardSum(cids.map(c => `cid:${c}:uid:${uid}:tids`)),
+        posts: db.sortedSetsCardSum(
+            cids.map((c) => `cid:${c}:uid:${uid}:pids`)
+        ),
+        best: Promise.all(
+            cids.map(async (c) =>
+                db.sortedSetCount(`cid:${c}:uid:${uid}:pids:votes`, 1, '+inf')
+            )
+        ),
+        controversial: Promise.all(
+            cids.map(async (c) =>
+                db.sortedSetCount(`cid:${c}:uid:${uid}:pids:votes`, '-inf', -1)
+            )
+        ),
+        topics: db.sortedSetsCardSum(
+            cids.map((c) => `cid:${c}:uid:${uid}:tids`)
+        ),
     };
     if (userData.isAdmin || userData.isSelf) {
         promises.ignored = db.sortedSetCard(`uid:${uid}:ignored_tids`);
@@ -170,8 +223,12 @@ async function getCounts(userData, callerUID) {
     }
     const counts = await utils.promiseParallel(promises);
     counts.best = counts.best.reduce((sum, count) => sum + count, 0);
-    counts.controversial = counts.controversial.reduce((sum, count) => sum + count, 0);
-    counts.categoriesWatched = counts.categoriesWatched && counts.categoriesWatched.length;
+    counts.controversial = counts.controversial.reduce(
+        (sum, count) => sum + count,
+        0
+    );
+    counts.categoriesWatched =
+        counts.categoriesWatched && counts.categoriesWatched.length;
     counts.groups = userData.groups.length;
     counts.following = userData.followingCount;
     counts.followers = userData.followerCount;
@@ -180,33 +237,36 @@ async function getCounts(userData, callerUID) {
 }
 
 async function getProfileMenu(uid, callerUID) {
-    const links = [{
-        id: 'info',
-        route: 'info',
-        name: '[[user:account_info]]',
-        icon: 'fa-info',
-        visibility: {
-            self: false,
-            other: false,
-            moderator: false,
-            globalMod: false,
-            admin: true,
-            canViewInfo: true,
+    const links = [
+        {
+            id: 'info',
+            route: 'info',
+            name: '[[user:account_info]]',
+            icon: 'fa-info',
+            visibility: {
+                self: false,
+                other: false,
+                moderator: false,
+                globalMod: false,
+                admin: true,
+                canViewInfo: true,
+            },
         },
-    }, {
-        id: 'sessions',
-        route: 'sessions',
-        name: '[[pages:account/sessions]]',
-        icon: 'fa-group',
-        visibility: {
-            self: true,
-            other: false,
-            moderator: false,
-            globalMod: false,
-            admin: false,
-            canViewInfo: false,
+        {
+            id: 'sessions',
+            route: 'sessions',
+            name: '[[pages:account/sessions]]',
+            icon: 'fa-group',
+            visibility: {
+                self: true,
+                other: false,
+                moderator: false,
+                globalMod: false,
+                admin: false,
+                canViewInfo: false,
+            },
         },
-    }];
+    ];
 
     if (meta.config.gdpr_enabled) {
         links.push({
@@ -239,7 +299,10 @@ async function parseAboutMe(userData) {
         return;
     }
     userData.aboutme = validator.escape(String(userData.aboutme || ''));
-    const parsed = await plugins.hooks.fire('filter:parse.aboutme', userData.aboutme);
+    const parsed = await plugins.hooks.fire(
+        'filter:parse.aboutme',
+        userData.aboutme
+    );
     userData.aboutme = translator.escape(userData.aboutme);
     userData.aboutmeParsed = translator.escape(parsed);
 }
@@ -257,7 +320,9 @@ function filterLinks(links, states) {
             ...link.visibility,
         };
 
-        const permit = Object.keys(states).some(state => states[state] && link.visibility[state]);
+        const permit = Object.keys(states).some(
+            (state) => states[state] && link.visibility[state]
+        );
 
         links[index].public = permit;
         return permit;

@@ -41,9 +41,9 @@ notificationsController.get = async function (req, res, next) {
 
     let allFilters = filters.regularFilters;
     if (isPrivileged) {
-        allFilters = allFilters.concat([
-            { separator: true },
-        ]).concat(filters.moderatorFilters);
+        allFilters = allFilters
+            .concat([{ separator: true }])
+            .concat(filters.moderatorFilters);
     }
     const selectedFilter = allFilters.find((filterData) => {
         filterData.selected = filterData.filter === filter;
@@ -53,10 +53,19 @@ notificationsController.get = async function (req, res, next) {
         return next();
     }
 
-    const nids = await user.notifications.getAll(req.uid, selectedFilter.filter);
-    let notifications = await user.notifications.getNotifications(nids, req.uid);
+    const nids = await user.notifications.getAll(
+        req.uid,
+        selectedFilter.filter
+    );
+    let notifications = await user.notifications.getNotifications(
+        nids,
+        req.uid
+    );
 
-    const pageCount = Math.max(1, Math.ceil(notifications.length / itemsPerPage));
+    const pageCount = Math.max(
+        1,
+        Math.ceil(notifications.length / itemsPerPage)
+    );
     notifications = notifications.slice(start, stop + 1);
 
     res.render('notifications', {
@@ -67,6 +76,8 @@ notificationsController.get = async function (req, res, next) {
         moderatorFilters: moderatorFilters,
         selectedFilter: selectedFilter,
         title: '[[pages:notifications]]',
-        breadcrumbs: helpers.buildBreadcrumbs([{ text: '[[pages:notifications]]' }]),
+        breadcrumbs: helpers.buildBreadcrumbs([
+            { text: '[[pages:notifications]]' },
+        ]),
     });
 };

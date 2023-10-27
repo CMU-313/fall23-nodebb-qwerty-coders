@@ -12,37 +12,54 @@ const meta = require('../meta');
 
 module.exports = function (Plugins) {
     Plugins.startJobs = function () {
-        new cronJob('0 0 0 * * *', (() => {
-            Plugins.submitUsageData();
-        }), null, true);
+        new cronJob(
+            '0 0 0 * * *',
+            () => {
+                Plugins.submitUsageData();
+            },
+            null,
+            true
+        );
     };
 
     Plugins.submitUsageData = function (callback) {
         callback = callback || function () {};
-        if (!meta.config.submitPluginUsage || !Plugins.loadedPlugins.length || global.env !== 'production') {
+        if (
+            !meta.config.submitPluginUsage ||
+            !Plugins.loadedPlugins.length ||
+            global.env !== 'production'
+        ) {
             return callback();
         }
 
         const hash = crypto.createHash('sha256');
         hash.update(nconf.get('url'));
-        request.post(`${nconf.get('registry') || 'https://packages.nodebb.org'}/api/v1/plugin/usage`, {
-            form: {
-                id: hash.digest('hex'),
-                version: pkg.version,
-                plugins: Plugins.loadedPlugins,
+        request.post(
+            `${
+                nconf.get('registry') || 'https://packages.nodebb.org'
+            }/api/v1/plugin/usage`,
+            {
+                form: {
+                    id: hash.digest('hex'),
+                    version: pkg.version,
+                    plugins: Plugins.loadedPlugins,
+                },
+                timeout: 5000,
             },
-            timeout: 5000,
-        }, (err, res, body) => {
-            if (err) {
-                winston.error(err.stack);
-                return callback(err);
+            (err, res, body) => {
+                if (err) {
+                    winston.error(err.stack);
+                    return callback(err);
+                }
+                if (res.statusCode !== 200) {
+                    winston.error(
+                        `[plugins.submitUsageData] received ${res.statusCode} ${body}`
+                    );
+                    callback(new Error(`[[error:nbbpm-${res.statusCode}]]`));
+                } else {
+                    callback();
+                }
             }
-            if (res.statusCode !== 200) {
-                winston.error(`[plugins.submitUsageData] received ${res.statusCode} ${body}`);
-                callback(new Error(`[[error:nbbpm-${res.statusCode}]]`));
-            } else {
-                callback();
-            }
-        });
+        );
     };
 };

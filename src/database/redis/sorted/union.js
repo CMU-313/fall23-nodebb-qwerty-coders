@@ -1,4 +1,3 @@
-
 'use strict';
 
 module.exports = function (module) {
@@ -39,7 +38,9 @@ module.exports = function (module) {
         }
 
         const multi = module.client.multi();
-        multi.zunionstore([tempSetName, params.sets.length].concat(params.sets));
+        multi.zunionstore(
+            [tempSetName, params.sets.length].concat(params.sets)
+        );
         multi[params.method](rangeParams);
         multi.del(tempSetName);
         let results = await helpers.execBatch(multi);

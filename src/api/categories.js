@@ -22,7 +22,10 @@ categoriesAPI.get = async function (caller, data) {
 
 categoriesAPI.create = async function (caller, data) {
     const response = await categories.create(data);
-    const categoryObjs = await categories.getCategories([response.cid], caller.uid);
+    const categoryObjs = await categories.getCategories(
+        [response.cid],
+        caller.uid
+    );
     return categoryObjs[0];
 };
 
@@ -68,25 +71,31 @@ categoriesAPI.setPrivilege = async (caller, data) => {
     if (!userExists && !groupExists) {
         throw new Error('[[error:no-user-or-group]]');
     }
-    const privs = Array.isArray(data.privilege) ? data.privilege : [data.privilege];
+    const privs = Array.isArray(data.privilege)
+        ? data.privilege
+        : [data.privilege];
     const type = data.set ? 'give' : 'rescind';
     if (!privs.length) {
         throw new Error('[[error:invalid-data]]');
     }
     if (parseInt(data.cid, 10) === 0) {
         const adminPrivList = await privileges.admin.getPrivilegeList();
-        const adminPrivs = privs.filter(priv => adminPrivList.includes(priv));
+        const adminPrivs = privs.filter((priv) => adminPrivList.includes(priv));
         if (adminPrivs.length) {
             await privileges.admin[type](adminPrivs, data.member);
         }
         const globalPrivList = await privileges.global.getPrivilegeList();
-        const globalPrivs = privs.filter(priv => globalPrivList.includes(priv));
+        const globalPrivs = privs.filter((priv) =>
+            globalPrivList.includes(priv)
+        );
         if (globalPrivs.length) {
             await privileges.global[type](globalPrivs, data.member);
         }
     } else {
         const categoryPrivList = await privileges.categories.getPrivilegeList();
-        const categoryPrivs = privs.filter(priv => categoryPrivList.includes(priv));
+        const categoryPrivs = privs.filter((priv) =>
+            categoryPrivList.includes(priv)
+        );
         await privileges.categories[type](categoryPrivs, data.cid, data.member);
     }
 

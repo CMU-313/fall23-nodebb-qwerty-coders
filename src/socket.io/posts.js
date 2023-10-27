@@ -29,7 +29,10 @@ SocketPosts.getRawPost = async function (socket, pid) {
         throw new Error('[[error:no-post]]');
     }
     postData.pid = pid;
-    const result = await plugins.hooks.fire('filter:post.getRawPost', { uid: socket.uid, postData: postData });
+    const result = await plugins.hooks.fire('filter:post.getRawPost', {
+        uid: socket.uid,
+        postData: postData,
+    });
     return result.postData.content;
 };
 
@@ -41,7 +44,11 @@ SocketPosts.getPostSummaryByIndex = async function (socket, data) {
     if (data.index === 0) {
         pid = await topics.getTopicField(data.tid, 'mainPid');
     } else {
-        pid = await db.getSortedSetRange(`tid:${data.tid}:posts`, data.index - 1, data.index - 1);
+        pid = await db.getSortedSetRange(
+            `tid:${data.tid}:posts`,
+            data.index - 1,
+            data.index - 1
+        );
     }
     pid = Array.isArray(pid) ? pid[0] : pid;
     if (!pid) {
@@ -53,7 +60,9 @@ SocketPosts.getPostSummaryByIndex = async function (socket, data) {
         throw new Error('[[error:no-privileges]]');
     }
 
-    const postsData = await posts.getPostSummaryByPids([pid], socket.uid, { stripTags: false });
+    const postsData = await posts.getPostSummaryByPids([pid], socket.uid, {
+        stripTags: false,
+    });
     posts.modifyPostByPrivilege(postsData[0], topicPrivileges);
     return postsData[0];
 };
@@ -69,7 +78,9 @@ SocketPosts.getPostSummaryByPid = async function (socket, data) {
         throw new Error('[[error:no-privileges]]');
     }
 
-    const postsData = await posts.getPostSummaryByPids([pid], socket.uid, { stripTags: false });
+    const postsData = await posts.getPostSummaryByPids([pid], socket.uid, {
+        stripTags: false,
+    });
     posts.modifyPostByPrivilege(postsData[0], topicPrivileges);
     return postsData[0];
 };
@@ -90,15 +101,24 @@ SocketPosts.getReplies = async function (socket, pid) {
         throw new Error('[[error:invalid-data]]');
     }
     const { topicPostSort } = await user.getSettings(socket.uid);
-    const pids = await posts.getPidsFromSet(`pid:${pid}:replies`, 0, -1, topicPostSort === 'newest_to_oldest');
+    const pids = await posts.getPidsFromSet(
+        `pid:${pid}:replies`,
+        0,
+        -1,
+        topicPostSort === 'newest_to_oldest'
+    );
 
     let [postData, postPrivileges] = await Promise.all([
         posts.getPostsByPids(pids, socket.uid),
         privileges.posts.get(pids, socket.uid),
     ]);
     postData = await topics.addPostData(postData, socket.uid);
-    postData.forEach((postData, index) => posts.modifyPostByPrivilege(postData, postPrivileges[index]));
-    postData = postData.filter((postData, index) => postData && postPrivileges[index].read);
+    postData.forEach((postData, index) =>
+        posts.modifyPostByPrivilege(postData, postPrivileges[index])
+    );
+    postData = postData.filter(
+        (postData, index) => postData && postPrivileges[index].read
+    );
     postData = await user.blocks.filter(socket.uid, postData);
     return postData;
 };
@@ -107,7 +127,11 @@ SocketPosts.accept = async function (socket, data) {
     await canEditQueue(socket, data, 'accept');
     const result = await posts.submitFromQueue(data.id);
     if (result && socket.uid !== parseInt(result.uid, 10)) {
-        await sendQueueNotification('post-queue-accepted', result.uid, `/post/${result.pid}`);
+        await sendQueueNotification(
+            'post-queue-accepted',
+            result.uid,
+            `/post/${result.pid}`
+        );
     }
     await logQueueEvent(socket, result, 'accept');
 };
@@ -145,7 +169,12 @@ SocketPosts.notify = async function (socket, data) {
     await canEditQueue(socket, data, 'notify');
     const result = await posts.getFromQueue(data.id);
     if (result) {
-        await sendQueueNotification('post-queue-notify', result.uid, `/post-queue/${data.id}`, validator.escape(String(data.message)));
+        await sendQueueNotification(
+            'post-queue-notify',
+            result.uid,
+            `/post-queue/${data.id}`,
+            validator.escape(String(data.message))
+        );
     }
 };
 
@@ -160,7 +189,9 @@ async function sendQueueNotification(type, targetUid, path, notificationText) {
     const notifData = {
         type: type,
         nid: `${type}-${targetUid}-${path}`,
-        bodyShort: notificationText ? `[[notifications:${type}, ${notificationText}]]` : `[[notifications:${type}]]`,
+        bodyShort: notificationText
+            ? `[[notifications:${type}, ${notificationText}]]`
+            : `[[notifications:${type}]]`,
         path: path,
     };
     if (parseInt(meta.config.postQueueNotificationUid, 10) > 0) {
@@ -176,7 +207,9 @@ SocketPosts.editQueuedContent = async function (socket, data) {
     }
     await posts.editQueuedContent(socket.uid, data);
     if (data.content) {
-        return await plugins.hooks.fire('filter:parse.post', { postData: data });
+        return await plugins.hooks.fire('filter:parse.post', {
+            postData: data,
+        });
     }
     return { postData: data };
 };

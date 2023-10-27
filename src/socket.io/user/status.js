@@ -8,7 +8,10 @@ module.exports = function (SocketUser) {
         if (!socket.uid) {
             throw new Error('[[error:invalid-uid]]');
         }
-        const userData = await user.getUserFields(uid, ['lastonline', 'status']);
+        const userData = await user.getUserFields(uid, [
+            'lastonline',
+            'status',
+        ]);
         return user.getStatus(userData);
     };
 

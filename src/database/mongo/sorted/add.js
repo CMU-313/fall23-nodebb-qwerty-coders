@@ -17,7 +17,13 @@ module.exports = function (module) {
         value = helpers.valueToString(value);
 
         try {
-            await module.client.collection('objects').updateOne({ _key: key, value: value }, { $set: { score: parseFloat(score) } }, { upsert: true });
+            await module.client
+                .collection('objects')
+                .updateOne(
+                    { _key: key, value: value },
+                    { $set: { score: parseFloat(score) } },
+                    { upsert: true }
+                );
         } catch (err) {
             if (err && err.message.startsWith('E11000 duplicate key error')) {
                 return await module.sortedSetAdd(key, score, value);
@@ -40,9 +46,13 @@ module.exports = function (module) {
         }
         values = values.map(helpers.valueToString);
 
-        const bulk = module.client.collection('objects').initializeUnorderedBulkOp();
+        const bulk = module.client
+            .collection('objects')
+            .initializeUnorderedBulkOp();
         for (let i = 0; i < scores.length; i += 1) {
-            bulk.find({ _key: key, value: values[i] }).upsert().updateOne({ $set: { score: parseFloat(scores[i]) } });
+            bulk.find({ _key: key, value: values[i] })
+                .upsert()
+                .updateOne({ $set: { score: parseFloat(scores[i]) } });
         }
         await bulk.execute();
     }
@@ -52,8 +62,11 @@ module.exports = function (module) {
             return;
         }
         const isArrayOfScores = Array.isArray(scores);
-        if ((!isArrayOfScores && !utils.isNumber(scores)) ||
-            (isArrayOfScores && scores.map(s => utils.isNumber(s)).includes(false))) {
+        if (
+            (!isArrayOfScores && !utils.isNumber(scores)) ||
+            (isArrayOfScores &&
+                scores.map((s) => utils.isNumber(s)).includes(false))
+        ) {
             throw new Error(`[[error:invalid-score, ${scores}]]`);
         }
 
@@ -63,12 +76,17 @@ module.exports = function (module) {
 
         value = helpers.valueToString(value);
 
-        const bulk = module.client.collection('objects').initializeUnorderedBulkOp();
+        const bulk = module.client
+            .collection('objects')
+            .initializeUnorderedBulkOp();
         for (let i = 0; i < keys.length; i += 1) {
-            bulk
-                .find({ _key: keys[i], value: value })
+            bulk.find({ _key: keys[i], value: value })
                 .upsert()
-                .updateOne({ $set: { score: parseFloat(isArrayOfScores ? scores[i] : scores) } });
+                .updateOne({
+                    $set: {
+                        score: parseFloat(isArrayOfScores ? scores[i] : scores),
+                    },
+                });
         }
         await bulk.execute();
     };
@@ -77,7 +95,9 @@ module.exports = function (module) {
         if (!Array.isArray(data) || !data.length) {
             return;
         }
-        const bulk = module.client.collection('objects').initializeUnorderedBulkOp();
+        const bulk = module.client
+            .collection('objects')
+            .initializeUnorderedBulkOp();
         data.forEach((item) => {
             if (!utils.isNumber(item[1])) {
                 throw new Error(`[[error:invalid-score, ${item[1]}]]`);

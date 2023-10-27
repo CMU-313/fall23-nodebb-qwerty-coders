@@ -27,9 +27,15 @@ module.exports = function (theModule, ignoreKeys) {
                 return;
             }
             if (isAsyncFunction(module[key])) {
-                module[key] = wrapCallback(module[key], util.callbackify(module[key]));
+                module[key] = wrapCallback(
+                    module[key],
+                    util.callbackify(module[key])
+                );
             } else if (isCallbackedFunction(module[key])) {
-                module[key] = wrapPromise(module[key], util.promisify(module[key]));
+                module[key] = wrapPromise(
+                    module[key],
+                    util.promisify(module[key])
+                );
             } else if (typeof module[key] === 'object') {
                 promisifyRecursive(module[key]);
             }
@@ -40,7 +46,9 @@ module.exports = function (theModule, ignoreKeys) {
         return async function wrapperCallback(...args) {
             if (args.length && typeof args[args.length - 1] === 'function') {
                 const cb = args.pop();
-                args.push((err, res) => (res !== undefined ? cb(err, res) : cb(err)));
+                args.push((err, res) =>
+                    res !== undefined ? cb(err, res) : cb(err)
+                );
                 return callbackFn(...args);
             }
             return origFn(...args);

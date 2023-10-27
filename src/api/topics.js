@@ -42,7 +42,13 @@ topicsAPI.create = async function (caller, data) {
     apiHelpers.setDefaultPostData(caller, payload);
     const isScheduling = parseInt(data.timestamp, 10) > payload.timestamp;
     if (isScheduling) {
-        if (await privileges.categories.can('topics:schedule', data.cid, caller.uid)) {
+        if (
+            await privileges.categories.can(
+                'topics:schedule',
+                data.cid,
+                caller.uid
+            )
+        ) {
             payload.timestamp = parseInt(data.timestamp, 10);
         } else {
             throw new Error('[[error:no-privileges]]');
@@ -58,15 +64,24 @@ topicsAPI.create = async function (caller, data) {
     const result = await topics.post(payload);
     await topics.thumbs.migrate(data.uuid, result.topicData.tid);
 
-    socketHelpers.emitToUids('event:new_post', { posts: [result.postData] }, [caller.uid]);
+    socketHelpers.emitToUids('event:new_post', { posts: [result.postData] }, [
+        caller.uid,
+    ]);
     socketHelpers.emitToUids('event:new_topic', result.topicData, [caller.uid]);
-    socketHelpers.notifyNew(caller.uid, 'newTopic', { posts: [result.postData], topic: result.topicData });
+    socketHelpers.notifyNew(caller.uid, 'newTopic', {
+        posts: [result.postData],
+        topic: result.topicData,
+    });
 
     return result.topicData;
 };
 
 topicsAPI.reply = async function (caller, data) {
-    if (!data || !data.tid || (meta.config.minimumPostLength !== 0 && !data.content)) {
+    if (
+        !data ||
+        !data.tid ||
+        (meta.config.minimumPostLength !== 0 && !data.content)
+    ) {
         throw new Error('[[error:invalid-data]]');
     }
     const payload = { ...data };
@@ -79,7 +94,11 @@ topicsAPI.reply = async function (caller, data) {
     }
 
     const postData = await topics.reply(payload); // postData seems to be a subset of postObj, refactor?
-    const postObj = await posts.getPostSummaryByPids([postData.pid], caller.uid, {});
+    const postObj = await posts.getPostSummaryByPids(
+        [postData.pid],
+        caller.uid,
+        {}
+    );
 
     const result = {
         posts: [postData],

@@ -10,7 +10,11 @@ const apiHelpers = require('../../api/helpers');
 const Posts = module.exports;
 
 Posts.get = async (req, res) => {
-    helpers.formatApiResponse(200, res, await api.posts.get(req, { pid: req.params.pid }));
+    helpers.formatApiResponse(
+        200,
+        res,
+        await api.posts.get(req, { pid: req.params.pid })
+    );
 };
 
 Posts.edit = async (req, res) => {
@@ -96,15 +100,27 @@ Posts.unendorse = async (req, res) => {
 };
 
 Posts.getDiffs = async (req, res) => {
-    helpers.formatApiResponse(200, res, await api.posts.getDiffs(req, { ...req.params }));
+    helpers.formatApiResponse(
+        200,
+        res,
+        await api.posts.getDiffs(req, { ...req.params })
+    );
 };
 
 Posts.loadDiff = async (req, res) => {
-    helpers.formatApiResponse(200, res, await api.posts.loadDiff(req, { ...req.params }));
+    helpers.formatApiResponse(
+        200,
+        res,
+        await api.posts.loadDiff(req, { ...req.params })
+    );
 };
 
 Posts.restoreDiff = async (req, res) => {
-    helpers.formatApiResponse(200, res, await api.posts.restoreDiff(req, { ...req.params }));
+    helpers.formatApiResponse(
+        200,
+        res,
+        await api.posts.restoreDiff(req, { ...req.params })
+    );
 };
 
 Posts.deleteDiff = async (req, res) => {
@@ -119,10 +135,18 @@ Posts.deleteDiff = async (req, res) => {
     ]);
 
     if (!(isAdmin || isModerator)) {
-        return helpers.formatApiResponse(403, res, new Error('[[error:no-privileges]]'));
+        return helpers.formatApiResponse(
+            403,
+            res,
+            new Error('[[error:no-privileges]]')
+        );
     }
 
     await posts.diffs.delete(req.params.pid, req.params.timestamp, req.uid);
 
-    helpers.formatApiResponse(200, res, await api.posts.getDiffs(req, { ...req.params }));
+    helpers.formatApiResponse(
+        200,
+        res,
+        await api.posts.getDiffs(req, { ...req.params })
+    );
 };

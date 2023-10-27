@@ -23,7 +23,10 @@ module.exports = function (middleware) {
 
         const [isAdmin, isMemberOfExempt] = await Promise.all([
             user.isAdministrator(req.uid),
-            groups.isMemberOfAny(req.uid, meta.config.groupsExemptFromMaintenanceMode),
+            groups.isMemberOfAny(
+                req.uid,
+                meta.config.groupsExemptFromMaintenanceMode
+            ),
         ]);
 
         if (isAdmin || isMemberOfExempt) {

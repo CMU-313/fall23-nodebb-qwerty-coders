@@ -20,7 +20,10 @@ export const savePerson = async (person: Person) => {
     await redisModule.hmset(person.username, person.email);
 };
 
-export const getPerson = async (role: 'instructor' | 'ta', username: string): Promise<Person | null> => {
+export const getPerson = async (
+    role: 'instructor' | 'ta',
+    username: string
+): Promise<Person | null> => {
     // The next line calls a function in a module that has not been updated to TS yet
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const data: string | null = await redisModule.hget(role, username);

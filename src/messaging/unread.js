@@ -17,7 +17,9 @@ module.exports = function (Messaging) {
             return;
         }
         const unreadCount = await Messaging.getUnreadCount(uid);
-        sockets.in(`uid_${uid}`).emit('event:unread.updateChatCount', unreadCount);
+        sockets
+            .in(`uid_${uid}`)
+            .emit('event:unread.updateChatCount', unreadCount);
     };
 
     Messaging.markRead = async (uid, roomId) => {
@@ -33,7 +35,7 @@ module.exports = function (Messaging) {
         if (!exists) {
             return;
         }
-        const keys = uids.map(uid => `uid:${uid}:chat:rooms:unread`);
+        const keys = uids.map((uid) => `uid:${uid}:chat:rooms:unread`);
         return await db.sortedSetsAdd(keys, Date.now(), roomId);
     };
 };

@@ -13,7 +13,9 @@ eventsController.get = async function (req, res) {
     const stop = start + itemsPerPage - 1;
 
     // Limit by date
-    let from = req.query.start ? new Date(req.query.start) || undefined : undefined;
+    let from = req.query.start
+        ? new Date(req.query.start) || undefined
+        : undefined;
     let to = req.query.end ? new Date(req.query.end) || undefined : new Date();
     from = from && from.setHours(0, 0, 0, 0); // setHours returns a unix timestamp (Number, not Date)
     to = to && to.setHours(23, 59, 59, 999); // setHours returns a unix timestamp (Number, not Date)
@@ -21,9 +23,17 @@ eventsController.get = async function (req, res) {
     const currentFilter = req.query.type || '';
 
     const [eventCount, eventData, counts] = await Promise.all([
-        db.sortedSetCount(`events:time${currentFilter ? `:${currentFilter}` : ''}`, from || '-inf', to),
+        db.sortedSetCount(
+            `events:time${currentFilter ? `:${currentFilter}` : ''}`,
+            from || '-inf',
+            to
+        ),
         events.getEvents(currentFilter, start, stop, from || '-inf', to),
-        db.sortedSetsCard([''].concat(events.types).map(type => `events:time${type ? `:${type}` : ''}`)),
+        db.sortedSetsCard(
+            ['']
+                .concat(events.types)
+                .map((type) => `events:time${type ? `:${type}` : ''}`)
+        ),
     ]);
 
     const types = [''].concat(events.types).map((type, index) => ({

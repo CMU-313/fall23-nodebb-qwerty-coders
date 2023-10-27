@@ -18,7 +18,11 @@ const accountHelpers = require('./helpers');
 const settingsController = module.exports;
 
 settingsController.get = async function (req, res, next) {
-    const userData = await accountHelpers.getUserDataByUserSlug(req.params.userslug, req.uid, req.query);
+    const userData = await accountHelpers.getUserDataByUserSlug(
+        req.params.userslug,
+        req.uid,
+        req.query
+    );
     if (!userData) {
         return next();
     }
@@ -50,11 +54,31 @@ settingsController.get = async function (req, res, next) {
     userData.disableEmailSubscriptions = meta.config.disableEmailSubscriptions;
 
     userData.dailyDigestFreqOptions = [
-        { value: 'off', name: '[[user:digest_off]]', selected: userData.settings.dailyDigestFreq === 'off' },
-        { value: 'day', name: '[[user:digest_daily]]', selected: userData.settings.dailyDigestFreq === 'day' },
-        { value: 'week', name: '[[user:digest_weekly]]', selected: userData.settings.dailyDigestFreq === 'week' },
-        { value: 'biweek', name: '[[user:digest_biweekly]]', selected: userData.settings.dailyDigestFreq === 'biweek' },
-        { value: 'month', name: '[[user:digest_monthly]]', selected: userData.settings.dailyDigestFreq === 'month' },
+        {
+            value: 'off',
+            name: '[[user:digest_off]]',
+            selected: userData.settings.dailyDigestFreq === 'off',
+        },
+        {
+            value: 'day',
+            name: '[[user:digest_daily]]',
+            selected: userData.settings.dailyDigestFreq === 'day',
+        },
+        {
+            value: 'week',
+            name: '[[user:digest_weekly]]',
+            selected: userData.settings.dailyDigestFreq === 'week',
+        },
+        {
+            value: 'biweek',
+            name: '[[user:digest_biweekly]]',
+            selected: userData.settings.dailyDigestFreq === 'biweek',
+        },
+        {
+            value: 'month',
+            name: '[[user:digest_monthly]]',
+            selected: userData.settings.dailyDigestFreq === 'month',
+        },
     ];
 
     userData.bootswatchSkinOptions = [
@@ -100,11 +124,14 @@ settingsController.get = async function (req, res, next) {
         'disabled',
     ];
 
-    userData.upvoteNotifFreq = notifFreqOptions.map(
-        name => ({ name: name, selected: name === userData.settings.upvoteNotifFreq })
-    );
+    userData.upvoteNotifFreq = notifFreqOptions.map((name) => ({
+        name: name,
+        selected: name === userData.settings.upvoteNotifFreq,
+    }));
 
-    userData.categoryWatchState = { [userData.settings.categoryWatchState]: true };
+    userData.categoryWatchState = {
+        [userData.settings.categoryWatchState]: true,
+    };
 
     userData.disableCustomUserSkins = meta.config.disableCustomUserSkins || 0;
 
@@ -113,20 +140,27 @@ settingsController.get = async function (req, res, next) {
     userData.hideFullname = meta.config.hideFullname || 0;
     userData.hideEmail = meta.config.hideEmail || 0;
 
-    userData.inTopicSearchAvailable = plugins.hooks.hasListeners('filter:topic.search');
+    userData.inTopicSearchAvailable = plugins.hooks.hasListeners(
+        'filter:topic.search'
+    );
 
     userData.maxTopicsPerPage = meta.config.maxTopicsPerPage;
     userData.maxPostsPerPage = meta.config.maxPostsPerPage;
 
     userData.title = '[[pages:account/settings]]';
-    userData.breadcrumbs = helpers.buildBreadcrumbs([{ text: userData.username, url: `/user/${userData.userslug}` }, { text: '[[user:settings]]' }]);
+    userData.breadcrumbs = helpers.buildBreadcrumbs([
+        { text: userData.username, url: `/user/${userData.userslug}` },
+        { text: '[[user:settings]]' },
+    ]);
 
     res.render('account/settings', userData);
 };
 
 const unsubscribable = ['digest', 'notification'];
 const jwtVerifyAsync = util.promisify((token, callback) => {
-    jwt.verify(token, nconf.get('secret'), (err, payload) => callback(err, payload));
+    jwt.verify(token, nconf.get('secret'), (err, payload) =>
+        callback(err, payload)
+    );
 });
 const doUnsubscribe = async (payload) => {
     if (payload.template === 'digest') {
@@ -135,8 +169,15 @@ const doUnsubscribe = async (payload) => {
             user.updateDigestSetting(payload.uid, 'off'),
         ]);
     } else if (payload.template === 'notification') {
-        const current = await db.getObjectField(`user:${payload.uid}:settings`, `notificationType_${payload.type}`);
-        await user.setSetting(payload.uid, `notificationType_${payload.type}`, (current === 'notificationemail' ? 'notification' : 'none'));
+        const current = await db.getObjectField(
+            `user:${payload.uid}:settings`,
+            `notificationType_${payload.type}`
+        );
+        await user.setSetting(
+            payload.uid,
+            `notificationType_${payload.type}`,
+            current === 'notificationemail' ? 'notification' : 'none'
+        );
     }
     return true;
 };
@@ -172,7 +213,9 @@ settingsController.unsubscribePost = async function (req, res) {
         await doUnsubscribe(payload);
         res.sendStatus(200);
     } catch (err) {
-        winston.error(`[settings/unsubscribe] One-click unsubscribe failed with error: ${err.message}`);
+        winston.error(
+            `[settings/unsubscribe] One-click unsubscribe failed with error: ${err.message}`
+        );
         res.sendStatus(500);
     }
 };
@@ -184,8 +227,15 @@ async function getNotificationSettings(userData) {
     if (privileges.isAdmin) {
         privilegedTypes.push('notificationType_new-register');
     }
-    if (privileges.isAdmin || privileges.isGlobalMod || privileges.isModeratorOfAnyCategory) {
-        privilegedTypes.push('notificationType_post-queue', 'notificationType_new-post-flag');
+    if (
+        privileges.isAdmin ||
+        privileges.isGlobalMod ||
+        privileges.isModeratorOfAnyCategory
+    ) {
+        privilegedTypes.push(
+            'notificationType_post-queue',
+            'notificationType_new-post-flag'
+        );
     }
     if (privileges.isAdmin || privileges.isGlobalMod) {
         privilegedTypes.push('notificationType_new-user-flag');
@@ -208,10 +258,14 @@ async function getNotificationSettings(userData) {
     }
 
     if (meta.config.disableChat) {
-        results.types = results.types.filter(type => type !== 'notificationType_new-chat');
+        results.types = results.types.filter(
+            (type) => type !== 'notificationType_new-chat'
+        );
     }
 
-    return results.types.map(modifyType).concat(results.privilegedTypes.map(modifyType));
+    return results.types
+        .map(modifyType)
+        .concat(results.privilegedTypes.map(modifyType));
 }
 
 async function getHomePageRoutes(userData) {
@@ -235,7 +289,11 @@ async function getHomePageRoutes(userData) {
         return route;
     });
 
-    if (!hasSelected && customIdx && userData.settings.homePageRoute !== 'none') {
+    if (
+        !hasSelected &&
+        customIdx &&
+        userData.settings.homePageRoute !== 'none'
+    ) {
         routes[customIdx].selected = true;
     }
 

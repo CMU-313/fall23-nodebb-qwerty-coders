@@ -14,7 +14,11 @@ blocksController.getBlocks = async function (req, res, next) {
     const start = Math.max(0, page - 1) * resultsPerPage;
     const stop = start + resultsPerPage - 1;
 
-    const userData = await accountHelpers.getUserDataByUserSlug(req.params.userslug, req.uid, req.query);
+    const userData = await accountHelpers.getUserDataByUserSlug(
+        req.params.userslug,
+        req.uid,
+        req.query
+    );
     if (!userData) {
         return next();
     }
@@ -33,7 +37,10 @@ blocksController.getBlocks = async function (req, res, next) {
     const pageCount = Math.ceil(userData.counts.blocks / resultsPerPage);
     userData.pagination = pagination.create(page, pageCount);
 
-    userData.breadcrumbs = helpers.buildBreadcrumbs([{ text: userData.username, url: `/user/${userData.userslug}` }, { text: '[[user:blocks]]' }]);
+    userData.breadcrumbs = helpers.buildBreadcrumbs([
+        { text: userData.username, url: `/user/${userData.userslug}` },
+        { text: '[[user:blocks]]' },
+    ]);
 
     res.render('account/blocks', userData);
 };

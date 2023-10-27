@@ -87,9 +87,12 @@ middleware.pageView = helpers.try(async (req, res, next) => {
 
 middleware.pluginHooks = helpers.try(async (req, res, next) => {
     // TODO: Deprecate in v2.0
-    await async.each(plugins.loadedHooks['filter:router.page'] || [], (hookObj, next) => {
-        hookObj.method(req, res, next);
-    });
+    await async.each(
+        plugins.loadedHooks['filter:router.page'] || [],
+        (hookObj, next) => {
+            hookObj.method(req, res, next);
+        }
+    );
 
     await plugins.hooks.fire('response:router.page', {
         req: req,
@@ -115,14 +118,23 @@ middleware.prepareAPI = function prepareAPI(req, res, next) {
 };
 
 middleware.routeTouchIcon = function routeTouchIcon(req, res) {
-    if (meta.config['brand:touchIcon'] && validator.isURL(meta.config['brand:touchIcon'])) {
+    if (
+        meta.config['brand:touchIcon'] &&
+        validator.isURL(meta.config['brand:touchIcon'])
+    ) {
         return res.redirect(meta.config['brand:touchIcon']);
     }
     let iconPath = '';
     if (meta.config['brand:touchIcon']) {
-        iconPath = path.join(nconf.get('upload_path'), meta.config['brand:touchIcon'].replace(/assets\/uploads/, ''));
+        iconPath = path.join(
+            nconf.get('upload_path'),
+            meta.config['brand:touchIcon'].replace(/assets\/uploads/, '')
+        );
     } else {
-        iconPath = path.join(nconf.get('base_dir'), 'public/images/touch/512.png');
+        iconPath = path.join(
+            nconf.get('base_dir'),
+            'public/images/touch/512.png'
+        );
     }
 
     return res.sendFile(iconPath, {
@@ -139,7 +151,14 @@ middleware.privateTagListing = helpers.try(async (req, res, next) => {
 });
 
 middleware.exposeGroupName = helpers.try(async (req, res, next) => {
-    await expose('groupName', groups.getGroupNameByGroupSlug, 'slug', req, res, next);
+    await expose(
+        'groupName',
+        groups.getGroupNameByGroupSlug,
+        'slug',
+        req,
+        res,
+        next
+    );
 });
 
 middleware.exposeUid = helpers.try(async (req, res, next) => {
@@ -159,8 +178,14 @@ middleware.privateUploads = function privateUploads(req, res, next) {
         return next();
     }
 
-    if (req.path.startsWith(`${nconf.get('relative_path')}/assets/uploads/files`)) {
-        const extensions = (meta.config.privateUploadsExtensions || '').split(',').filter(Boolean);
+    if (
+        req.path.startsWith(
+            `${nconf.get('relative_path')}/assets/uploads/files`
+        )
+    ) {
+        const extensions = (meta.config.privateUploadsExtensions || '')
+            .split(',')
+            .filter(Boolean);
         let ext = path.extname(req.path);
         ext = ext ? ext.replace(/^\./, '') : ext;
         if (!extensions.length || extensions.includes(ext)) {
@@ -171,9 +196,15 @@ middleware.privateUploads = function privateUploads(req, res, next) {
 };
 
 middleware.busyCheck = function busyCheck(req, res, next) {
-    if (global.env === 'production' && meta.config.eventLoopCheckEnabled && toobusy()) {
+    if (
+        global.env === 'production' &&
+        meta.config.eventLoopCheckEnabled &&
+        toobusy()
+    ) {
         analytics.increment('errors:503');
-        res.status(503).type('text/html').sendFile(path.join(__dirname, '../../public/503.html'));
+        res.status(503)
+            .type('text/html')
+            .sendFile(path.join(__dirname, '../../public/503.html'));
     } else {
         setImmediate(next);
     }
@@ -196,7 +227,7 @@ middleware.delayLoading = function delayLoading(req, res, next) {
     if (timesSeen > 10) {
         return res.sendStatus(429);
     }
-    delayCache.set(req.ip, timesSeen += 1);
+    delayCache.set(req.ip, (timesSeen += 1));
 
     setTimeout(next, 1000);
 };
@@ -218,9 +249,17 @@ middleware.addUploadHeaders = function addUploadHeaders(req, res, next) {
     // Trim uploaded files' timestamps when downloading + force download if html
     let basename = path.basename(req.path);
     const extname = path.extname(req.path);
-    if (req.path.startsWith('/uploads/files/') && middleware.regexes.timestampedUpload.test(basename)) {
+    if (
+        req.path.startsWith('/uploads/files/') &&
+        middleware.regexes.timestampedUpload.test(basename)
+    ) {
         basename = basename.slice(14);
-        res.header('Content-Disposition', `${extname.startsWith('.htm') ? 'attachment' : 'inline'}; filename="${basename}"`);
+        res.header(
+            'Content-Disposition',
+            `${
+                extname.startsWith('.htm') ? 'attachment' : 'inline'
+            }; filename="${basename}"`
+        );
     }
 
     next();
@@ -234,7 +273,9 @@ middleware.validateAuth = helpers.try(async (req, res, next) => {
         });
         next();
     } catch (err) {
-        const regenerateSession = util.promisify(cb => req.session.regenerate(cb));
+        const regenerateSession = util.promisify((cb) =>
+            req.session.regenerate(cb)
+        );
         await regenerateSession();
         req.uid = 0;
         req.loggedIn = false;
@@ -244,11 +285,15 @@ middleware.validateAuth = helpers.try(async (req, res, next) => {
 
 middleware.checkRequired = function (fields, req, res, next) {
     // Used in API calls to ensure that necessary parameters/data values are present
-    const missing = fields.filter(field => !req.body.hasOwnProperty(field));
+    const missing = fields.filter((field) => !req.body.hasOwnProperty(field));
 
     if (!missing.length) {
         return next();
     }
 
-    controllers.helpers.formatApiResponse(400, res, new Error(`[[error:required-parameters-missing, ${missing.join(' ')}]]`));
+    controllers.helpers.formatApiResponse(
+        400,
+        res,
+        new Error(`[[error:required-parameters-missing, ${missing.join(' ')}]]`)
+    );
 };

@@ -1,6 +1,5 @@
 'use strict';
 
-
 const nconf = require('nconf');
 const validator = require('validator');
 const qs = require('querystring');
@@ -25,33 +24,53 @@ categoryController.get = async function (req, res, next) {
     const cid = req.params.category_id;
 
     let currentPage = parseInt(req.query.page, 10) || 1;
-    let topicIndex = utils.isNumber(req.params.topic_index) ? parseInt(req.params.topic_index, 10) - 1 : 0;
-    if ((req.params.topic_index && !utils.isNumber(req.params.topic_index)) || !utils.isNumber(cid)) {
+    let topicIndex = utils.isNumber(req.params.topic_index)
+        ? parseInt(req.params.topic_index, 10) - 1
+        : 0;
+    if (
+        (req.params.topic_index && !utils.isNumber(req.params.topic_index)) ||
+        !utils.isNumber(cid)
+    ) {
         return next();
     }
 
-    const [categoryFields, userPrivileges, userSettings, rssToken] = await Promise.all([
-        categories.getCategoryFields(cid, ['slug', 'disabled', 'link']),
-        privileges.categories.get(cid, req.uid),
-        user.getSettings(req.uid),
-        user.auth.getFeedToken(req.uid),
-    ]);
+    const [categoryFields, userPrivileges, userSettings, rssToken] =
+        await Promise.all([
+            categories.getCategoryFields(cid, ['slug', 'disabled', 'link']),
+            privileges.categories.get(cid, req.uid),
+            user.getSettings(req.uid),
+            user.auth.getFeedToken(req.uid),
+        ]);
 
-    if (!categoryFields.slug ||
+    if (
+        !categoryFields.slug ||
         (categoryFields && categoryFields.disabled) ||
-        (userSettings.usePagination && currentPage < 1)) {
+        (userSettings.usePagination && currentPage < 1)
+    ) {
         return next();
     }
     if (topicIndex < 0) {
-        return helpers.redirect(res, `/category/${categoryFields.slug}?${qs.stringify(req.query)}`);
+        return helpers.redirect(
+            res,
+            `/category/${categoryFields.slug}?${qs.stringify(req.query)}`
+        );
     }
 
     if (!userPrivileges.read) {
         return helpers.notAllowed(req, res);
     }
 
-    if (!res.locals.isAPI && !req.params.slug && (categoryFields.slug && categoryFields.slug !== `${cid}/`)) {
-        return helpers.redirect(res, `/category/${categoryFields.slug}?${qs.stringify(req.query)}`, true);
+    if (
+        !res.locals.isAPI &&
+        !req.params.slug &&
+        categoryFields.slug &&
+        categoryFields.slug !== `${cid}/`
+    ) {
+        return helpers.redirect(
+            res,
+            `/category/${categoryFields.slug}?${qs.stringify(req.query)}`,
+            true
+        );
     }
 
     if (categoryFields.link) {
@@ -60,15 +79,18 @@ categoryController.get = async function (req, res, next) {
     }
 
     if (!userSettings.usePagination) {
-        topicIndex = Math.max(0, topicIndex - (Math.ceil(userSettings.topicsPerPage / 2) - 1));
+        topicIndex = Math.max(
+            0,
+            topicIndex - (Math.ceil(userSettings.topicsPerPage / 2) - 1)
+        );
     } else if (!req.query.page) {
-        const index = Math.max(parseInt((topicIndex || 0), 10), 0);
+        const index = Math.max(parseInt(topicIndex || 0, 10), 0);
         currentPage = Math.ceil((index + 1) / userSettings.topicsPerPage);
         topicIndex = 0;
     }
 
     const targetUid = await user.getUidByUserslug(req.query.author);
-    const start = ((currentPage - 1) * userSettings.topicsPerPage) + topicIndex;
+    const start = (currentPage - 1) * userSettings.topicsPerPage + topicIndex;
     const stop = start + userSettings.topicsPerPage - 1;
 
     const categoryData = await categories.getCategoryById({
@@ -87,25 +109,47 @@ categoryController.get = async function (req, res, next) {
     }
 
     if (topicIndex > Math.max(categoryData.topic_count - 1, 0)) {
-        return helpers.redirect(res, `/category/${categoryData.slug}/${categoryData.topic_count}?${qs.stringify(req.query)}`);
+        return helpers.redirect(
+            res,
+            `/category/${categoryData.slug}/${
+                categoryData.topic_count
+            }?${qs.stringify(req.query)}`
+        );
     }
-    const pageCount = Math.max(1, Math.ceil(categoryData.topic_count / userSettings.topicsPerPage));
+    const pageCount = Math.max(
+        1,
+        Math.ceil(categoryData.topic_count / userSettings.topicsPerPage)
+    );
     if (userSettings.usePagination && currentPage > pageCount) {
         return next();
     }
 
     categories.modifyTopicsByPrivilege(categoryData.topics, userPrivileges);
-    categoryData.tagWhitelist = categories.filterTagWhitelist(categoryData.tagWhitelist, userPrivileges.isAdminOrMod);
+    categoryData.tagWhitelist = categories.filterTagWhitelist(
+        categoryData.tagWhitelist,
+        userPrivileges.isAdminOrMod
+    );
 
     await buildBreadcrumbs(req, categoryData);
     if (categoryData.children.length) {
         const allCategories = [];
         categories.flattenCategories(allCategories, categoryData.children);
-        await categories.getRecentTopicReplies(allCategories, req.uid, req.query);
-        categoryData.subCategoriesLeft = Math.max(0, categoryData.children.length - categoryData.subCategoriesPerPage);
-        categoryData.hasMoreSubCategories = categoryData.children.length > categoryData.subCategoriesPerPage;
+        await categories.getRecentTopicReplies(
+            allCategories,
+            req.uid,
+            req.query
+        );
+        categoryData.subCategoriesLeft = Math.max(
+            0,
+            categoryData.children.length - categoryData.subCategoriesPerPage
+        );
+        categoryData.hasMoreSubCategories =
+            categoryData.children.length > categoryData.subCategoriesPerPage;
         categoryData.nextSubCategoryStart = categoryData.subCategoriesPerPage;
-        categoryData.children = categoryData.children.slice(0, categoryData.subCategoriesPerPage);
+        categoryData.children = categoryData.children.slice(
+            0,
+            categoryData.subCategoriesPerPage
+        );
         categoryData.children.forEach((child) => {
             if (child) {
                 helpers.trimChildren(child);
@@ -131,7 +175,11 @@ categoryController.get = async function (req, res, next) {
 
     categoryData['feeds:disableRSS'] = meta.config['feeds:disableRSS'] || 0;
     categoryData['reputation:disabled'] = meta.config['reputation:disabled'];
-    categoryData.pagination = pagination.create(currentPage, pageCount, req.query);
+    categoryData.pagination = pagination.create(
+        currentPage,
+        pageCount,
+        req.query
+    );
     categoryData.pagination.rel.forEach((rel) => {
         rel.href = `${url}/category/${categoryData.slug}${rel.href}`;
         res.locals.linkTags.push(rel);
@@ -150,8 +198,13 @@ async function buildBreadcrumbs(req, categoryData) {
             cid: categoryData.cid,
         },
     ];
-    const crumbs = await helpers.buildCategoryBreadcrumbs(categoryData.parentCid);
-    if (req.originalUrl.startsWith(`${relative_path}/api/category`) || req.originalUrl.startsWith(`${relative_path}/category`)) {
+    const crumbs = await helpers.buildCategoryBreadcrumbs(
+        categoryData.parentCid
+    );
+    if (
+        req.originalUrl.startsWith(`${relative_path}/api/category`) ||
+        req.originalUrl.startsWith(`${relative_path}/category`)
+    ) {
         categoryData.breadcrumbs = crumbs.concat(breadcrumbs);
     }
 }

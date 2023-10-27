@@ -23,11 +23,17 @@ profileController.get = async function (req, res, next) {
         if (res.locals.isAPI) {
             req.params.userslug = lowercaseSlug;
         } else {
-            return res.redirect(`${nconf.get('relative_path')}/user/${lowercaseSlug}`);
+            return res.redirect(
+                `${nconf.get('relative_path')}/user/${lowercaseSlug}`
+            );
         }
     }
 
-    const userData = await accountHelpers.getUserDataByUserSlug(req.params.userslug, req.uid, req.query);
+    const userData = await accountHelpers.getUserDataByUserSlug(
+        req.params.userslug,
+        req.uid,
+        req.query
+    );
     if (!userData) {
         return next();
     }
@@ -47,9 +53,14 @@ profileController.get = async function (req, res, next) {
     userData.posts = latestPosts; // for backwards compat.
     userData.latestPosts = latestPosts;
     userData.bestPosts = bestPosts;
-    userData.breadcrumbs = helpers.buildBreadcrumbs([{ text: userData.username }]);
+    userData.breadcrumbs = helpers.buildBreadcrumbs([
+        { text: userData.username },
+    ]);
     userData.title = userData.username;
-    userData.allowCoverPicture = !userData.isSelf || !!meta.config['reputation:disabled'] || userData.reputation >= meta.config['min:rep:cover-picture'];
+    userData.allowCoverPicture =
+        !userData.isSelf ||
+        !!meta.config['reputation:disabled'] ||
+        userData.reputation >= meta.config['min:rep:cover-picture'];
 
     // Show email changed modal on first access after said change
     userData.emailChanged = req.session.emailChanged;
@@ -61,8 +72,15 @@ profileController.get = async function (req, res, next) {
 
     addMetaTags(res, userData);
 
-    userData.selectedGroup = userData.groups.filter(group => group && userData.groupTitleArray.includes(group.name))
-        .sort((a, b) => userData.groupTitleArray.indexOf(a.name) - userData.groupTitleArray.indexOf(b.name));
+    userData.selectedGroup = userData.groups
+        .filter(
+            (group) => group && userData.groupTitleArray.includes(group.name)
+        )
+        .sort(
+            (a, b) =>
+                userData.groupTitleArray.indexOf(a.name) -
+                userData.groupTitleArray.indexOf(b.name)
+        );
 
     res.render('account/profile', userData);
 };
@@ -73,7 +91,8 @@ async function incrementProfileViews(req, userData) {
 
         if (
             req.uid !== userData.uid &&
-            (!req.session.uids_viewed[userData.uid] || req.session.uids_viewed[userData.uid] < Date.now() - 3600000)
+            (!req.session.uids_viewed[userData.uid] ||
+                req.session.uids_viewed[userData.uid] < Date.now() - 3600000)
         ) {
             await user.incrementUserFieldBy(userData.uid, 'profileviews', 1);
             req.session.uids_viewed[userData.uid] = Date.now();
@@ -90,8 +109,12 @@ async function getBestPosts(callerUid, userData) {
 }
 
 async function getPosts(callerUid, userData, setSuffix) {
-    const cids = await categories.getCidsByPrivilege('categories:cid', callerUid, 'topics:read');
-    const keys = cids.map(c => `cid:${c}:uid:${userData.uid}:${setSuffix}`);
+    const cids = await categories.getCidsByPrivilege(
+        'categories:cid',
+        callerUid,
+        'topics:read'
+    );
+    const keys = cids.map((c) => `cid:${c}:uid:${userData.uid}:${setSuffix}`);
     let hasMorePosts = true;
     let start = 0;
     const count = 10;
@@ -100,29 +123,50 @@ async function getPosts(callerUid, userData, setSuffix) {
     const [isAdmin, isModOfCids, canSchedule] = await Promise.all([
         user.isAdministrator(callerUid),
         user.isModerator(callerUid, cids),
-        privileges.categories.isUserAllowedTo('topics:schedule', cids, callerUid),
+        privileges.categories.isUserAllowedTo(
+            'topics:schedule',
+            cids,
+            callerUid
+        ),
     ]);
     const cidToIsMod = _.zipObject(cids, isModOfCids);
     const cidToCanSchedule = _.zipObject(cids, canSchedule);
 
     do {
         /* eslint-disable no-await-in-loop */
-        let pids = await db.getSortedSetRevRange(keys, start, start + count - 1);
+        let pids = await db.getSortedSetRevRange(
+            keys,
+            start,
+            start + count - 1
+        );
         if (!pids.length || pids.length < count) {
             hasMorePosts = false;
         }
         if (pids.length) {
-            ({ pids } = await plugins.hooks.fire('filter:account.profile.getPids', {
-                uid: callerUid,
-                userData,
-                setSuffix,
-                pids,
-            }));
-            const p = await posts.getPostSummaryByPids(pids, callerUid, { stripTags: false });
-            postData.push(...p.filter(
-                p => p && p.topic && (isAdmin || cidToIsMod[p.topic.cid] ||
-                    (p.topic.scheduled && cidToCanSchedule[p.topic.cid]) || (!p.deleted && !p.topic.deleted))
+            ({ pids } = await plugins.hooks.fire(
+                'filter:account.profile.getPids',
+                {
+                    uid: callerUid,
+                    userData,
+                    setSuffix,
+                    pids,
+                }
             ));
+            const p = await posts.getPostSummaryByPids(pids, callerUid, {
+                stripTags: false,
+            });
+            postData.push(
+                ...p.filter(
+                    (p) =>
+                        p &&
+                        p.topic &&
+                        (isAdmin ||
+                            cidToIsMod[p.topic.cid] ||
+                            (p.topic.scheduled &&
+                                cidToCanSchedule[p.topic.cid]) ||
+                            (!p.deleted && !p.topic.deleted))
+                )
+            );
         }
         start += count;
     } while (postData.length < count && hasMorePosts);
@@ -130,7 +174,9 @@ async function getPosts(callerUid, userData, setSuffix) {
 }
 
 function addMetaTags(res, userData) {
-    const plainAboutMe = userData.aboutme ? utils.stripHTMLTags(utils.decodeHTMLEntities(userData.aboutme)) : '';
+    const plainAboutMe = userData.aboutme
+        ? utils.stripHTMLTags(utils.decodeHTMLEntities(userData.aboutme))
+        : '';
     res.locals.metaTags = [
         {
             name: 'title',

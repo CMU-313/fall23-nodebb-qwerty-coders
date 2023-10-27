@@ -17,9 +17,22 @@ const minifier = require('./minifier');
 const CSS = module.exports;
 
 CSS.supportedSkins = [
-    'cerulean', 'cyborg', 'flatly', 'journal', 'lumen', 'paper', 'simplex',
-    'spacelab', 'united', 'cosmo', 'darkly', 'readable', 'sandstone',
-    'slate', 'superhero', 'yeti',
+    'cerulean',
+    'cyborg',
+    'flatly',
+    'journal',
+    'lumen',
+    'paper',
+    'simplex',
+    'spacelab',
+    'united',
+    'cosmo',
+    'darkly',
+    'readable',
+    'sandstone',
+    'slate',
+    'superhero',
+    'yeti',
 ];
 
 const buildImports = {
@@ -39,7 +52,9 @@ const buildImports = {
             '@import "../../public/less/mixins.less";',
             '@import "../../public/less/global.less";',
             '@import "../../public/less/modals.less";',
-        ].map(str => str.replace(/\//g, path.sep)).join('\n')}`;
+        ]
+            .map((str) => str.replace(/\//g, path.sep))
+            .join('\n')}`;
     },
     admin: function (source) {
         return `${source}\n${[
@@ -54,14 +69,18 @@ const buildImports = {
             '@import "../../public/less/jquery-ui.less";',
             '@import (inline) "../node_modules/@adactive/bootstrap-tagsinput/src/bootstrap-tagsinput.css";',
             '@import (inline) "../public/vendor/mdl/material.css";',
-        ].map(str => str.replace(/\//g, path.sep)).join('\n')}`;
+        ]
+            .map((str) => str.replace(/\//g, path.sep))
+            .join('\n')}`;
     },
 };
 
 async function filterMissingFiles(filepaths) {
     const exists = await Promise.all(
         filepaths.map(async (filepath) => {
-            const exists = await file.exists(path.join(__dirname, '../../node_modules', filepath));
+            const exists = await file.exists(
+                path.join(__dirname, '../../node_modules', filepath)
+            );
             if (!exists) {
                 winston.warn(`[meta/css] File not found! ${filepath}`);
             }
@@ -82,12 +101,14 @@ async function getImports(files, prefix, extension) {
             pluginDirectories.push(styleFile);
         }
     });
-    await Promise.all(pluginDirectories.map(async (directory) => {
-        const styleFiles = await file.walk(directory);
-        styleFiles.forEach((styleFile) => {
-            source += `${prefix + path.sep + styleFile}";`;
-        });
-    }));
+    await Promise.all(
+        pluginDirectories.map(async (directory) => {
+            const styleFiles = await file.walk(directory);
+            styleFiles.forEach((styleFile) => {
+                source += `${prefix + path.sep + styleFile}";`;
+            });
+        })
+    );
     return source;
 }
 
@@ -109,15 +130,28 @@ async function getBundleMetadata(target) {
     }
     let skinImport = [];
     if (target === 'client') {
-        const themeData = await db.getObjectFields('config', ['theme:type', 'theme:id', 'bootswatchSkin']);
-        const themeId = (themeData['theme:id'] || 'nodebb-theme-persona');
-        const baseThemePath = path.join(nconf.get('themes_path'), (themeData['theme:type'] && themeData['theme:type'] === 'local' ? themeId : 'nodebb-theme-vanilla'));
+        const themeData = await db.getObjectFields('config', [
+            'theme:type',
+            'theme:id',
+            'bootswatchSkin',
+        ]);
+        const themeId = themeData['theme:id'] || 'nodebb-theme-persona';
+        const baseThemePath = path.join(
+            nconf.get('themes_path'),
+            themeData['theme:type'] && themeData['theme:type'] === 'local'
+                ? themeId
+                : 'nodebb-theme-vanilla'
+        );
         paths.unshift(baseThemePath);
 
         themeData.bootswatchSkin = skin || themeData.bootswatchSkin;
         if (themeData && themeData.bootswatchSkin) {
-            skinImport.push(`\n@import "./@nodebb/bootswatch/${themeData.bootswatchSkin}/variables.less";`);
-            skinImport.push(`\n@import "./@nodebb/bootswatch/${themeData.bootswatchSkin}/bootswatch.less";`);
+            skinImport.push(
+                `\n@import "./@nodebb/bootswatch/${themeData.bootswatchSkin}/variables.less";`
+            );
+            skinImport.push(
+                `\n@import "./@nodebb/bootswatch/${themeData.bootswatchSkin}/bootswatch.less";`
+            );
         }
         skinImport = skinImport.join('');
     }
@@ -125,7 +159,9 @@ async function getBundleMetadata(target) {
     const [lessImports, cssImports, acpLessImports] = await Promise.all([
         filterGetImports(plugins.lessFiles, '\n@import ".', '.less'),
         filterGetImports(plugins.cssFiles, '\n@import (inline) ".', '.css'),
-        target === 'client' ? '' : filterGetImports(plugins.acpLessFiles, '\n@import ".', '.less'),
+        target === 'client'
+            ? ''
+            : filterGetImports(plugins.acpLessFiles, '\n@import ".', '.less'),
     ]);
 
     async function filterGetImports(files, prefix, extension) {
@@ -146,9 +182,17 @@ CSS.buildBundle = async function (target, fork) {
 
     const data = await getBundleMetadata(target);
     const minify = process.env.NODE_ENV !== 'development';
-    const bundle = await minifier.css.bundle(data.imports, data.paths, minify, fork);
+    const bundle = await minifier.css.bundle(
+        data.imports,
+        data.paths,
+        minify,
+        fork
+    );
 
     const filename = `${target}.css`;
-    await fs.promises.writeFile(path.join(__dirname, '../../build/public', filename), bundle.code);
+    await fs.promises.writeFile(
+        path.join(__dirname, '../../build/public', filename),
+        bundle.code
+    );
     return bundle.code;
 };

@@ -14,8 +14,18 @@ const utils = require('../../utils');
 const usersController = module.exports;
 
 const userFields = [
-    'uid', 'username', 'userslug', 'email', 'postcount', 'joindate', 'banned',
-    'reputation', 'picture', 'flags', 'lastonline', 'email:confirmed',
+    'uid',
+    'username',
+    'userslug',
+    'email',
+    'postcount',
+    'joindate',
+    'banned',
+    'reputation',
+    'picture',
+    'flags',
+    'lastonline',
+    'email:confirmed',
 ];
 
 usersController.index = async function (req, res) {
@@ -36,7 +46,9 @@ async function getUsers(req, res) {
         resultsPerPage = 50;
     }
     let sortBy = validator.escape(req.query.sortBy || '');
-    const filterBy = Array.isArray(req.query.filters || []) ? (req.query.filters || []) : [req.query.filters];
+    const filterBy = Array.isArray(req.query.filters || [])
+        ? req.query.filters || []
+        : [req.query.filters];
     const start = Math.max(0, page - 1) * resultsPerPage;
     const stop = start + resultsPerPage - 1;
 
@@ -80,14 +92,18 @@ async function getUsers(req, res) {
         let uids = [];
         if (Array.isArray(set)) {
             const weights = set.map((s, index) => (index ? 0 : 1));
-            uids = await db[reverse ? 'getSortedSetRevIntersect' : 'getSortedSetIntersect']({
+            uids = await db[
+                reverse ? 'getSortedSetRevIntersect' : 'getSortedSetIntersect'
+            ]({
                 sets: set,
                 start: start,
                 stop: stop,
                 weights: weights,
             });
         } else {
-            uids = await db[reverse ? 'getSortedSetRevRange' : 'getSortedSetRange'](set, start, stop);
+            uids = await db[
+                reverse ? 'getSortedSetRevRange' : 'getSortedSetRange'
+            ](set, start, stop);
         }
         return uids;
     }
@@ -100,7 +116,7 @@ async function getUsers(req, res) {
     ]);
 
     await render(req, res, {
-        users: users.filter(user => user && parseInt(user.uid, 10)),
+        users: users.filter((user) => user && parseInt(user.uid, 10)),
         page: page,
         pageCount: Math.max(1, Math.ceil(count / resultsPerPage)),
         resultsPerPage: resultsPerPage,
@@ -139,17 +155,19 @@ usersController.search = async function (req, res) {
             const data = await db.getSortedSetScan({
                 key: `${searchBy}:sorted`,
                 match: query,
-                limit: hardCap || (resultsPerPage * 10),
+                limit: hardCap || resultsPerPage * 10,
             });
-            return data.map(data => data.split(':').pop());
+            return data.map((data) => data.split(':').pop());
         },
     });
 
-    const uids = searchData.users.map(user => user && user.uid);
+    const uids = searchData.users.map((user) => user && user.uid);
     searchData.users = await loadUserInfo(req.uid, uids);
     if (req.query.searchBy === 'ip') {
         searchData.users.forEach((user) => {
-            user.ip = user.ips.find(ip => ip.includes(String(req.query.query)));
+            user.ip = user.ips.find((ip) =>
+                ip.includes(String(req.query.query))
+            );
         });
     }
     searchData.query = validator.escape(String(req.query.query || ''));
@@ -162,7 +180,9 @@ usersController.search = async function (req, res) {
 
 async function loadUserInfo(callerUid, uids) {
     async function getIPs() {
-        return await Promise.all(uids.map(uid => db.getSortedSetRevRange(`uid:${uid}:ip`, 0, -1)));
+        return await Promise.all(
+            uids.map((uid) => db.getSortedSetRevRange(`uid:${uid}:ip`, 0, -1))
+        );
     }
     const [isAdmin, userData, lastonline, ips] = await Promise.all([
         user.isAdministrator(uids),
@@ -193,10 +213,16 @@ usersController.registrationQueue = async function (req, res) {
     const data = await utils.promiseParallel({
         registrationQueueCount: db.sortedSetCard('registration:queue'),
         users: user.getRegistrationQueue(start, stop),
-        customHeaders: plugins.hooks.fire('filter:admin.registrationQueue.customHeaders', { headers: [] }),
+        customHeaders: plugins.hooks.fire(
+            'filter:admin.registrationQueue.customHeaders',
+            { headers: [] }
+        ),
         invites: getInvites(),
     });
-    const pageCount = Math.max(1, Math.ceil(data.registrationQueueCount / itemsPerPage));
+    const pageCount = Math.max(
+        1,
+        Math.ceil(data.registrationQueueCount / itemsPerPage)
+    );
     data.pagination = pagination.create(page, pageCount);
     data.customHeaders = data.customHeaders.headers;
     res.render('admin/manage/registration', data);
@@ -204,26 +230,34 @@ usersController.registrationQueue = async function (req, res) {
 
 async function getInvites() {
     const invitations = await user.getAllInvites();
-    const uids = invitations.map(invite => invite.uid);
+    const uids = invitations.map((invite) => invite.uid);
     let usernames = await user.getUsersFields(uids, ['username']);
-    usernames = usernames.map(user => user.username);
+    usernames = usernames.map((user) => user.username);
 
     invitations.forEach((invites, index) => {
         invites.username = usernames[index];
     });
 
     async function getUsernamesByEmails(emails) {
-        const uids = await db.sortedSetScores('email:uid', emails.map(email => String(email).toLowerCase()));
+        const uids = await db.sortedSetScores(
+            'email:uid',
+            emails.map((email) => String(email).toLowerCase())
+        );
         const usernames = await user.getUsersFields(uids, ['username']);
-        return usernames.map(user => user.username);
+        return usernames.map((user) => user.username);
     }
 
-    usernames = await Promise.all(invitations.map(invites => getUsernamesByEmails(invites.invitations)));
+    usernames = await Promise.all(
+        invitations.map((invites) => getUsernamesByEmails(invites.invitations))
+    );
 
     invitations.forEach((invites, index) => {
         invites.invitations = invites.invitations.map((email, i) => ({
             email: email,
-            username: usernames[index][i] === '[[global:guest]]' ? '' : usernames[index][i],
+            username:
+                usernames[index][i] === '[[global:guest]]'
+                    ? ''
+                    : usernames[index][i],
         }));
     });
     return invitations;
@@ -234,21 +268,30 @@ async function render(req, res, data) {
 
     const { registrationType } = meta.config;
 
-    data.inviteOnly = registrationType === 'invite-only' || registrationType === 'admin-invite-only';
+    data.inviteOnly =
+        registrationType === 'invite-only' ||
+        registrationType === 'admin-invite-only';
     data.adminInviteOnly = registrationType === 'admin-invite-only';
     data[`sort_${data.sortBy}`] = true;
     if (req.query.searchBy) {
         data[`searchBy_${validator.escape(String(req.query.searchBy))}`] = true;
     }
-    const filterBy = Array.isArray(req.query.filters || []) ? (req.query.filters || []) : [req.query.filters];
+    const filterBy = Array.isArray(req.query.filters || [])
+        ? req.query.filters || []
+        : [req.query.filters];
     filterBy.forEach((filter) => {
         data[`filterBy_${validator.escape(String(filter))}`] = true;
     });
-    data.userCount = parseInt(await db.getObjectField('global', 'userCount'), 10);
+    data.userCount = parseInt(
+        await db.getObjectField('global', 'userCount'),
+        10
+    );
     if (data.adminInviteOnly) {
         data.showInviteButton = await privileges.users.isAdministrator(req.uid);
     } else {
-        data.showInviteButton = await privileges.users.hasInvitePrivilege(req.uid);
+        data.showInviteButton = await privileges.users.hasInvitePrivilege(
+            req.uid
+        );
     }
 
     res.render('admin/manage/users', data);
@@ -262,19 +305,23 @@ usersController.getCSV = async function (req, res, next) {
     });
     const path = require('path');
     const { baseDir } = require('../../constants').paths;
-    res.sendFile('users.csv', {
-        root: path.join(baseDir, 'build/export'),
-        headers: {
-            'Content-Type': 'text/csv',
-            'Content-Disposition': 'attachment; filename=users.csv',
+    res.sendFile(
+        'users.csv',
+        {
+            root: path.join(baseDir, 'build/export'),
+            headers: {
+                'Content-Type': 'text/csv',
+                'Content-Disposition': 'attachment; filename=users.csv',
+            },
         },
-    }, (err) => {
-        if (err) {
-            if (err.code === 'ENOENT') {
-                res.locals.isAPI = false;
-                return next();
+        (err) => {
+            if (err) {
+                if (err.code === 'ENOENT') {
+                    res.locals.isAPI = false;
+                    return next();
+                }
+                return next(err);
             }
-            return next(err);
         }
-    });
+    );
 };

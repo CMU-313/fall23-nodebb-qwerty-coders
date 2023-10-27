@@ -30,26 +30,42 @@ module.exports = function (middleware) {
                 options.loggedIn = req.uid > 0;
                 options.relative_path = relative_path;
                 options.template = { name: template, [template]: true };
-                options.url = (req.baseUrl + req.path.replace(/^\/api/, ''));
+                options.url = req.baseUrl + req.path.replace(/^\/api/, '');
                 options.bodyClass = helpers.buildBodyClass(req, res, options);
 
                 if (req.loggedIn) {
                     res.set('cache-control', 'private');
                 }
 
-                const buildResult = await plugins.hooks.fire(`filter:${template}.build`, { req: req, res: res, templateData: options });
+                const buildResult = await plugins.hooks.fire(
+                    `filter:${template}.build`,
+                    { req: req, res: res, templateData: options }
+                );
                 if (res.headersSent) {
                     return;
                 }
-                const templateToRender = buildResult.templateData.templateToRender || template;
+                const templateToRender =
+                    buildResult.templateData.templateToRender || template;
 
-                const renderResult = await plugins.hooks.fire('filter:middleware.render', { req: req, res: res, templateData: buildResult.templateData });
+                const renderResult = await plugins.hooks.fire(
+                    'filter:middleware.render',
+                    {
+                        req: req,
+                        res: res,
+                        templateData: buildResult.templateData,
+                    }
+                );
                 if (res.headersSent) {
                     return;
                 }
                 options = renderResult.templateData;
                 options._header = {
-                    tags: await meta.tags.parse(req, renderResult, res.locals.metaTags, res.locals.linkTags),
+                    tags: await meta.tags.parse(
+                        req,
+                        renderResult,
+                        res.locals.metaTags,
+                        res.locals.linkTags
+                    ),
                 };
                 options.widgets = await widgets.render(req.uid, {
                     template: `${template}.tpl`,
@@ -65,22 +81,43 @@ module.exports = function (middleware) {
                     if (req.route && req.route.path === '/api/') {
                         options.title = '[[pages:home]]';
                     }
-                    req.app.set('json spaces', global.env === 'development' || req.query.pretty ? 4 : 0);
+                    req.app.set(
+                        'json spaces',
+                        global.env === 'development' || req.query.pretty ? 4 : 0
+                    );
                     return res.json(options);
                 }
-                const optionsString = JSON.stringify(options).replace(/<\//g, '<\\/');
+                const optionsString = JSON.stringify(options).replace(
+                    /<\//g,
+                    '<\\/'
+                );
                 const results = await utils.promiseParallel({
-                    header: renderHeaderFooter('renderHeader', req, res, options),
-                    content: renderContent(render, templateToRender, req, res, options),
-                    footer: renderHeaderFooter('renderFooter', req, res, options),
+                    header: renderHeaderFooter(
+                        'renderHeader',
+                        req,
+                        res,
+                        options
+                    ),
+                    content: renderContent(
+                        render,
+                        templateToRender,
+                        req,
+                        res,
+                        options
+                    ),
+                    footer: renderHeaderFooter(
+                        'renderFooter',
+                        req,
+                        res,
+                        options
+                    ),
                 });
 
-                const str = `${results.header +
+                const str = `${
+                    results.header +
                     (res.locals.postHeader || '') +
                     results.content
-                }<script id="ajaxify-data" type="application/json">${
-                    optionsString
-                }</script>${
+                }<script id="ajaxify-data" type="application/json">${optionsString}</script>${
                     res.locals.preFooter || ''
                 }${results.footer}`;
 
@@ -123,11 +160,15 @@ module.exports = function (middleware) {
     }
 
     function getLang(req, res) {
-        let language = (res.locals.config && res.locals.config.userLang) || 'en-GB';
+        let language =
+            (res.locals.config && res.locals.config.userLang) || 'en-GB';
         if (res.locals.renderAdminHeader) {
-            language = (res.locals.config && res.locals.config.acpLang) || 'en-GB';
+            language =
+                (res.locals.config && res.locals.config.acpLang) || 'en-GB';
         }
-        return req.query.lang ? validator.escape(String(req.query.lang)) : language;
+        return req.query.lang
+            ? validator.escape(String(req.query.lang))
+            : language;
     }
 
     async function translate(str, language) {

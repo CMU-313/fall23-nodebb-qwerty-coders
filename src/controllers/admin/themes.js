@@ -8,7 +8,10 @@ const { paths } = require('../../constants');
 
 const themesController = module.exports;
 
-const defaultScreenshotPath = path.join(__dirname, '../../../public/images/themes/default.png');
+const defaultScreenshotPath = path.join(
+    __dirname,
+    '../../../public/images/themes/default.png'
+);
 
 themesController.get = async function (req, res, next) {
     const themeDir = path.join(paths.themes, req.params.theme);
@@ -25,7 +28,9 @@ themesController.get = async function (req, res, next) {
         return next(err);
     }
 
-    const screenshotPath = themeConfig.screenshot ? path.join(themeDir, themeConfig.screenshot) : defaultScreenshotPath;
+    const screenshotPath = themeConfig.screenshot
+        ? path.join(themeDir, themeConfig.screenshot)
+        : defaultScreenshotPath;
     const exists = await file.exists(screenshotPath);
     res.sendFile(exists ? screenshotPath : defaultScreenshotPath);
 };

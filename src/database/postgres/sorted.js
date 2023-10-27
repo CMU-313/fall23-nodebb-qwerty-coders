@@ -79,31 +79,98 @@ OFFSET $2::INTEGER`,
         }
 
         if (withScores) {
-            res.rows = res.rows.map(r => ({ value: r.value, score: parseFloat(r.score) }));
+            res.rows = res.rows.map((r) => ({
+                value: r.value,
+                score: parseFloat(r.score),
+            }));
         } else {
-            res.rows = res.rows.map(r => r.value);
+            res.rows = res.rows.map((r) => r.value);
         }
 
         return res.rows;
     }
 
-    module.getSortedSetRangeByScore = async function (key, start, count, min, max) {
-        return await getSortedSetRangeByScore(key, start, count, min, max, 1, false);
+    module.getSortedSetRangeByScore = async function (
+        key,
+        start,
+        count,
+        min,
+        max
+    ) {
+        return await getSortedSetRangeByScore(
+            key,
+            start,
+            count,
+            min,
+            max,
+            1,
+            false
+        );
     };
 
-    module.getSortedSetRevRangeByScore = async function (key, start, count, max, min) {
-        return await getSortedSetRangeByScore(key, start, count, min, max, -1, false);
+    module.getSortedSetRevRangeByScore = async function (
+        key,
+        start,
+        count,
+        max,
+        min
+    ) {
+        return await getSortedSetRangeByScore(
+            key,
+            start,
+            count,
+            min,
+            max,
+            -1,
+            false
+        );
     };
 
-    module.getSortedSetRangeByScoreWithScores = async function (key, start, count, min, max) {
-        return await getSortedSetRangeByScore(key, start, count, min, max, 1, true);
+    module.getSortedSetRangeByScoreWithScores = async function (
+        key,
+        start,
+        count,
+        min,
+        max
+    ) {
+        return await getSortedSetRangeByScore(
+            key,
+            start,
+            count,
+            min,
+            max,
+            1,
+            true
+        );
     };
 
-    module.getSortedSetRevRangeByScoreWithScores = async function (key, start, count, max, min) {
-        return await getSortedSetRangeByScore(key, start, count, min, max, -1, true);
+    module.getSortedSetRevRangeByScoreWithScores = async function (
+        key,
+        start,
+        count,
+        max,
+        min
+    ) {
+        return await getSortedSetRangeByScore(
+            key,
+            start,
+            count,
+            min,
+            max,
+            -1,
+            true
+        );
     };
 
-    async function getSortedSetRangeByScore(key, start, count, min, max, sort, withScores) {
+    async function getSortedSetRangeByScore(
+        key,
+        start,
+        count,
+        min,
+        max,
+        sort,
+        withScores
+    ) {
         if (!key) {
             return;
         }
@@ -124,7 +191,9 @@ OFFSET $2::INTEGER`,
         }
 
         const res = await module.pool.query({
-            name: `getSortedSetRangeByScoreWithScores${sort > 0 ? 'Asc' : 'Desc'}`,
+            name: `getSortedSetRangeByScoreWithScores${
+                sort > 0 ? 'Asc' : 'Desc'
+            }`,
             text: `
 SELECT z."value",
        z."score"
@@ -142,9 +211,12 @@ OFFSET $2::INTEGER`,
         });
 
         if (withScores) {
-            res.rows = res.rows.map(r => ({ value: r.value, score: parseFloat(r.score) }));
+            res.rows = res.rows.map((r) => ({
+                value: r.value,
+                score: parseFloat(r.score),
+            }));
         } else {
-            res.rows = res.rows.map(r => r.value);
+            res.rows = res.rows.map((r) => r.value);
         }
 
         return res.rows;
@@ -218,7 +290,9 @@ SELECT o."_key" k,
             values: [keys],
         });
 
-        return keys.map(k => parseInt((res.rows.find(r => r.k === k) || { c: 0 }).c, 10));
+        return keys.map((k) =>
+            parseInt((res.rows.find((r) => r.k === k) || { c: 0 }).c, 10)
+        );
     };
 
     module.sortedSetsCardSum = async function (keys) {
@@ -264,7 +338,7 @@ SELECT (SELECT r
             values: [keys, values],
         });
 
-        return res.rows.map(r => (r.r === null ? null : parseFloat(r.r)));
+        return res.rows.map((r) => (r.r === null ? null : parseFloat(r.r)));
     }
 
     module.sortedSetsRanks = async function (keys, values) {
@@ -288,7 +362,11 @@ SELECT (SELECT r
             return [];
         }
 
-        return await getSortedSetRank('ASC', new Array(values.length).fill(key), values);
+        return await getSortedSetRank(
+            'ASC',
+            new Array(values.length).fill(key),
+            values
+        );
     };
 
     module.sortedSetRevRanks = async function (key, values) {
@@ -296,7 +374,11 @@ SELECT (SELECT r
             return [];
         }
 
-        return await getSortedSetRank('DESC', new Array(values.length).fill(key), values);
+        return await getSortedSetRank(
+            'DESC',
+            new Array(values.length).fill(key),
+            values
+        );
     };
 
     module.sortedSetScore = async function (key, value) {
@@ -346,7 +428,7 @@ SELECT o."_key" k,
         });
 
         return keys.map((k) => {
-            const s = res.rows.find(r => r.k === k);
+            const s = res.rows.find((r) => r.k === k);
             return s ? parseFloat(s.s) : null;
         });
     };
@@ -375,7 +457,7 @@ SELECT z."value" v,
         });
 
         return values.map((v) => {
-            const s = res.rows.find(r => r.v === v);
+            const s = res.rows.find((r) => r.v === v);
             return s ? parseFloat(s.s) : null;
         });
     };
@@ -426,7 +508,7 @@ SELECT z."value" v
             values: [key, values],
         });
 
-        return values.map(v => res.rows.some(r => r.v === v));
+        return values.map((v) => res.rows.some((r) => r.v === v));
     };
 
     module.isMemberOfSortedSets = async function (keys, value) {
@@ -449,7 +531,7 @@ SELECT o."_key" k
             values: [keys, value],
         });
 
-        return keys.map(k => res.rows.some(r => r.k === k));
+        return keys.map((k) => res.rows.some((r) => r.k === k));
     };
 
     module.getSortedSetMembers = async function (key) {
@@ -471,7 +553,7 @@ SELECT "_key" k,
             values: [keys],
         });
 
-        return keys.map(k => (res.rows.find(r => r.k === k) || {}).m || []);
+        return keys.map((k) => (res.rows.find((r) => r.k === k) || {}).m || []);
     };
 
     module.sortedSetIncrBy = async function (key, increment, value) {
@@ -500,14 +582,30 @@ RETURNING "score" s`,
 
     module.sortedSetIncrByBulk = async function (data) {
         // TODO: perf single query?
-        return await Promise.all(data.map(item => module.sortedSetIncrBy(item[0], item[1], item[2])));
+        return await Promise.all(
+            data.map((item) =>
+                module.sortedSetIncrBy(item[0], item[1], item[2])
+            )
+        );
     };
 
-    module.getSortedSetRangeByLex = async function (key, min, max, start, count) {
+    module.getSortedSetRangeByLex = async function (
+        key,
+        min,
+        max,
+        start,
+        count
+    ) {
         return await sortedSetLex(key, min, max, 1, start, count);
     };
 
-    module.getSortedSetRevRangeByLex = async function (key, max, min, start, count) {
+    module.getSortedSetRevRangeByLex = async function (
+        key,
+        max,
+        min,
+        start,
+        count
+    ) {
         return await sortedSetLex(key, min, max, -1, start, count);
     };
 
@@ -551,7 +649,7 @@ OFFSET $${q.values.length - 1}::INTEGER`,
             values: q.values,
         });
 
-        return res.rows.map(r => r.v);
+        return res.rows.map((r) => r.v);
     }
 
     module.sortedSetRemoveRangeByLex = async function (key, min, max) {
@@ -634,24 +732,36 @@ SELECT z."value",
             values: [params.key, params.limit],
         });
         if (!params.withScores) {
-            return res.rows.map(r => r.value);
+            return res.rows.map((r) => r.value);
         }
-        return res.rows.map(r => ({ value: r.value, score: parseFloat(r.score) }));
+        return res.rows.map((r) => ({
+            value: r.value,
+            score: parseFloat(r.score),
+        }));
     };
 
     module.processSortedSet = async function (setKey, process, options) {
         const client = await module.pool.connect();
         const batchSize = (options || {}).batch || 100;
-        const cursor = client.query(new Cursor(`
+        const cursor = client.query(
+            new Cursor(
+                `
 SELECT z."value", z."score"
   FROM "legacy_object_live" o
  INNER JOIN "legacy_zset" z
          ON o."_key" = z."_key"
         AND o."type" = z."type"
  WHERE o."_key" = $1::TEXT
- ORDER BY z."score" ASC, z."value" ASC`, [setKey]));
+ ORDER BY z."score" ASC, z."value" ASC`,
+                [setKey]
+            )
+        );
 
-        if (process && process.constructor && process.constructor.name !== 'AsyncFunction') {
+        if (
+            process &&
+            process.constructor &&
+            process.constructor.name !== 'AsyncFunction'
+        ) {
             process = util.promisify(process);
         }
 
@@ -664,9 +774,12 @@ SELECT z."value", z."score"
             }
 
             if (options.withScores) {
-                rows = rows.map(r => ({ value: r.value, score: parseFloat(r.score) }));
+                rows = rows.map((r) => ({
+                    value: r.value,
+                    score: parseFloat(r.score),
+                }));
             } else {
-                rows = rows.map(r => r.value);
+                rows = rows.map((r) => r.value);
             }
             try {
                 await process(rows);

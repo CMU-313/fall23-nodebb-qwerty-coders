@@ -36,7 +36,10 @@ chatsController.get = async function (req, res, next) {
             title: '[[pages:chats]]',
         });
     }
-    const room = await messaging.loadRoom(req.uid, { uid: uid, roomId: req.params.roomid });
+    const room = await messaging.loadRoom(req.uid, {
+        uid: uid,
+        roomId: req.params.roomid,
+    });
     if (!room) {
         return next();
     }
@@ -61,5 +64,8 @@ chatsController.redirectToChat = async function (req, res, next) {
         return next();
     }
     const roomid = parseInt(req.params.roomid, 10);
-    helpers.redirect(res, `/user/${userslug}/chats${roomid ? `/${roomid}` : ''}`);
+    helpers.redirect(
+        res,
+        `/user/${userslug}/chats${roomid ? `/${roomid}` : ''}`
+    );
 };

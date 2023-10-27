@@ -39,7 +39,10 @@ Sockets.init = async function (server) {
     io.on('connection', onConnection);
 
     const opts = {
-        transports: nconf.get('socket.io:transports') || ['polling', 'websocket'],
+        transports: nconf.get('socket.io:transports') || [
+            'polling',
+            'websocket',
+        ],
         cookie: false,
     };
     /*
@@ -62,7 +65,11 @@ Sockets.init = async function (server) {
 };
 
 function onConnection(socket) {
-    socket.ip = (socket.request.headers['x-forwarded-for'] || socket.request.connection.remoteAddress || '').split(',')[0];
+    socket.ip = (
+        socket.request.headers['x-forwarded-for'] ||
+        socket.request.connection.remoteAddress ||
+        ''
+    ).split(',')[0];
     socket.request.ip = socket.ip;
     logger.io_one(socket, socket.uid);
 
@@ -101,7 +108,9 @@ async function onConnect(socket) {
         socket.join('online_guests');
     }
 
-    socket.join(`sess_${socket.request.signedCookies[nconf.get('sessionKey')]}`);
+    socket.join(
+        `sess_${socket.request.signedCookies[nconf.get('sessionKey')]}`
+    );
     socket.emit('checkSession', socket.uid);
     socket.emit('setHostname', os.hostname());
     plugins.hooks.fire('action:sockets.connect', { socket: socket });
@@ -114,7 +123,10 @@ async function onMessage(socket, payload) {
 
     const eventName = payload.data[0];
     const params = typeof payload.data[1] === 'function' ? {} : payload.data[1];
-    const callback = typeof payload.data[payload.data.length - 1] === 'function' ? payload.data[payload.data.length - 1] : function () {};
+    const callback =
+        typeof payload.data[payload.data.length - 1] === 'function'
+            ? payload.data[payload.data.length - 1]
+            : function () {};
 
     if (!eventName) {
         return winston.warn('[socket.io] Empty method name');
@@ -123,7 +135,11 @@ async function onMessage(socket, payload) {
     const parts = eventName.toString().split('.');
     const namespace = parts[0];
     const methodToCall = parts.reduce((prev, cur) => {
-        if (prev !== null && prev[cur] && (!prev.hasOwnProperty || prev.hasOwnProperty(cur))) {
+        if (
+            prev !== null &&
+            prev[cur] &&
+            (!prev.hasOwnProperty || prev.hasOwnProperty(cur))
+        ) {
             return prev[cur];
         }
         return null;
@@ -144,7 +160,9 @@ async function onMessage(socket, payload) {
     }
 
     if (!eventName.startsWith('admin.') && ratelimit.isFlooding(socket)) {
-        winston.warn(`[socket.io] Too many emits! Disconnecting uid : ${socket.uid}. Events : ${socket.previousEvents}`);
+        winston.warn(
+            `[socket.io] Too many emits! Disconnecting uid : ${socket.uid}. Events : ${socket.previousEvents}`
+        );
         return socket.disconnect();
     }
 
@@ -156,7 +174,10 @@ async function onMessage(socket, payload) {
             await Namespaces[namespace].before(socket, eventName, params);
         }
 
-        if (methodToCall.constructor && methodToCall.constructor.name === 'AsyncFunction') {
+        if (
+            methodToCall.constructor &&
+            methodToCall.constructor.name === 'AsyncFunction'
+        ) {
             const result = await methodToCall(socket, params);
             callback(null, result);
         } else {
@@ -172,9 +193,18 @@ async function onMessage(socket, payload) {
 
 function requireModules() {
     const modules = [
-        'admin', 'categories', 'groups', 'meta', 'modules',
-        'notifications', 'plugins', 'posts', 'topics', 'user',
-        'blacklist', 'uploads',
+        'admin',
+        'categories',
+        'groups',
+        'meta',
+        'modules',
+        'notifications',
+        'plugins',
+        'posts',
+        'topics',
+        'user',
+        'blacklist',
+        'uploads',
     ];
 
     modules.forEach((module) => {
@@ -192,17 +222,25 @@ async function checkMaintenance(socket) {
         return;
     }
     const validator = require('validator');
-    throw new Error(`[[pages:maintenance.text, ${validator.escape(String(meta.config.title || 'NodeBB'))}]]`);
+    throw new Error(
+        `[[pages:maintenance.text, ${validator.escape(
+            String(meta.config.title || 'NodeBB')
+        )}]]`
+    );
 }
 
-const getSessionAsync = util.promisify(
-    (sid, callback) => db.sessionStore.get(sid, (err, sessionObj) => callback(err, sessionObj || null))
+const getSessionAsync = util.promisify((sid, callback) =>
+    db.sessionStore.get(sid, (err, sessionObj) =>
+        callback(err, sessionObj || null)
+    )
 );
 
 async function validateSession(socket, errorMsg) {
     const req = socket.request;
     const { sessionId } = await plugins.hooks.fire('filter:sockets.sessionId', {
-        sessionId: req.signedCookies ? req.signedCookies[nconf.get('sessionKey')] : null,
+        sessionId: req.signedCookies
+            ? req.signedCookies[nconf.get('sessionKey')]
+            : null,
         request: req,
     });
 
@@ -223,7 +261,9 @@ async function validateSession(socket, errorMsg) {
     });
 }
 
-const cookieParserAsync = util.promisify((req, callback) => cookieParser(req, {}, err => callback(err)));
+const cookieParserAsync = util.promisify((req, callback) =>
+    cookieParser(req, {}, (err) => callback(err))
+);
 
 async function authorize(socket, callback) {
     const { request } = socket;
@@ -235,7 +275,9 @@ async function authorize(socket, callback) {
     await cookieParserAsync(request);
 
     const { sessionId } = await plugins.hooks.fire('filter:sockets.sessionId', {
-        sessionId: request.signedCookies ? request.signedCookies[nconf.get('sessionKey')] : null,
+        sessionId: request.signedCookies
+            ? request.signedCookies[nconf.get('sessionKey')]
+            : null,
         request: request,
     });
 
@@ -274,5 +316,10 @@ Sockets.warnDeprecated = (socket, replacement) => {
             replacement: replacement,
         });
     }
-    winston.warn(`[deprecated]\n ${new Error('-').stack.split('\n').slice(2, 5).join('\n')}\n     use ${replacement}`);
+    winston.warn(
+        `[deprecated]\n ${new Error('-').stack
+            .split('\n')
+            .slice(2, 5)
+            .join('\n')}\n     use ${replacement}`
+    );
 };

@@ -13,7 +13,6 @@ const morgan = require('morgan');
 const file = require('./file');
 const meta = require('./meta');
 
-
 const opts = {
     /*
      * state used by Logger
@@ -77,7 +76,10 @@ Logger.open = function (value) {
             const stats = fs.statSync(value);
             if (stats) {
                 if (stats.isDirectory()) {
-                    stream = fs.createWriteStream(path.join(value, 'nodebb.log'), { flags: 'a' });
+                    stream = fs.createWriteStream(
+                        path.join(value, 'nodebb.log'),
+                        { flags: 'a' }
+                    );
                 } else {
                     stream = fs.createWriteStream(value, { flags: 'a' });
                 }
@@ -143,7 +145,10 @@ Logger.prepare_io_string = function (_type, _uid, _args) {
      * The format is: io: <uid> <event> <args>
      */
     try {
-        return `io: ${_uid} ${_type} ${util.inspect(Array.prototype.slice.call(_args), { depth: 3 })}\n`;
+        return `io: ${_uid} ${_type} ${util.inspect(
+            Array.prototype.slice.call(_args),
+            { depth: 3 }
+        )}\n`;
     } catch (err) {
         winston.info('Logger.prepare_io_string: Failed', err);
         return 'error';
@@ -154,7 +159,12 @@ Logger.io_close = function (socket) {
     /*
      * Restore all hijacked sockets to their original emit/on functions
      */
-    if (!socket || !socket.io || !socket.io.sockets || !socket.io.sockets.sockets) {
+    if (
+        !socket ||
+        !socket.io ||
+        !socket.io.sockets ||
+        !socket.io.sockets.sockets
+    ) {
         return;
     }
 
@@ -176,7 +186,12 @@ Logger.io = function (socket) {
      * Go through all of the currently established sockets & hook their .emit/.on
      */
 
-    if (!socket || !socket.io || !socket.io.sockets || !socket.io.sockets.sockets) {
+    if (
+        !socket ||
+        !socket.io ||
+        !socket.io.sockets ||
+        !socket.io.sockets.sockets
+    ) {
         return;
     }
 
@@ -193,7 +208,9 @@ Logger.io_one = function (socket, uid) {
     function override(method, name, errorMsg) {
         return (...args) => {
             if (opts.streams.log.f) {
-                opts.streams.log.f.write(Logger.prepare_io_string(name, uid, args));
+                opts.streams.log.f.write(
+                    Logger.prepare_io_string(name, uid, args)
+                );
             }
 
             try {
@@ -208,10 +225,18 @@ Logger.io_one = function (socket, uid) {
         // courtesy of: http://stackoverflow.com/a/9674248
         socket.oEmit = socket.emit;
         const { emit } = socket;
-        socket.emit = override(emit, 'emit', 'Logger.io_one: emit.apply: Failed');
+        socket.emit = override(
+            emit,
+            'emit',
+            'Logger.io_one: emit.apply: Failed'
+        );
 
         socket.$onvent = socket.onevent;
         const $onevent = socket.onevent;
-        socket.onevent = override($onevent, 'on', 'Logger.io_one: $emit.apply: Failed');
+        socket.onevent = override(
+            $onevent,
+            'on',
+            'Logger.io_one: $emit.apply: Failed'
+        );
     }
 };

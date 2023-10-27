@@ -8,9 +8,18 @@ const plugins = require('../plugins');
 const utils = require('../utils');
 
 const intFields = [
-    'cid', 'parentCid', 'disabled', 'isSection', 'order',
-    'topic_count', 'post_count', 'numRecentReplies',
-    'minTags', 'maxTags', 'postQueue', 'subCategoriesPerPage',
+    'cid',
+    'parentCid',
+    'disabled',
+    'isSection',
+    'order',
+    'topic_count',
+    'post_count',
+    'numRecentReplies',
+    'minTags',
+    'maxTags',
+    'postQueue',
+    'subCategoriesPerPage',
 ];
 
 module.exports = function (Categories) {
@@ -19,7 +28,7 @@ module.exports = function (Categories) {
             return [];
         }
 
-        const keys = cids.map(cid => `category:${cid}`);
+        const keys = cids.map((cid) => `category:${cid}`);
         const categories = await db.getObjects(keys, fields);
         const result = await plugins.hooks.fire('filter:category.getFields', {
             cids: cids,
@@ -27,7 +36,9 @@ module.exports = function (Categories) {
             fields: fields,
             keys: keys,
         });
-        result.categories.forEach(category => modifyCategory(category, fields));
+        result.categories.forEach((category) =>
+            modifyCategory(category, fields)
+        );
         return result.categories;
     };
 
@@ -66,12 +77,15 @@ module.exports = function (Categories) {
 
 function defaultIntField(category, fields, fieldName, defaultField) {
     if (!fields.length || fields.includes(fieldName)) {
-        const useDefault = !category.hasOwnProperty(fieldName) ||
+        const useDefault =
+            !category.hasOwnProperty(fieldName) ||
             category[fieldName] === null ||
             category[fieldName] === '' ||
             !utils.isNumber(category[fieldName]);
 
-        category[fieldName] = useDefault ? meta.config[defaultField] : category[fieldName];
+        category[fieldName] = useDefault
+            ? meta.config[defaultField]
+            : category[fieldName];
     }
 }
 
@@ -86,7 +100,15 @@ function modifyCategory(category, fields) {
 
     db.parseIntFields(category, intFields, fields);
 
-    const escapeFields = ['name', 'color', 'bgColor', 'backgroundImage', 'imageClass', 'class', 'link'];
+    const escapeFields = [
+        'name',
+        'color',
+        'bgColor',
+        'backgroundImage',
+        'imageClass',
+        'class',
+        'link',
+    ];
     escapeFields.forEach((field) => {
         if (category.hasOwnProperty(field)) {
             category[field] = validator.escape(String(category[field] || ''));
@@ -107,6 +129,7 @@ function modifyCategory(category, fields) {
 
     if (category.description) {
         category.description = validator.escape(String(category.description));
-        category.descriptionParsed = category.descriptionParsed || category.description;
+        category.descriptionParsed =
+            category.descriptionParsed || category.description;
     }
 }

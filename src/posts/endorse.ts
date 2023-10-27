@@ -2,20 +2,23 @@ import db = require('../database');
 import plugins = require('../plugins');
 
 interface PostData {
-  pid: number,
-  uid: number
+    pid: number;
+    uid: number;
 }
 
 interface ToggleData {
-  post: PostData,
-  isEndorsed: boolean
+    post: PostData;
+    isEndorsed: boolean;
 }
 
 interface PostsType {
-  getPostFields(pid: string, fields: string[]): Promise<PostData>,
-  hasEndorsed(pid: string | Array<string>, uid: string): Promise<boolean | boolean[]>
-  endorse(pid: string, uid: string): Promise<ToggleData>,
-  unendorse(pid: string, uid: string): Promise<ToggleData>,
+    getPostFields(pid: string, fields: string[]): Promise<PostData>;
+    hasEndorsed(
+        pid: string | Array<string>,
+        uid: string
+    ): Promise<boolean | boolean[]>;
+    endorse(pid: string, uid: string): Promise<ToggleData>;
+    unendorse(pid: string, uid: string): Promise<ToggleData>;
 }
 
 export default function (Posts: PostsType) {
@@ -47,7 +50,10 @@ export default function (Posts: PostsType) {
             await db.sortedSetRemove(`uid:${uid}:endorsed`, pid);
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        await db[isEndorsing ? 'setAdd' : 'setRemove'](`pid:${pid}:users_endorsed`, uid);
+        await db[isEndorsing ? 'setAdd' : 'setRemove'](
+            `pid:${pid}:users_endorsed`,
+            uid
+        );
 
         await plugins.hooks.fire(`action:post.${type}`, {
             pid: pid,
@@ -62,18 +68,21 @@ export default function (Posts: PostsType) {
         };
     }
 
-    Posts.hasEndorsed = async function (pid: string | Array<string>, uid: string) {
+    Posts.hasEndorsed = async function (
+        pid: string | Array<string>,
+        uid: string
+    ) {
         if (parseInt(uid, 10) <= 0) {
             return Array.isArray(pid) ? pid.map(() => false) : false;
         }
 
         if (Array.isArray(pid)) {
-            const sets = pid.map(pid => `pid:${pid}:users_endorsed`);
+            const sets = pid.map((pid) => `pid:${pid}:users_endorsed`);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const counts = await db.setsCount(sets); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
             // The next line calls a function in a module that has not been updated to TS yet
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-            return counts.map(v => (v > 0)); // eslint-disable-line @typescript-eslint/no-unsafe-call
+            return counts.map((v) => v > 0); // eslint-disable-line @typescript-eslint/no-unsafe-call
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         const count = await db.setCount(`pid:${pid}:users_endorsed`); // eslint-disable-line @typescript-eslint/no-unsafe-assignment

@@ -33,7 +33,10 @@ SocketTopics.bookmark = async function (socket, data) {
         throw new Error('[[error:invalid-data]]');
     }
     const postcount = await topics.getTopicField(data.tid, 'postcount');
-    if (data.index > meta.config.bookmarkThreshold && postcount > meta.config.bookmarkThreshold) {
+    if (
+        data.index > meta.config.bookmarkThreshold &&
+        postcount > meta.config.bookmarkThreshold
+    ) {
         await topics.setUserBookmark(data.tid, socket.uid, data.index);
     }
 };
@@ -47,7 +50,12 @@ SocketTopics.createTopicFromPosts = async function (socket, data) {
         throw new Error('[[error:invalid-data]]');
     }
 
-    const result = await topics.createTopicFromPosts(socket.uid, data.title, data.pids, data.fromTid);
+    const result = await topics.createTopicFromPosts(
+        socket.uid,
+        data.title,
+        data.pids,
+        data.fromTid
+    );
     await events.log({
         type: `topic-fork`,
         uid: socket.uid,
@@ -75,14 +83,22 @@ SocketTopics.getMyNextPostIndex = async function (socket, data) {
     }
 
     async function getTopicPids(index) {
-        const topicSet = data.sort === 'most_votes' ? `tid:${data.tid}:posts:votes` : `tid:${data.tid}:posts`;
-        const reverse = data.sort === 'newest_to_oldest' || data.sort === 'most_votes';
-        const cacheKey = `np:s:${topicSet}:r:${String(reverse)}:tid:${data.tid}:pids`;
+        const topicSet =
+            data.sort === 'most_votes'
+                ? `tid:${data.tid}:posts:votes`
+                : `tid:${data.tid}:posts`;
+        const reverse =
+            data.sort === 'newest_to_oldest' || data.sort === 'most_votes';
+        const cacheKey = `np:s:${topicSet}:r:${String(reverse)}:tid:${
+            data.tid
+        }:pids`;
         const topicPids = cache.get(cacheKey);
         if (topicPids) {
             return topicPids.slice(index - 1);
         }
-        const pids = await db[reverse ? 'getSortedSetRevRange' : 'getSortedSetRange'](topicSet, 0, -1);
+        const pids = await db[
+            reverse ? 'getSortedSetRevRange' : 'getSortedSetRange'
+        ](topicSet, 0, -1);
         cache.set(cacheKey, pids, 30000);
         return pids.slice(index - 1);
     }
@@ -94,11 +110,18 @@ SocketTopics.getMyNextPostIndex = async function (socket, data) {
         if (userPids) {
             return userPids;
         }
-        const pids = await db.getSortedSetRange(`cid:${cid}:uid:${socket.uid}:pids`, 0, -1);
+        const pids = await db.getSortedSetRange(
+            `cid:${cid}:uid:${socket.uid}:pids`,
+            0,
+            -1
+        );
         cache.set(cacheKey, pids, 30000);
         return pids;
     }
-    const postCountInTopic = await db.sortedSetScore(`tid:${data.tid}:posters`, socket.uid);
+    const postCountInTopic = await db.sortedSetScore(
+        `tid:${data.tid}:posters`,
+        socket.uid
+    );
     if (postCountInTopic <= 0) {
         return 0;
     }
@@ -110,7 +133,10 @@ SocketTopics.getMyNextPostIndex = async function (socket, data) {
     if (!userPidsInTopic.length) {
         if (postCountInTopic > 0) {
             // wrap around to beginning
-            const wrapIndex = await SocketTopics.getMyNextPostIndex(socket, { ...data, index: 1 });
+            const wrapIndex = await SocketTopics.getMyNextPostIndex(socket, {
+                ...data,
+                index: 1,
+            });
             return wrapIndex;
         }
         return 0;

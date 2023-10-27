@@ -18,7 +18,10 @@ file.saveFileToLocal = async function (filename, folder, tempPath) {
     /*
      * remarkable doesn't allow spaces in hyperlinks, once that's fixed, remove this.
      */
-    filename = filename.split('.').map(name => slugify(name)).join('.');
+    filename = filename
+        .split('.')
+        .map((name) => slugify(name))
+        .join('.');
 
     const uploadPath = path.join(nconf.get('upload_path'), folder, filename);
     if (!uploadPath.startsWith(nconf.get('upload_path'))) {
@@ -35,7 +38,10 @@ file.saveFileToLocal = async function (filename, folder, tempPath) {
 };
 
 file.base64ToLocal = async function (imageData, uploadPath) {
-    const buffer = Buffer.from(imageData.slice(imageData.indexOf('base64') + 7), 'base64');
+    const buffer = Buffer.from(
+        imageData.slice(imageData.indexOf('base64') + 7),
+        'base64'
+    );
     uploadPath = path.join(nconf.get('upload_path'), uploadPath);
 
     await fs.promises.writeFile(uploadPath, buffer, {
@@ -50,7 +56,9 @@ file.appendToFileName = function (filename, string) {
     if (dotIndex === -1) {
         return filename + string;
     }
-    return filename.substring(0, dotIndex) + string + filename.substring(dotIndex);
+    return (
+        filename.substring(0, dotIndex) + string + filename.substring(dotIndex)
+    );
 };
 
 file.allowedExtensions = function () {
@@ -68,7 +76,10 @@ file.allowedExtensions = function () {
         return extension.toLowerCase();
     });
 
-    if (allowedExtensions.includes('.jpg') && !allowedExtensions.includes('.jpeg')) {
+    if (
+        allowedExtensions.includes('.jpg') &&
+        !allowedExtensions.includes('.jpeg')
+    ) {
         allowedExtensions.push('.jpeg');
     }
 
@@ -108,7 +119,9 @@ file.delete = async function (path) {
         await fs.promises.unlink(path);
     } catch (err) {
         if (err.code === 'ENOENT') {
-            winston.verbose(`[file] Attempted to delete non-existent file: ${path}`);
+            winston.verbose(
+                `[file] Attempted to delete non-existent file: ${path}`
+            );
             return;
         }
 
@@ -133,7 +146,7 @@ file.linkDirs = async function linkDirs(sourceDir, destDir, relative) {
         sourceDir = path.relative(path.dirname(destDir), sourceDir);
     }
 
-    const type = (process.platform === 'win32') ? 'junction' : 'dir';
+    const type = process.platform === 'win32' ? 'junction' : 'dir';
     await fs.promises.symlink(sourceDir, destDir, type);
 };
 
@@ -148,10 +161,14 @@ file.typeToExtension = function (type) {
 // Adapted from http://stackoverflow.com/questions/5827612/node-js-fs-readdir-recursive-directory-search
 file.walk = async function (dir) {
     const subdirs = await fs.promises.readdir(dir);
-    const files = await Promise.all(subdirs.map(async (subdir) => {
-        const res = path.resolve(dir, subdir);
-        return (await fs.promises.stat(res)).isDirectory() ? file.walk(res) : res;
-    }));
+    const files = await Promise.all(
+        subdirs.map(async (subdir) => {
+            const res = path.resolve(dir, subdir);
+            return (await fs.promises.stat(res)).isDirectory()
+                ? file.walk(res)
+                : res;
+        })
+    );
     return files.reduce((a, f) => a.concat(f), []);
 };
 

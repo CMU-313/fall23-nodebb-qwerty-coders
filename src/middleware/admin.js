@@ -38,9 +38,18 @@ middleware.renderHeader = async (req, res, data) => {
     res.locals.config = res.locals.config || {};
 
     const results = await utils.promiseParallel({
-        userData: user.getUserFields(req.uid, ['username', 'userslug', 'email', 'picture', 'email:confirmed']),
+        userData: user.getUserFields(req.uid, [
+            'username',
+            'userslug',
+            'email',
+            'picture',
+            'email:confirmed',
+        ]),
         scripts: getAdminScripts(),
-        custom_header: plugins.hooks.fire('filter:admin.header.build', custom_header),
+        custom_header: plugins.hooks.fire(
+            'filter:admin.header.build',
+            custom_header
+        ),
         configs: meta.configs.list(),
         latestVersion: getLatestVersion(),
         privileges: privileges.admin.get(req.uid),
@@ -60,10 +69,13 @@ middleware.renderHeader = async (req, res, data) => {
 
     const version = nconf.get('version');
 
-    res.locals.config.userLang = res.locals.config.acpLang || res.locals.config.userLang;
+    res.locals.config.userLang =
+        res.locals.config.acpLang || res.locals.config.userLang;
     let templateValues = {
         config: res.locals.config,
-        configJSON: jsesc(JSON.stringify(res.locals.config), { isScriptContext: true }),
+        configJSON: jsesc(JSON.stringify(res.locals.config), {
+            isScriptContext: true,
+        }),
         relative_path: res.locals.config.relative_path,
         adminConfigJSON: encodeURIComponent(JSON.stringify(results.configs)),
         metaTags: results.tags.meta,
@@ -79,25 +91,39 @@ middleware.renderHeader = async (req, res, data) => {
         bodyClass: data.bodyClass,
         version: version,
         latestVersion: results.latestVersion,
-        upgradeAvailable: results.latestVersion && semver.gt(results.latestVersion, version),
-        showManageMenu: results.privileges.superadmin || ['categories', 'privileges', 'users', 'admins-mods', 'groups', 'tags', 'settings'].some(priv => results.privileges[`admin:${priv}`]),
+        upgradeAvailable:
+            results.latestVersion && semver.gt(results.latestVersion, version),
+        showManageMenu:
+            results.privileges.superadmin ||
+            [
+                'categories',
+                'privileges',
+                'users',
+                'admins-mods',
+                'groups',
+                'tags',
+                'settings',
+            ].some((priv) => results.privileges[`admin:${priv}`]),
     };
 
     templateValues.template = { name: res.locals.template };
     templateValues.template[res.locals.template] = true;
-    ({ templateData: templateValues } = await plugins.hooks.fire('filter:middleware.renderAdminHeader', {
-        req,
-        res,
-        templateData: templateValues,
-        data,
-    }));
+    ({ templateData: templateValues } = await plugins.hooks.fire(
+        'filter:middleware.renderAdminHeader',
+        {
+            req,
+            res,
+            templateData: templateValues,
+            data,
+        }
+    ));
 
     return await req.app.renderAsync('admin/header', templateValues);
 };
 
 async function getAdminScripts() {
     const scripts = await plugins.hooks.fire('filter:admin.scripts.get', []);
-    return scripts.map(script => ({ src: script }));
+    return scripts.map((script) => ({ src: script }));
 }
 
 async function getLatestVersion() {
@@ -124,7 +150,7 @@ middleware.checkPrivileges = helpers.try(async (req, res, next) => {
     const path = req.path.replace(/^(\/api)?(\/v3)?\/admin\/?/g, '');
     if (path) {
         const privilege = privileges.admin.resolve(path);
-        if (!await privileges.admin.can(privilege, req.uid)) {
+        if (!(await privileges.admin.can(privilege, req.uid))) {
             return controllers.helpers.notAllowed(req, res);
         }
     } else {
@@ -145,9 +171,17 @@ middleware.checkPrivileges = helpers.try(async (req, res, next) => {
     const loginTime = req.session.meta ? req.session.meta.datetime : 0;
     const adminReloginDuration = meta.config.adminReloginDuration * 60000;
     const disabled = meta.config.adminReloginDuration === 0;
-    if (disabled || (loginTime && parseInt(loginTime, 10) > Date.now() - adminReloginDuration)) {
-        const timeLeft = parseInt(loginTime, 10) - (Date.now() - adminReloginDuration);
-        if (req.session.meta && timeLeft < Math.min(60000, adminReloginDuration)) {
+    if (
+        disabled ||
+        (loginTime &&
+            parseInt(loginTime, 10) > Date.now() - adminReloginDuration)
+    ) {
+        const timeLeft =
+            parseInt(loginTime, 10) - (Date.now() - adminReloginDuration);
+        if (
+            req.session.meta &&
+            timeLeft < Math.min(60000, adminReloginDuration)
+        ) {
             req.session.meta.datetime += Math.min(60000, adminReloginDuration);
         }
 
@@ -156,7 +190,10 @@ middleware.checkPrivileges = helpers.try(async (req, res, next) => {
 
     let returnTo = req.path;
     if (nconf.get('relative_path')) {
-        returnTo = req.path.replace(new RegExp(`^${nconf.get('relative_path')}`), '');
+        returnTo = req.path.replace(
+            new RegExp(`^${nconf.get('relative_path')}`),
+            ''
+        );
     }
     returnTo = returnTo.replace(/^\/api/, '');
 

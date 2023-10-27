@@ -83,11 +83,17 @@ exports.post = async function (req, res) {
             throw new Error('[[error:invalid-data]]');
         }
         if (result.queued) {
-            return res.redirect(`${nconf.get('relative_path') || '/'}?noScriptMessage=[[success:post-queued]]`);
+            return res.redirect(
+                `${
+                    nconf.get('relative_path') || '/'
+                }?noScriptMessage=[[success:post-queued]]`
+            );
         }
         const uid = result.uid ? result.uid : result.topicData.uid;
         user.updateOnlineUsers(uid);
-        const path = result.pid ? `/post/${result.pid}` : `/topic/${result.topicData.slug}`;
+        const path = result.pid
+            ? `/post/${result.pid}`
+            : `/topic/${result.topicData.slug}`;
         res.redirect(nconf.get('relative_path') + path);
     } catch (err) {
         helpers.noScriptErrors(req, res, err.message, 400);

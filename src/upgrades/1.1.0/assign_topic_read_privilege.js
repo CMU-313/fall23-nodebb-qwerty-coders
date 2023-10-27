@@ -18,15 +18,25 @@ module.exports = {
 
             for (const group of groups) {
                 if (group.privileges['groups:read']) {
-                    await groupsAPI.join(`cid:${cid}:privileges:groups:topics:read`, group.name);
-                    winston.verbose(`cid:${cid}:privileges:groups:topics:read granted to gid: ${group.name}`);
+                    await groupsAPI.join(
+                        `cid:${cid}:privileges:groups:topics:read`,
+                        group.name
+                    );
+                    winston.verbose(
+                        `cid:${cid}:privileges:groups:topics:read granted to gid: ${group.name}`
+                    );
                 }
             }
 
             for (const user of users) {
                 if (user.privileges.read) {
-                    await groupsAPI.join(`cid:${cid}:privileges:topics:read`, user.uid);
-                    winston.verbose(`cid:${cid}:privileges:topics:read granted to uid: ${user.uid}`);
+                    await groupsAPI.join(
+                        `cid:${cid}:privileges:topics:read`,
+                        user.uid
+                    );
+                    winston.verbose(
+                        `cid:${cid}:privileges:topics:read granted to uid: ${user.uid}`
+                    );
                 }
             }
             winston.verbose(`-- cid ${cid} upgraded`);

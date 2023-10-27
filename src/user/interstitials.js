@@ -42,10 +42,22 @@ Interstitials.email = async (data) => {
         callback: async (userData, formData) => {
             // Validate and send email confirmation
             if (userData.uid) {
-                const [isPasswordCorrect, canEdit, { email: current, 'email:confirmed': confirmed }, { allowed, error }] = await Promise.all([
-                    user.isPasswordCorrect(userData.uid, formData.password, data.req.ip),
+                const [
+                    isPasswordCorrect,
+                    canEdit,
+                    { email: current, 'email:confirmed': confirmed },
+                    { allowed, error },
+                ] = await Promise.all([
+                    user.isPasswordCorrect(
+                        userData.uid,
+                        formData.password,
+                        data.req.ip
+                    ),
                     privileges.users.canEdit(data.req.uid, userData.uid),
-                    user.getUserFields(userData.uid, ['email', 'email:confirmed']),
+                    user.getUserFields(userData.uid, [
+                        'email',
+                        'email:confirmed',
+                    ]),
                     plugins.hooks.fire('filter:user.saveEmail', {
                         uid: userData.uid,
                         email: formData.email,
@@ -68,26 +80,41 @@ Interstitials.email = async (data) => {
                     if (formData.email === current) {
                         if (confirmed) {
                             throw new Error('[[error:email-nochange]]');
-                        } else if (await user.email.canSendValidation(userData.uid, current)) {
-                            throw new Error(`[[error:confirm-email-already-sent, ${meta.config.emailConfirmInterval}]]`);
+                        } else if (
+                            await user.email.canSendValidation(
+                                userData.uid,
+                                current
+                            )
+                        ) {
+                            throw new Error(
+                                `[[error:confirm-email-already-sent, ${meta.config.emailConfirmInterval}]]`
+                            );
                         }
                     }
 
                     // Admins editing will auto-confirm, unless editing their own email
                     if (isAdminOrGlobalMod && userData.uid !== data.req.uid) {
-                        await user.setUserField(userData.uid, 'email', formData.email);
+                        await user.setUserField(
+                            userData.uid,
+                            'email',
+                            formData.email
+                        );
                         await user.email.confirmByUid(userData.uid);
                     } else if (canEdit) {
                         if (hasPassword && !isPasswordCorrect) {
                             throw new Error('[[error:invalid-password]]');
                         }
 
-                        await user.email.sendValidationEmail(userData.uid, {
-                            email: formData.email,
-                            force: true,
-                        }).catch((err) => {
-                            winston.error(`[user.interstitials.email] Validation email failed to send\n[emailer.send] ${err.stack}`);
-                        });
+                        await user.email
+                            .sendValidationEmail(userData.uid, {
+                                email: formData.email,
+                                force: true,
+                            })
+                            .catch((err) => {
+                                winston.error(
+                                    `[user.interstitials.email] Validation email failed to send\n[emailer.send] ${err.stack}`
+                                );
+                            });
                         data.req.session.emailChanged = 1;
                     } else {
                         // User attempting to edit another user's email -- not allowed
@@ -98,21 +125,36 @@ Interstitials.email = async (data) => {
                         throw new Error('[[error:invalid-email]]');
                     }
 
-                    if (current.length && (!hasPassword || (hasPassword && isPasswordCorrect) || isAdminOrGlobalMod)) {
+                    if (
+                        current.length &&
+                        (!hasPassword ||
+                            (hasPassword && isPasswordCorrect) ||
+                            isAdminOrGlobalMod)
+                    ) {
                         // User explicitly clearing their email
-                        await user.email.remove(userData.uid, data.req.session.id);
+                        await user.email.remove(
+                            userData.uid,
+                            data.req.session.id
+                        );
                     }
                 }
             } else {
-                const { allowed, error } = await plugins.hooks.fire('filter:user.saveEmail', {
-                    uid: null,
-                    email: formData.email,
-                    registration: true,
-                    allowed: true, // change this value to disallow
-                    error: '[[error:invalid-email]]',
-                });
+                const { allowed, error } = await plugins.hooks.fire(
+                    'filter:user.saveEmail',
+                    {
+                        uid: null,
+                        email: formData.email,
+                        registration: true,
+                        allowed: true, // change this value to disallow
+                        error: '[[error:invalid-email]]',
+                    }
+                );
 
-                if (!allowed || (meta.config.requireEmailAddress && !(formData.email && formData.email.length))) {
+                if (
+                    !allowed ||
+                    (meta.config.requireEmailAddress &&
+                        !(formData.email && formData.email.length))
+                ) {
                     throw new Error(error);
                 }
 
@@ -128,7 +170,10 @@ Interstitials.email = async (data) => {
 };
 
 Interstitials.gdpr = async function (data) {
-    if (!meta.config.gdpr_enabled || (data.userData && data.userData.gdpr_consent)) {
+    if (
+        !meta.config.gdpr_enabled ||
+        (data.userData && data.userData.gdpr_consent)
+    ) {
         return data;
     }
     if (!data.userData) {
@@ -136,7 +181,10 @@ Interstitials.gdpr = async function (data) {
     }
 
     if (data.userData.uid) {
-        const consented = await db.getObjectField(`user:${data.userData.uid}`, 'gdpr_consent');
+        const consented = await db.getObjectField(
+            `user:${data.userData.uid}`,
+            'gdpr_consent'
+        );
         if (parseInt(consented, 10)) {
             return data;
         }
@@ -149,11 +197,18 @@ Interstitials.gdpr = async function (data) {
             digestEnabled: meta.config.dailyDigestFreq !== 'off',
         },
         callback: function (userData, formData, next) {
-            if (formData.gdpr_agree_data === 'on' && formData.gdpr_agree_email === 'on') {
+            if (
+                formData.gdpr_agree_data === 'on' &&
+                formData.gdpr_agree_email === 'on'
+            ) {
                 userData.gdpr_consent = true;
             }
 
-            next(userData.gdpr_consent ? null : new Error('[[register:gdpr_consent_denied]]'));
+            next(
+                userData.gdpr_consent
+                    ? null
+                    : new Error('[[register:gdpr_consent_denied]]')
+            );
         },
     });
     return data;
@@ -169,7 +224,10 @@ Interstitials.tou = async function (data) {
     }
 
     if (data.userData.uid) {
-        const accepted = await db.getObjectField(`user:${data.userData.uid}`, 'acceptTos');
+        const accepted = await db.getObjectField(
+            `user:${data.userData.uid}`,
+            'acceptTos'
+        );
         if (parseInt(accepted, 10)) {
             return data;
         }
@@ -191,7 +249,11 @@ Interstitials.tou = async function (data) {
                 userData.acceptTos = true;
             }
 
-            next(userData.acceptTos ? null : new Error('[[register:terms_of_use_error]]'));
+            next(
+                userData.acceptTos
+                    ? null
+                    : new Error('[[register:terms_of_use_error]]')
+            );
         },
     });
     return data;

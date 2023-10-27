@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -23,21 +22,40 @@ const _privilegeMap = new Map([
     ['topics:read', { label: '[[admin/manage/privileges:access-topics]]' }],
     ['topics:create', { label: '[[admin/manage/privileges:create-topics]]' }],
     ['topics:reply', { label: '[[admin/manage/privileges:reply-to-topics]]' }],
-    ['topics:schedule', { label: '[[admin/manage/privileges:schedule-topics]]' }],
+    [
+        'topics:schedule',
+        { label: '[[admin/manage/privileges:schedule-topics]]' },
+    ],
     ['topics:tag', { label: '[[admin/manage/privileges:tag-topics]]' }],
     ['posts:edit', { label: '[[admin/manage/privileges:edit-posts]]' }],
-    ['posts:history', { label: '[[admin/manage/privileges:view-edit-history]]' }],
+    [
+        'posts:history',
+        { label: '[[admin/manage/privileges:view-edit-history]]' },
+    ],
     ['posts:delete', { label: '[[admin/manage/privileges:delete-posts]]' }],
     ['posts:upvote', { label: '[[admin/manage/privileges:upvote-posts]]' }],
     ['posts:downvote', { label: '[[admin/manage/privileges:downvote-posts]]' }],
     ['topics:delete', { label: '[[admin/manage/privileges:delete-topics]]' }],
-    ['posts:view_deleted', { label: '[[admin/manage/privileges:view_deleted]]' }],
+    [
+        'posts:view_deleted',
+        { label: '[[admin/manage/privileges:view_deleted]]' },
+    ],
     ['purge', { label: '[[admin/manage/privileges:purge]]' }],
     ['moderate', { label: '[[admin/manage/privileges:moderate]]' }],
 ]);
 
-privsCategories.getUserPrivilegeList = async () => await plugins.hooks.fire('filter:privileges.list', Array.from(_privilegeMap.keys()));
-privsCategories.getGroupPrivilegeList = async () => await plugins.hooks.fire('filter:privileges.groups.list', Array.from(_privilegeMap.keys()).map(privilege => `groups:${privilege}`));
+privsCategories.getUserPrivilegeList = async () =>
+    await plugins.hooks.fire(
+        'filter:privileges.list',
+        Array.from(_privilegeMap.keys())
+    );
+privsCategories.getGroupPrivilegeList = async () =>
+    await plugins.hooks.fire(
+        'filter:privileges.groups.list',
+        Array.from(_privilegeMap.keys()).map(
+            (privilege) => `groups:${privilege}`
+        )
+    );
 privsCategories.getPrivilegeList = async () => {
     const [user, group] = await Promise.all([
         privsCategories.getUserPrivilegeList(),
@@ -55,10 +73,16 @@ privsCategories.init = async () => {
 
 // Method used in admin/category controller to show all users/groups with privs in that given cid
 privsCategories.list = async function (cid) {
-    let labels = Array.from(_privilegeMap.values()).map(data => data.label);
+    let labels = Array.from(_privilegeMap.values()).map((data) => data.label);
     labels = await utils.promiseParallel({
-        users: plugins.hooks.fire('filter:privileges.list_human', labels.slice()),
-        groups: plugins.hooks.fire('filter:privileges.groups.list_human', labels.slice()),
+        users: plugins.hooks.fire(
+            'filter:privileges.list_human',
+            labels.slice()
+        ),
+        groups: plugins.hooks.fire(
+            'filter:privileges.groups.list_human',
+            labels.slice()
+        ),
     });
 
     const keys = await utils.promiseParallel({
@@ -73,16 +97,22 @@ privsCategories.list = async function (cid) {
     });
     payload.keys = keys;
 
-    payload.columnCountUserOther = payload.labels.users.length - privsCategories._coreSize;
-    payload.columnCountGroupOther = payload.labels.groups.length - privsCategories._coreSize;
+    payload.columnCountUserOther =
+        payload.labels.users.length - privsCategories._coreSize;
+    payload.columnCountGroupOther =
+        payload.labels.groups.length - privsCategories._coreSize;
 
     return payload;
 };
 
 privsCategories.get = async function (cid, uid) {
     const privs = [
-        'topics:create', 'topics:read', 'topics:schedule',
-        'topics:tag', 'read', 'posts:view_deleted',
+        'topics:create',
+        'topics:read',
+        'topics:schedule',
+        'topics:tag',
+        'read',
+        'posts:view_deleted',
     ];
 
     const [userPrivileges, isAdministrator, isModerator] = await Promise.all([
@@ -91,7 +121,9 @@ privsCategories.get = async function (cid, uid) {
         user.isModerator(uid, cid),
     ]);
 
-    const combined = userPrivileges.map(allowed => allowed || isAdministrator);
+    const combined = userPrivileges.map(
+        (allowed) => allowed || isAdministrator
+    );
     const privData = _.zipObject(privs, combined);
     const isAdminOrMod = isAdministrator || isModerator;
 
@@ -117,13 +149,20 @@ privsCategories.isAdminOrMod = async function (cid, uid) {
 };
 
 privsCategories.isUserAllowedTo = async function (privilege, cid, uid) {
-    if ((Array.isArray(privilege) && !privilege.length) || (Array.isArray(cid) && !cid.length)) {
+    if (
+        (Array.isArray(privilege) && !privilege.length) ||
+        (Array.isArray(cid) && !cid.length)
+    ) {
         return [];
     }
     if (!cid) {
         return false;
     }
-    const results = await helpers.isAllowedTo(privilege, uid, Array.isArray(cid) ? cid : [cid]);
+    const results = await helpers.isAllowedTo(
+        privilege,
+        uid,
+        Array.isArray(cid) ? cid : [cid]
+    );
 
     if (Array.isArray(results) && results.length) {
         return Array.isArray(cid) ? results : results[0];
@@ -155,7 +194,10 @@ privsCategories.filterCids = async function (privilege, cids, uid) {
         user.isAdministrator(uid),
     ]);
     return cids.filter(
-        (cid, index) => !!cid && !categoryData[index].disabled && (allowedTo[index] || isAdmin)
+        (cid, index) =>
+            !!cid &&
+            !categoryData[index].disabled &&
+            (allowedTo[index] || isAdmin)
     );
 };
 
@@ -216,5 +258,9 @@ privsCategories.userPrivileges = async function (cid, uid) {
 
 privsCategories.groupPrivileges = async function (cid, groupName) {
     const groupPrivilegeList = await privsCategories.getGroupPrivilegeList();
-    return await helpers.userOrGroupPrivileges(cid, groupName, groupPrivilegeList);
+    return await helpers.userOrGroupPrivileges(
+        cid,
+        groupName,
+        groupPrivilegeList
+    );
 };

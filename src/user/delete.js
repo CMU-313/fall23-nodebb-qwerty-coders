@@ -40,17 +40,25 @@ module.exports = function (User) {
     };
 
     async function deletePosts(callerUid, uid) {
-        await batch.processSortedSet(`uid:${uid}:posts`, async (pids) => {
-            await posts.purge(pids, callerUid);
-        }, { alwaysStartAt: 0, batch: 500 });
+        await batch.processSortedSet(
+            `uid:${uid}:posts`,
+            async (pids) => {
+                await posts.purge(pids, callerUid);
+            },
+            { alwaysStartAt: 0, batch: 500 }
+        );
     }
 
     async function deleteTopics(callerUid, uid) {
-        await batch.processSortedSet(`uid:${uid}:topics`, async (ids) => {
-            await async.eachSeries(ids, async (tid) => {
-                await topics.purge(tid, callerUid);
-            });
-        }, { alwaysStartAt: 0 });
+        await batch.processSortedSet(
+            `uid:${uid}:topics`,
+            async (ids) => {
+                await async.eachSeries(ids, async (tid) => {
+                    await topics.purge(tid, callerUid);
+                });
+            },
+            { alwaysStartAt: 0 }
+        );
     }
 
     async function deleteUploads(callerUid, uid) {
@@ -60,28 +68,39 @@ module.exports = function (User) {
 
     async function deleteQueued(uid) {
         let deleteIds = [];
-        await batch.processSortedSet('post:queue', async (ids) => {
-            const data = await db.getObjects(ids.map(id => `post:queue:${id}`));
-            const userQueuedIds = data.filter(d => parseInt(d.uid, 10) === parseInt(uid, 10)).map(d => d.id);
-            deleteIds = deleteIds.concat(userQueuedIds);
-        }, { batch: 500 });
+        await batch.processSortedSet(
+            'post:queue',
+            async (ids) => {
+                const data = await db.getObjects(
+                    ids.map((id) => `post:queue:${id}`)
+                );
+                const userQueuedIds = data
+                    .filter((d) => parseInt(d.uid, 10) === parseInt(uid, 10))
+                    .map((d) => d.id);
+                deleteIds = deleteIds.concat(userQueuedIds);
+            },
+            { batch: 500 }
+        );
         await async.eachSeries(deleteIds, posts.removeFromQueue);
     }
 
     async function removeFromSortedSets(uid) {
-        await db.sortedSetsRemove([
-            'users:joindate',
-            'users:postcount',
-            'users:reputation',
-            'users:banned',
-            'users:banned:expire',
-            'users:flags',
-            'users:online',
-            'digest:day:uids',
-            'digest:week:uids',
-            'digest:biweek:uids',
-            'digest:month:uids',
-        ], uid);
+        await db.sortedSetsRemove(
+            [
+                'users:joindate',
+                'users:postcount',
+                'users:reputation',
+                'users:banned',
+                'users:banned:expire',
+                'users:flags',
+                'users:online',
+                'digest:day:uids',
+                'digest:week:uids',
+                'digest:biweek:uids',
+                'digest:month:uids',
+            ],
+            uid
+        );
     }
 
     User.deleteAccount = async function (uid) {
@@ -98,7 +117,10 @@ module.exports = function (User) {
             throw new Error('[[error:no-user]]');
         }
 
-        await plugins.hooks.fire('static:user.delete', { uid: uid, userData: userData });
+        await plugins.hooks.fire('static:user.delete', {
+            uid: uid,
+            userData: userData,
+        });
         await deleteVotes(uid);
         await deleteChats(uid);
         await User.auth.revokeAllSessions(uid);
@@ -115,12 +137,17 @@ module.exports = function (User) {
             `user:${uid}:settings`,
             `user:${uid}:usernames`,
             `user:${uid}:emails`,
-            `uid:${uid}:topics`, `uid:${uid}:posts`,
-            `uid:${uid}:chats`, `uid:${uid}:chats:unread`,
-            `uid:${uid}:chat:rooms`, `uid:${uid}:chat:rooms:unread`,
-            `uid:${uid}:upvote`, `uid:${uid}:downvote`,
+            `uid:${uid}:topics`,
+            `uid:${uid}:posts`,
+            `uid:${uid}:chats`,
+            `uid:${uid}:chats:unread`,
+            `uid:${uid}:chat:rooms`,
+            `uid:${uid}:chat:rooms:unread`,
+            `uid:${uid}:upvote`,
+            `uid:${uid}:downvote`,
             `uid:${uid}:flag:pids`,
-            `uid:${uid}:sessions`, `uid:${uid}:sessionUUID:sessionId`,
+            `uid:${uid}:sessions`,
+            `uid:${uid}:sessionUUID:sessionId`,
             `invitation:uid:${uid}`,
         ];
 
@@ -132,11 +159,17 @@ module.exports = function (User) {
         ];
         if (userData.email) {
             bulkRemove.push(['email:uid', userData.email.toLowerCase()]);
-            bulkRemove.push(['email:sorted', `${userData.email.toLowerCase()}:${uid}`]);
+            bulkRemove.push([
+                'email:sorted',
+                `${userData.email.toLowerCase()}:${uid}`,
+            ]);
         }
 
         if (userData.fullname) {
-            bulkRemove.push(['fullname:sorted', `${userData.fullname.toLowerCase()}:${uid}`]);
+            bulkRemove.push([
+                'fullname:sorted',
+                `${userData.fullname.toLowerCase()}:${uid}`,
+            ]);
         }
 
         await Promise.all([
@@ -151,7 +184,11 @@ module.exports = function (User) {
             flags.resolveFlag('user', uid, uid),
             User.reset.cleanByUid(uid),
         ]);
-        await db.deleteAll([`followers:${uid}`, `following:${uid}`, `user:${uid}`]);
+        await db.deleteAll([
+            `followers:${uid}`,
+            `following:${uid}`,
+            `user:${uid}`,
+        ]);
         delete deletesInProgress[uid];
         return userData;
     };
@@ -168,8 +205,14 @@ module.exports = function (User) {
     }
 
     async function deleteChats(uid) {
-        const roomIds = await db.getSortedSetRange(`uid:${uid}:chat:rooms`, 0, -1);
-        const userKeys = roomIds.map(roomId => `uid:${uid}:chat:room:${roomId}:mids`);
+        const roomIds = await db.getSortedSetRange(
+            `uid:${uid}:chat:rooms`,
+            0,
+            -1
+        );
+        const userKeys = roomIds.map(
+            (roomId) => `uid:${uid}:chat:room:${roomId}:mids`
+        );
 
         await Promise.all([
             messaging.leaveRooms(uid, roomIds),
@@ -179,7 +222,10 @@ module.exports = function (User) {
 
     async function deleteUserIps(uid) {
         const ips = await db.getSortedSetRange(`uid:${uid}:ip`, 0, -1);
-        await db.sortedSetsRemove(ips.map(ip => `ip:${ip}:uid`), uid);
+        await db.sortedSetsRemove(
+            ips.map((ip) => `ip:${ip}:uid`),
+            uid
+        );
         await db.delete(`uid:${uid}:ip`);
     }
 
@@ -197,8 +243,8 @@ module.exports = function (User) {
             });
         }
 
-        const followingSets = followers.map(uid => `following:${uid}`);
-        const followerSets = following.map(uid => `followers:${uid}`);
+        const followingSets = followers.map((uid) => `following:${uid}`);
+        const followerSets = following.map((uid) => `followers:${uid}`);
 
         await Promise.all([
             db.sortedSetsRemove(followerSets.concat(followingSets), uid),

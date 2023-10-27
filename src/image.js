@@ -51,25 +51,28 @@ image.resizeImage = async function (data) {
         const metadata = await sharpImage.metadata();
 
         sharpImage.rotate(); // auto-orients based on exif data
-        sharpImage.resize(data.hasOwnProperty('width') ? data.width : null, data.hasOwnProperty('height') ? data.height : null);
+        sharpImage.resize(
+            data.hasOwnProperty('width') ? data.width : null,
+            data.hasOwnProperty('height') ? data.height : null
+        );
 
         if (data.quality) {
             switch (metadata.format) {
-            case 'jpeg': {
-                sharpImage.jpeg({
-                    quality: data.quality,
-                    mozjpeg: true,
-                });
-                break;
-            }
+                case 'jpeg': {
+                    sharpImage.jpeg({
+                        quality: data.quality,
+                        mozjpeg: true,
+                    });
+                    break;
+                }
 
-            case 'png': {
-                sharpImage.png({
-                    quality: data.quality,
-                    compressionLevel: 9,
-                });
-                break;
-            }
+                case 'png': {
+                    sharpImage.png({
+                        quality: data.quality,
+                        compressionLevel: 9,
+                    });
+                    break;
+                }
             }
         }
 
@@ -99,11 +102,17 @@ image.size = async function (path) {
         const sharp = requireSharp();
         imageData = await sharp(path, { failOnError: true }).metadata();
     }
-    return imageData ? { width: imageData.width, height: imageData.height } : undefined;
+    return imageData
+        ? { width: imageData.width, height: imageData.height }
+        : undefined;
 };
 
 image.stripEXIF = async function (path) {
-    if (!meta.config.stripEXIFData || path.endsWith('.gif') || path.endsWith('.svg')) {
+    if (
+        !meta.config.stripEXIFData ||
+        path.endsWith('.gif') ||
+        path.endsWith('.svg')
+    ) {
         return;
     }
     try {
@@ -125,7 +134,10 @@ image.checkDimensions = async function (path) {
     const meta = require('./meta');
     const result = await image.size(path);
 
-    if (result.width > meta.config.rejectImageWidth || result.height > meta.config.rejectImageHeight) {
+    if (
+        result.width > meta.config.rejectImageWidth ||
+        result.height > meta.config.rejectImageHeight
+    ) {
         throw new Error('[[error:invalid-image-dimensions]]');
     }
 
@@ -152,14 +164,20 @@ image.writeImageDataToTempFile = async function (imageData) {
 
     const filepath = path.join(os.tmpdir(), filename + extension);
 
-    const buffer = Buffer.from(imageData.slice(imageData.indexOf('base64') + 7), 'base64');
+    const buffer = Buffer.from(
+        imageData.slice(imageData.indexOf('base64') + 7),
+        'base64'
+    );
 
     await fs.promises.writeFile(filepath, buffer, { encoding: 'base64' });
     return filepath;
 };
 
 image.sizeFromBase64 = function (imageData) {
-    return Buffer.from(imageData.slice(imageData.indexOf('base64') + 7), 'base64').length;
+    return Buffer.from(
+        imageData.slice(imageData.indexOf('base64') + 7),
+        'base64'
+    ).length;
 };
 
 image.uploadImage = async function (filename, folder, imageData) {

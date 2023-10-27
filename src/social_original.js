@@ -43,7 +43,7 @@ social.getPostSharing = async function () {
 
 social.getActivePostSharing = async function () {
     const networks = await social.getPostSharing();
-    return networks.filter(network => network && network.activated);
+    return networks.filter((network) => network && network.activated);
 };
 
 social.setActivePostSharingNetworks = async function (networkIDs) {

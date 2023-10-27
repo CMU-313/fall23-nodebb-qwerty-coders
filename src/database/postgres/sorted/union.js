@@ -50,7 +50,9 @@ SELECT COUNT(DISTINCT z."value") c
         }
 
         const res = await module.pool.query({
-            name: `getSortedSetUnion${aggregate}${params.sort > 0 ? 'Asc' : 'Desc'}WithScores`,
+            name: `getSortedSetUnion${aggregate}${
+                params.sort > 0 ? 'Asc' : 'Desc'
+            }WithScores`,
             text: `
 WITH A AS (SELECT z."value",
                   ${aggregate}(z."score" * k."weight") "score"
@@ -71,12 +73,12 @@ OFFSET $3::INTEGER`,
         });
 
         if (params.withScores) {
-            res.rows = res.rows.map(r => ({
+            res.rows = res.rows.map((r) => ({
                 value: r.value,
                 score: parseFloat(r.score),
             }));
         } else {
-            res.rows = res.rows.map(r => r.value);
+            res.rows = res.rows.map((r) => r.value);
         }
         return res.rows;
     }

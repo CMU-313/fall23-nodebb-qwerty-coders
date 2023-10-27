@@ -1,6 +1,4 @@
-
 'use strict';
-
 
 const winston = require('winston');
 const nconf = require('nconf');
@@ -21,7 +19,8 @@ function isUriNotSpecified() {
 mongoModule.questions = [
     {
         name: 'mongo:uri',
-        description: 'MongoDB connection URI: (leave blank if you wish to specify host, port, username/password and database individually)\nFormat: mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]',
+        description:
+            'MongoDB connection URI: (leave blank if you wish to specify host, port, username/password and database individually)\nFormat: mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]',
         default: nconf.get('mongo:uri') || '',
         hideOnWebInstall: true,
     },
@@ -49,7 +48,10 @@ mongoModule.questions = [
         default: nconf.get('mongo:password') || '',
         hidden: true,
         ask: isUriNotSpecified,
-        before: function (value) { value = value || nconf.get('mongo:password') || ''; return value; },
+        before: function (value) {
+            value = value || nconf.get('mongo:password') || '';
+            return value;
+        },
     },
     {
         name: 'mongo:database',
@@ -85,8 +87,14 @@ mongoModule.createIndices = async function () {
     winston.info('[database] Checking database indices.');
     const collection = mongoModule.client.collection('objects');
     await collection.createIndex({ _key: 1, score: -1 }, { background: true });
-    await collection.createIndex({ _key: 1, value: -1 }, { background: true, unique: true, sparse: true });
-    await collection.createIndex({ expireAt: 1 }, { expireAfterSeconds: 0, background: true });
+    await collection.createIndex(
+        { _key: 1, value: -1 },
+        { background: true, unique: true, sparse: true }
+    );
+    await collection.createIndex(
+        { expireAt: 1 },
+        { expireAfterSeconds: 0, background: true }
+    );
     winston.info('[database] Checking database indices done!');
 };
 
@@ -97,7 +105,11 @@ mongoModule.checkCompatibility = function (callback) {
 
 mongoModule.checkCompatibilityVersion = function (version, callback) {
     if (semver.lt(version, '2.0.0')) {
-        return callback(new Error('The `mongodb` package is out-of-date, please run `./nodebb setup` again.'));
+        return callback(
+            new Error(
+                'The `mongodb` package is out-of-date, please run `./nodebb setup` again.'
+            )
+        );
     }
 
     callback();
@@ -118,7 +130,8 @@ mongoModule.info = async function (db) {
             serverStatusError = err.message;
             // Override mongo error with more human-readable error
             if (err.name === 'MongoError' && err.codeName === 'Unauthorized') {
-                serverStatusError = '[[admin/advanced/database:mongo.unauthorized]]';
+                serverStatusError =
+                    '[[admin/advanced/database:mongo.unauthorized]]';
             }
             winston.error(err.stack);
         }
@@ -134,7 +147,7 @@ mongoModule.info = async function (db) {
     stats.serverStatusError = serverStatusError;
     const scale = 1024 * 1024 * 1024;
 
-    listCollections = listCollections.map(collectionInfo => ({
+    listCollections = listCollections.map((collectionInfo) => ({
         name: collectionInfo.ns,
         count: collectionInfo.count,
         size: collectionInfo.size,
@@ -149,7 +162,11 @@ mongoModule.info = async function (db) {
     stats.mem.virtual = (stats.mem.virtual / 1024).toFixed(3);
     stats.mem.mapped = (stats.mem.mapped / 1024).toFixed(3);
     stats.collectionData = listCollections;
-    stats.network = serverStatus.network || { bytesIn: 0, bytesOut: 0, numRequests: 0 };
+    stats.network = serverStatus.network || {
+        bytesIn: 0,
+        bytesOut: 0,
+        numRequests: 0,
+    };
     stats.network.bytesIn = (stats.network.bytesIn / scale).toFixed(3);
     stats.network.bytesOut = (stats.network.bytesOut / scale).toFixed(3);
     stats.network.numRequests = utils.addCommas(stats.network.numRequests);
@@ -160,7 +177,9 @@ mongoModule.info = async function (db) {
     stats.storageSize = (stats.storageSize / scale).toFixed(3);
     stats.fileSize = stats.fileSize ? (stats.fileSize / scale).toFixed(3) : 0;
     stats.indexSize = (stats.indexSize / scale).toFixed(3);
-    stats.storageEngine = serverStatus.storageEngine ? serverStatus.storageEngine.name : 'mmapv1';
+    stats.storageEngine = serverStatus.storageEngine
+        ? serverStatus.storageEngine.name
+        : 'mmapv1';
     stats.host = serverStatus.host;
     stats.version = serverStatus.version;
     stats.uptime = serverStatus.uptime;
@@ -170,12 +189,14 @@ mongoModule.info = async function (db) {
 
 async function getCollectionStats(db) {
     const items = await db.listCollections().toArray();
-    return await Promise.all(items.map(collection => db.collection(collection.name).stats()));
+    return await Promise.all(
+        items.map((collection) => db.collection(collection.name).stats())
+    );
 }
 
 mongoModule.close = function (callback) {
     callback = callback || function () {};
-    client.close(err => callback(err));
+    client.close((err) => callback(err));
 };
 
 require('./mongo/main')(mongoModule);

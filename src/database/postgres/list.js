@@ -77,7 +77,7 @@ RETURNING A."array"[array_length(A."array", 1)] v`,
         }
         // TODO: remove all values with one query
         if (Array.isArray(value)) {
-            await Promise.all(value.map(v => module.listRemoveAll(key, v)));
+            await Promise.all(value.map((v) => module.listRemoveAll(key, v)));
             return;
         }
         await module.pool.query({
@@ -100,9 +100,11 @@ UPDATE "legacy_list" l
 
         stop += 1;
 
-        await module.pool.query(stop > 0 ? {
-            name: 'listTrim',
-            text: `
+        await module.pool.query(
+            stop > 0
+                ? {
+                      name: 'listTrim',
+                      text: `
 UPDATE "legacy_list" l
    SET "array" = ARRAY(SELECT m.m
                          FROM UNNEST(l."array") WITH ORDINALITY m(m, i)
@@ -113,10 +115,11 @@ UPDATE "legacy_list" l
  WHERE o."_key" = l."_key"
    AND o."type" = l."type"
    AND o."_key" = $1::TEXT`,
-            values: [key, start, stop],
-        } : {
-            name: 'listTrimBack',
-            text: `
+                      values: [key, start, stop],
+                  }
+                : {
+                      name: 'listTrimBack',
+                      text: `
 UPDATE "legacy_list" l
    SET "array" = ARRAY(SELECT m.m
                          FROM UNNEST(l."array") WITH ORDINALITY m(m, i)
@@ -127,8 +130,9 @@ UPDATE "legacy_list" l
  WHERE o."_key" = l."_key"
    AND o."type" = l."type"
    AND o."_key" = $1::TEXT`,
-            values: [key, start, stop],
-        });
+                      values: [key, start, stop],
+                  }
+        );
     };
 
     module.getListRange = async function (key, start, stop) {
@@ -138,9 +142,11 @@ UPDATE "legacy_list" l
 
         stop += 1;
 
-        const res = await module.pool.query(stop > 0 ? {
-            name: 'getListRange',
-            text: `
+        const res = await module.pool.query(
+            stop > 0
+                ? {
+                      name: 'getListRange',
+                      text: `
 SELECT ARRAY(SELECT m.m
                FROM UNNEST(l."array") WITH ORDINALITY m(m, i)
               ORDER BY m.i ASC
@@ -151,10 +157,11 @@ SELECT ARRAY(SELECT m.m
          ON o."_key" = l."_key"
         AND o."type" = l."type"
       WHERE o."_key" = $1::TEXT`,
-            values: [key, start, stop],
-        } : {
-            name: 'getListRangeBack',
-            text: `
+                      values: [key, start, stop],
+                  }
+                : {
+                      name: 'getListRangeBack',
+                      text: `
 SELECT ARRAY(SELECT m.m
                FROM UNNEST(l."array") WITH ORDINALITY m(m, i)
               ORDER BY m.i ASC
@@ -165,8 +172,9 @@ SELECT ARRAY(SELECT m.m
          ON o."_key" = l."_key"
         AND o."type" = l."type"
  WHERE o."_key" = $1::TEXT`,
-            values: [key, start, stop],
-        });
+                      values: [key, start, stop],
+                  }
+        );
 
         return res.rows.length ? res.rows[0].l : [];
     };

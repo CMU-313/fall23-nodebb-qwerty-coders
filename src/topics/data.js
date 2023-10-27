@@ -9,15 +9,25 @@ const translator = require('../translator');
 const plugins = require('../plugins');
 
 const intFields = [
-    'tid', 'cid', 'uid', 'mainPid', 'postcount',
-    'viewcount', 'postercount', 'deleted', 'locked', 'pinned',
-    'pinExpiry', 'timestamp', 'upvotes', 'downvotes', 'lastposttime',
+    'tid',
+    'cid',
+    'uid',
+    'mainPid',
+    'postcount',
+    'viewcount',
+    'postercount',
+    'deleted',
+    'locked',
+    'pinned',
+    'pinExpiry',
+    'timestamp',
+    'upvotes',
+    'downvotes',
+    'lastposttime',
     'deleterUid',
 ];
 
-const boolFields = [
-    'isPrivate',
-];
+const boolFields = ['isPrivate'];
 
 module.exports = function (Topics) {
     Topics.getTopicsFields = async function (tids, fields) {
@@ -30,7 +40,7 @@ module.exports = function (Topics) {
             fields.push('timestamp');
         }
 
-        const keys = tids.map(tid => `topic:${tid}`);
+        const keys = tids.map((tid) => `topic:${tid}`);
         const topics = await db.getObjects(keys, fields);
         const result = await plugins.hooks.fire('filter:topic.getFields', {
             tids: tids,
@@ -38,7 +48,7 @@ module.exports = function (Topics) {
             fields: fields,
             keys: keys,
         });
-        result.topics.forEach(topic => modifyTopic(topic, fields));
+        result.topics.forEach((topic) => modifyTopic(topic, fields));
         return result.topics;
     };
 
@@ -86,7 +96,9 @@ module.exports = function (Topics) {
 function escapeTitle(topicData) {
     if (topicData) {
         if (topicData.title) {
-            topicData.title = translator.escape(validator.escape(topicData.title));
+            topicData.title = translator.escape(
+                validator.escape(topicData.title)
+            );
         }
         if (topicData.titleRaw) {
             topicData.titleRaw = translator.escape(topicData.titleRaw);
@@ -138,14 +150,17 @@ function modifyTopic(topic, fields) {
 
     if (fields.includes('tags') || !fields.length) {
         const tags = String(topic.tags || '');
-        topic.tags = tags.split(',').filter(Boolean).map((tag) => {
-            const escaped = validator.escape(String(tag));
-            return {
-                value: tag,
-                valueEscaped: escaped,
-                valueEncoded: encodeURIComponent(escaped),
-                class: escaped.replace(/\s/g, '-'),
-            };
-        });
+        topic.tags = tags
+            .split(',')
+            .filter(Boolean)
+            .map((tag) => {
+                const escaped = validator.escape(String(tag));
+                return {
+                    value: tag,
+                    valueEscaped: escaped,
+                    valueEncoded: encodeURIComponent(escaped),
+                    class: escaped.replace(/\s/g, '-'),
+                };
+            });
     }
 }

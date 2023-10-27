@@ -58,11 +58,14 @@ SocketUser.reset.send = async function (socket, email) {
     try {
         await user.reset.send(email);
         await logEvent('[[success:success]]');
-        await sleep(2500 + ((Math.random() * 500) - 250));
+        await sleep(2500 + (Math.random() * 500 - 250));
     } catch (err) {
         await logEvent(err.message);
-        await sleep(2500 + ((Math.random() * 500) - 250));
-        const internalErrors = ['[[error:invalid-email]]', '[[error:reset-rate-limited]]'];
+        await sleep(2500 + (Math.random() * 500 - 250));
+        const internalErrors = [
+            '[[error:invalid-email]]',
+            '[[error:reset-rate-limited]]',
+        ];
         if (!internalErrors.includes(err.message)) {
             throw err;
         }
@@ -87,12 +90,16 @@ SocketUser.reset.commit = async function (socket, data) {
 
     const username = await user.getUserField(uid, 'username');
     const now = new Date();
-    const parsedDate = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
-    emailer.send('reset_notify', uid, {
-        username: username,
-        date: parsedDate,
-        subject: '[[email:reset.notify.subject]]',
-    }).catch(err => winston.error(`[emailer.send] ${err.stack}`));
+    const parsedDate = `${now.getFullYear()}/${
+        now.getMonth() + 1
+    }/${now.getDate()}`;
+    emailer
+        .send('reset_notify', uid, {
+            username: username,
+            date: parsedDate,
+            subject: '[[email:reset.notify.subject]]',
+        })
+        .catch((err) => winston.error(`[emailer.send] ${err.stack}`));
 };
 
 SocketUser.isFollowing = async function (socket, data) {
@@ -138,7 +145,11 @@ SocketUser.getUserByUID = async function (socket, uid) {
 };
 
 SocketUser.getUserByUsername = async function (socket, username) {
-    return await userController.getUserDataByField(socket.uid, 'username', username);
+    return await userController.getUserDataByField(
+        socket.uid,
+        'username',
+        username
+    );
 };
 
 SocketUser.getUserByEmail = async function (socket, email) {

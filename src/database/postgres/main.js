@@ -21,8 +21,10 @@ module.exports = function (module) {
         const type = await module.type(key);
         if (type === 'zset') {
             if (Array.isArray(key)) {
-                const members = await Promise.all(key.map(key => module.getSortedSetRange(key, 0, 0)));
-                return members.map(member => member.length > 0);
+                const members = await Promise.all(
+                    key.map((key) => module.getSortedSetRange(key, 0, 0))
+                );
+                return members.map((member) => member.length > 0);
             }
             const members = await module.getSortedSetRange(key, 0, 0);
             return members.length > 0;
@@ -37,7 +39,7 @@ module.exports = function (module) {
                  WHERE o."_key" = ANY($1::TEXT[])`,
                 values: [key],
             });
-            return key.map(k => res.rows.some(r => r.k === k));
+            return key.map((k) => res.rows.some((r) => r.k === k));
         }
         const res = await module.pool.query({
             name: 'exists',
@@ -67,7 +69,7 @@ module.exports = function (module) {
         WHERE o."_key" LIKE '${match}'`,
         });
 
-        return res.rows.map(r => r._key);
+        return res.rows.map((r) => r._key);
     };
 
     module.delete = async function (key) {
@@ -205,7 +207,7 @@ UPDATE "legacy_object"
     }
 
     module.expire = async function (key, seconds) {
-        await doExpire(key, new Date(((Date.now() / 1000) + seconds) * 1000));
+        await doExpire(key, new Date((Date.now() / 1000 + seconds) * 1000));
     };
 
     module.expireAt = async function (key, timestamp) {
@@ -231,14 +233,16 @@ SELECT "expireAt"::TEXT
             values: [key],
         });
 
-        return res.rows.length ? new Date(res.rows[0].expireAt).getTime() : null;
+        return res.rows.length
+            ? new Date(res.rows[0].expireAt).getTime()
+            : null;
     }
 
     module.ttl = async function (key) {
-        return Math.round((await getExpire(key) - Date.now()) / 1000);
+        return Math.round(((await getExpire(key)) - Date.now()) / 1000);
     };
 
     module.pttl = async function (key) {
-        return await getExpire(key) - Date.now();
+        return (await getExpire(key)) - Date.now();
     };
 };

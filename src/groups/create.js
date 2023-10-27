@@ -9,7 +9,8 @@ module.exports = function (Groups) {
     Groups.create = async function (data) {
         const isSystem = isSystemGroup(data);
         const timestamp = data.timestamp || Date.now();
-        let disableJoinRequests = parseInt(data.disableJoinRequests, 10) === 1 ? 1 : 0;
+        let disableJoinRequests =
+            parseInt(data.disableJoinRequests, 10) === 1 ? 1 : 0;
         if (data.name === 'administrators') {
             disableJoinRequests = 1;
         }
@@ -24,7 +25,10 @@ module.exports = function (Groups) {
         }
 
         const memberCount = data.hasOwnProperty('ownerUid') ? 1 : 0;
-        const isPrivate = data.hasOwnProperty('private') && data.private !== undefined ? parseInt(data.private, 10) === 1 : true;
+        const isPrivate =
+            data.hasOwnProperty('private') && data.private !== undefined
+                ? parseInt(data.private, 10) === 1
+                : true;
         let groupData = {
             name: data.name,
             slug: slugify(data.name),
@@ -40,25 +44,48 @@ module.exports = function (Groups) {
             disableLeave: disableLeave,
         };
 
-        await plugins.hooks.fire('filter:group.create', { group: groupData, data: data });
+        await plugins.hooks.fire('filter:group.create', {
+            group: groupData,
+            data: data,
+        });
 
-        await db.sortedSetAdd('groups:createtime', groupData.createtime, groupData.name);
+        await db.sortedSetAdd(
+            'groups:createtime',
+            groupData.createtime,
+            groupData.name
+        );
         await db.setObject(`group:${groupData.name}`, groupData);
 
         if (data.hasOwnProperty('ownerUid')) {
             await db.setAdd(`group:${groupData.name}:owners`, data.ownerUid);
-            await db.sortedSetAdd(`group:${groupData.name}:members`, timestamp, data.ownerUid);
+            await db.sortedSetAdd(
+                `group:${groupData.name}:members`,
+                timestamp,
+                data.ownerUid
+            );
         }
 
         if (!isHidden && !isSystem) {
             await db.sortedSetAddBulk([
                 ['groups:visible:createtime', timestamp, groupData.name],
-                ['groups:visible:memberCount', groupData.memberCount, groupData.name],
-                ['groups:visible:name', 0, `${groupData.name.toLowerCase()}:${groupData.name}`],
+                [
+                    'groups:visible:memberCount',
+                    groupData.memberCount,
+                    groupData.name,
+                ],
+                [
+                    'groups:visible:name',
+                    0,
+                    `${groupData.name.toLowerCase()}:${groupData.name}`,
+                ],
             ]);
         }
 
-        await db.setObjectField('groupslug:groupname', groupData.slug, groupData.name);
+        await db.setObjectField(
+            'groupslug:groupname',
+            groupData.slug,
+            groupData.name
+        );
 
         groupData = await Groups.getGroupData(groupData.name);
         plugins.hooks.fire('action:group.create', { group: groupData });
@@ -66,9 +93,12 @@ module.exports = function (Groups) {
     };
 
     function isSystemGroup(data) {
-        return data.system === true || parseInt(data.system, 10) === 1 ||
+        return (
+            data.system === true ||
+            parseInt(data.system, 10) === 1 ||
             Groups.systemGroups.includes(data.name) ||
-            Groups.isPrivilegeGroup(data.name);
+            Groups.isPrivilegeGroup(data.name)
+        );
     }
 
     Groups.validateGroupName = function (name) {
@@ -80,11 +110,17 @@ module.exports = function (Groups) {
             throw new Error('[[error:invalid-group-name]]');
         }
 
-        if (!Groups.isPrivilegeGroup(name) && name.length > meta.config.maximumGroupNameLength) {
+        if (
+            !Groups.isPrivilegeGroup(name) &&
+            name.length > meta.config.maximumGroupNameLength
+        ) {
             throw new Error('[[error:group-name-too-long]]');
         }
 
-        if (name === 'guests' || (!Groups.isPrivilegeGroup(name) && name.includes(':'))) {
+        if (
+            name === 'guests' ||
+            (!Groups.isPrivilegeGroup(name) && name.includes(':'))
+        ) {
             throw new Error('[[error:invalid-group-name]]');
         }
 

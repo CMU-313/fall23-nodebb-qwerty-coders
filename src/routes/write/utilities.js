@@ -10,8 +10,17 @@ const { setupApiRoute } = routeHelpers;
 module.exports = function () {
     // The "ping" routes are mounted at root level, but for organizational purposes,
     // the controllers are in `utilities.js`
-    const middlewares = middleware.checkRequired.bind(null, ['username', 'password']);
-    setupApiRoute(router, 'post', '/login', [middlewares], controllers.write.utilities.login);
+    const middlewares = middleware.checkRequired.bind(null, [
+        'username',
+        'password',
+    ]);
+    setupApiRoute(
+        router,
+        'post',
+        '/login',
+        [middlewares],
+        controllers.write.utilities.login
+    );
 
     return router;
 };

@@ -3,12 +3,17 @@
 const sockets = require('../socket.io');
 
 module.exports = function (Messaging) {
-    Messaging.deleteMessage = async (mid, uid) => await doDeleteRestore(mid, 1, uid);
-    Messaging.restoreMessage = async (mid, uid) => await doDeleteRestore(mid, 0, uid);
+    Messaging.deleteMessage = async (mid, uid) =>
+        await doDeleteRestore(mid, 1, uid);
+    Messaging.restoreMessage = async (mid, uid) =>
+        await doDeleteRestore(mid, 0, uid);
 
     async function doDeleteRestore(mid, state, uid) {
         const field = state ? 'deleted' : 'restored';
-        const { deleted, roomId } = await Messaging.getMessageFields(mid, ['deleted', 'roomId']);
+        const { deleted, roomId } = await Messaging.getMessageFields(mid, [
+            'deleted',
+            'roomId',
+        ]);
         if (deleted === state) {
             throw new Error(`[[error:chat-${field}-already]]`);
         }
@@ -25,7 +30,9 @@ module.exports = function (Messaging) {
                 if (state === 1) {
                     sockets.in(`uid_${_uid}`).emit('event:chats.delete', mid);
                 } else if (state === 0) {
-                    sockets.in(`uid_${_uid}`).emit('event:chats.restore', messages[0]);
+                    sockets
+                        .in(`uid_${_uid}`)
+                        .emit('event:chats.restore', messages[0]);
                 }
             }
         });

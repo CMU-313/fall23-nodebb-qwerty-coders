@@ -15,8 +15,14 @@ uploads.upload = async function (socket, data) {
         'user.updateCover': socketUser.updateCover,
         'groups.cover.update': socketGroup.cover.update,
     };
-    if (!socket.uid || !data || !data.chunk ||
-        !data.params || !data.params.method || !methodToFunc.hasOwnProperty(data.params.method)) {
+    if (
+        !socket.uid ||
+        !data ||
+        !data.chunk ||
+        !data.params ||
+        !data.params.method ||
+        !methodToFunc.hasOwnProperty(data.params.method)
+    ) {
         throw new Error('[[error:invalid-data]]');
     }
 
@@ -28,8 +34,10 @@ uploads.upload = async function (socket, data) {
     socketUploads[method].imageData += data.chunk;
 
     try {
-        const maxSize = data.params.method === 'user.uploadCroppedPicture' ?
-            meta.config.maximumProfileImageSize : meta.config.maximumCoverImageSize;
+        const maxSize =
+            data.params.method === 'user.uploadCroppedPicture'
+                ? meta.config.maximumProfileImageSize
+                : meta.config.maximumCoverImageSize;
         const size = image.sizeFromBase64(socketUploads[method].imageData);
 
         if (size > maxSize * 1024) {
@@ -39,7 +47,10 @@ uploads.upload = async function (socket, data) {
             return;
         }
         data.params.imageData = socketUploads[method].imageData;
-        const result = await methodToFunc[data.params.method](socket, data.params);
+        const result = await methodToFunc[data.params.method](
+            socket,
+            data.params
+        );
         delete socketUploads[method];
         return result;
     } catch (err) {

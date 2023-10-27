@@ -49,16 +49,26 @@ module.exports = function (Messaging) {
 
         queueObj.timeout = setTimeout(async () => {
             try {
-                await sendNotifications(fromUid, uids, roomId, queueObj.message);
+                await sendNotifications(
+                    fromUid,
+                    uids,
+                    roomId,
+                    queueObj.message
+                );
             } catch (err) {
-                winston.error(`[messaging/notifications] Unabled to send notification\n${err.stack}`);
+                winston.error(
+                    `[messaging/notifications] Unabled to send notification\n${err.stack}`
+                );
             }
         }, meta.config.notificationSendDelay * 1000);
     };
 
     async function sendNotifications(fromuid, uids, roomId, messageObj) {
         const isOnline = await user.isOnline(uids);
-        uids = uids.filter((uid, index) => !isOnline[index] && parseInt(fromuid, 10) !== parseInt(uid, 10));
+        uids = uids.filter(
+            (uid, index) =>
+                !isOnline[index] && parseInt(fromuid, 10) !== parseInt(uid, 10)
+        );
         if (!uids.length) {
             return;
         }

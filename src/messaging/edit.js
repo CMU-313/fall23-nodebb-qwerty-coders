@@ -7,7 +7,6 @@ const privileges = require('../privileges');
 
 const sockets = require('../socket.io');
 
-
 module.exports = function (Messaging) {
     Messaging.editMessage = async (uid, mid, roomId, content) => {
         await Messaging.checkContent(content);
@@ -56,7 +55,10 @@ module.exports = function (Messaging) {
 
         if (meta.config.disableChat) {
             throw new Error('[[error:chat-disabled]]');
-        } else if (!isAdminOrGlobalMod && meta.config.disableChatMessageEditing) {
+        } else if (
+            !isAdminOrGlobalMod &&
+            meta.config.disableChatMessageEditing
+        ) {
             throw new Error('[[error:chat-message-editing-disabled]]');
         }
 
@@ -70,14 +72,23 @@ module.exports = function (Messaging) {
             throw new Error('[[error:no-privileges]]');
         }
 
-        const messageData = await Messaging.getMessageFields(messageId, ['fromuid', 'timestamp', 'system']);
+        const messageData = await Messaging.getMessageFields(messageId, [
+            'fromuid',
+            'timestamp',
+            'system',
+        ]);
         if (isAdminOrGlobalMod && !messageData.system) {
             return;
         }
 
         const chatConfigDuration = meta.config[durationConfig];
-        if (chatConfigDuration && Date.now() - messageData.timestamp > chatConfigDuration * 1000) {
-            throw new Error(`[[error:chat-${type}-duration-expired, ${meta.config[durationConfig]}]]`);
+        if (
+            chatConfigDuration &&
+            Date.now() - messageData.timestamp > chatConfigDuration * 1000
+        ) {
+            throw new Error(
+                `[[error:chat-${type}-duration-expired, ${meta.config[durationConfig]}]]`
+            );
         }
 
         if (messageData.fromuid === parseInt(uid, 10) && !messageData.system) {
@@ -87,6 +98,8 @@ module.exports = function (Messaging) {
         throw new Error(`[[error:cant-${type}-chat-message]]`);
     };
 
-    Messaging.canEdit = async (messageId, uid) => await canEditDelete(messageId, uid, 'edit');
-    Messaging.canDelete = async (messageId, uid) => await canEditDelete(messageId, uid, 'delete');
+    Messaging.canEdit = async (messageId, uid) =>
+        await canEditDelete(messageId, uid, 'edit');
+    Messaging.canDelete = async (messageId, uid) =>
+        await canEditDelete(messageId, uid, 'delete');
 };

@@ -1,4 +1,3 @@
-
 'use strict';
 
 const util = require('util');
@@ -25,29 +24,42 @@ exports.processSortedSet = async function (setKey, process, options) {
     options.batch = options.batch || DEFAULT_BATCH_SIZE;
 
     // use the fast path if possible
-    if (db.processSortedSet && typeof options.doneIf !== 'function' && !utils.isNumber(options.alwaysStartAt)) {
+    if (
+        db.processSortedSet &&
+        typeof options.doneIf !== 'function' &&
+        !utils.isNumber(options.alwaysStartAt)
+    ) {
         return await db.processSortedSet(setKey, process, options);
     }
 
     // custom done condition
-    options.doneIf = typeof options.doneIf === 'function' ? options.doneIf : function () {};
+    options.doneIf =
+        typeof options.doneIf === 'function' ? options.doneIf : function () {};
 
     let start = 0;
     let stop = options.batch - 1;
 
-    if (process && process.constructor && process.constructor.name !== 'AsyncFunction') {
+    if (
+        process &&
+        process.constructor &&
+        process.constructor.name !== 'AsyncFunction'
+    ) {
         process = util.promisify(process);
     }
 
     while (true) {
         /* eslint-disable no-await-in-loop */
-        const ids = await db[`getSortedSetRange${options.withScores ? 'WithScores' : ''}`](setKey, start, stop);
+        const ids = await db[
+            `getSortedSetRange${options.withScores ? 'WithScores' : ''}`
+        ](setKey, start, stop);
         if (!ids.length || options.doneIf(start, stop, ids)) {
             return;
         }
         await process(ids);
 
-        start += utils.isNumber(options.alwaysStartAt) ? options.alwaysStartAt : options.batch;
+        start += utils.isNumber(options.alwaysStartAt)
+            ? options.alwaysStartAt
+            : options.batch;
         stop = start + options.batch - 1;
 
         if (options.interval) {
@@ -68,7 +80,11 @@ exports.processArray = async function (array, process, options) {
 
     const batch = options.batch || DEFAULT_BATCH_SIZE;
     let start = 0;
-    if (process && process.constructor && process.constructor.name !== 'AsyncFunction') {
+    if (
+        process &&
+        process.constructor &&
+        process.constructor.name !== 'AsyncFunction'
+    ) {
         process = util.promisify(process);
     }
 

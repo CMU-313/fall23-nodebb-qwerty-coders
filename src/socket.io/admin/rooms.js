@@ -48,7 +48,6 @@ SocketRooms.getTotalGuestCount = function (callback) {
     }, 100);
 };
 
-
 SocketRooms.getAll = async function () {
     pubsub.publish('sync:stats:start');
 
@@ -75,7 +74,10 @@ SocketRooms.getAll = async function () {
         totals.users.category += instance.users.category;
 
         instance.topics.forEach((topic) => {
-            totals.topics[topic.tid] = totals.topics[topic.tid] || { count: 0, tid: topic.tid };
+            totals.topics[topic.tid] = totals.topics[topic.tid] || {
+                count: 0,
+                tid: topic.tid,
+            };
             totals.topics[topic.tid].count += topic.count;
         });
     }
@@ -87,7 +89,7 @@ SocketRooms.getAll = async function () {
 
     topTenTopics = topTenTopics.sort((a, b) => b.count - a.count).slice(0, 10);
 
-    const topTenTids = topTenTopics.map(topic => topic.tid);
+    const topTenTids = topTenTopics.map((topic) => topic.tid);
 
     const titles = await topics.getTopicsFields(topTenTids, ['title']);
     totals.topTenTopics = topTenTopics.map((topic, index) => {
@@ -150,7 +152,9 @@ SocketRooms.getLocalStats = function () {
             }
         }
 
-        topTenTopics = topTenTopics.sort((a, b) => b.count - a.count).slice(0, 10);
+        topTenTopics = topTenTopics
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
         socketData.topics = topTenTopics;
     }
 

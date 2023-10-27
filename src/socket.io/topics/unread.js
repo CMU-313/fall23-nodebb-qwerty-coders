@@ -33,7 +33,11 @@ module.exports = function (SocketTopics) {
     };
 
     SocketTopics.markCategoryTopicsRead = async function (socket, cid) {
-        const tids = await topics.getUnreadTids({ cid: cid, uid: socket.uid, filter: '' });
+        const tids = await topics.getUnreadTids({
+            cid: cid,
+            uid: socket.uid,
+            filter: '',
+        });
         await SocketTopics.markAsRead(socket, tids);
     };
 
@@ -55,20 +59,29 @@ module.exports = function (SocketTopics) {
         }
         const isAdmin = await user.isAdministrator(socket.uid);
         const now = Date.now();
-        await Promise.all(tids.map(async (tid) => {
-            const topicData = await topics.getTopicFields(tid, ['tid', 'cid']);
-            if (!topicData.tid) {
-                throw new Error('[[error:no-topic]]');
-            }
-            const isMod = await user.isModerator(socket.uid, topicData.cid);
-            if (!isAdmin && !isMod) {
-                throw new Error('[[error:no-privileges]]');
-            }
-            await topics.markAsUnreadForAll(tid);
-            await topics.updateRecent(tid, now);
-            await db.sortedSetAdd(`cid:${topicData.cid}:tids:lastposttime`, now, tid);
-            await topics.setTopicField(tid, 'lastposttime', now);
-        }));
+        await Promise.all(
+            tids.map(async (tid) => {
+                const topicData = await topics.getTopicFields(tid, [
+                    'tid',
+                    'cid',
+                ]);
+                if (!topicData.tid) {
+                    throw new Error('[[error:no-topic]]');
+                }
+                const isMod = await user.isModerator(socket.uid, topicData.cid);
+                if (!isAdmin && !isMod) {
+                    throw new Error('[[error:no-privileges]]');
+                }
+                await topics.markAsUnreadForAll(tid);
+                await topics.updateRecent(tid, now);
+                await db.sortedSetAdd(
+                    `cid:${topicData.cid}:tids:lastposttime`,
+                    now,
+                    tid
+                );
+                await topics.setTopicField(tid, 'lastposttime', now);
+            })
+        );
         topics.pushUnreadCount(socket.uid);
     };
 };

@@ -34,6 +34,11 @@ postsController.getRecentPosts = async function (req, res) {
     const postsPerPage = 20;
     const start = Math.max(0, (page - 1) * postsPerPage);
     const stop = start + postsPerPage - 1;
-    const data = await posts.getRecentPosts(req.uid, start, stop, req.params.term);
+    const data = await posts.getRecentPosts(
+        req.uid,
+        start,
+        stop,
+        req.params.term
+    );
     res.json(data);
 };

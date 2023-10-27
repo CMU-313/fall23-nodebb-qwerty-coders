@@ -31,7 +31,10 @@ postgresModule.questions = [
         description: 'Password of your PostgreSQL database',
         hidden: true,
         default: nconf.get('postgres:password') || '',
-        before: function (value) { value = value || nconf.get('postgres:password') || ''; return value; },
+        before: function (value) {
+            value = value || nconf.get('postgres:password') || '';
+            return value;
+        },
     },
     {
         name: 'postgres:database',
@@ -55,13 +58,14 @@ postgresModule.init = async function () {
     try {
         await checkUpgrade(client);
     } catch (err) {
-        winston.error(`NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: ${err.message}`);
+        winston.error(
+            `NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: ${err.message}`
+        );
         throw err;
     } finally {
         client.release();
     }
 };
-
 
 async function checkUpgrade(client) {
     const res = await client.query(`
@@ -258,7 +262,9 @@ SELECT "data"->>'_key',
    AND (("data" ? 'value')
      OR ("data" ? 'data'))`);
                 await client.query(`DROP TABLE "objects" CASCADE`);
-                await client.query(`DROP FUNCTION "fun__objects__expireAt"() CASCADE`);
+                await client.query(
+                    `DROP FUNCTION "fun__objects__expireAt"() CASCADE`
+                );
             }
             await client.query(`
 CREATE VIEW "legacy_object_live" AS
@@ -334,17 +340,26 @@ postgresModule.createIndices = function (callback) {
     const query = postgresModule.pool.query.bind(postgresModule.pool);
 
     winston.info('[database] Checking database indices.');
-    async.series([
-        async.apply(query, `CREATE INDEX IF NOT EXISTS "idx__legacy_zset__key__score" ON "legacy_zset"("_key" ASC, "score" DESC)`),
-        async.apply(query, `CREATE INDEX IF NOT EXISTS "idx__legacy_object__expireAt" ON "legacy_object"("expireAt" ASC)`),
-    ], (err) => {
-        if (err) {
-            winston.error(`Error creating index ${err.message}`);
-            return callback(err);
+    async.series(
+        [
+            async.apply(
+                query,
+                `CREATE INDEX IF NOT EXISTS "idx__legacy_zset__key__score" ON "legacy_zset"("_key" ASC, "score" DESC)`
+            ),
+            async.apply(
+                query,
+                `CREATE INDEX IF NOT EXISTS "idx__legacy_object__expireAt" ON "legacy_object"("expireAt" ASC)`
+            ),
+        ],
+        (err) => {
+            if (err) {
+                winston.error(`Error creating index ${err.message}`);
+                return callback(err);
+            }
+            winston.info('[database] Checking database indices done!');
+            callback();
         }
-        winston.info('[database] Checking database indices done!');
-        callback();
-    });
+    );
 };
 
 postgresModule.checkCompatibility = function (callback) {
@@ -354,7 +369,11 @@ postgresModule.checkCompatibility = function (callback) {
 
 postgresModule.checkCompatibilityVersion = function (version, callback) {
     if (semver.lt(version, '7.0.0')) {
-        return callback(new Error('The `pg` package is out-of-date, please run `./nodebb setup` again.'));
+        return callback(
+            new Error(
+                'The `pg` package is out-of-date, please run `./nodebb setup` again.'
+            )
+        );
     }
 
     callback();
@@ -387,4 +406,9 @@ require('./postgres/sorted')(postgresModule);
 require('./postgres/list')(postgresModule);
 require('./postgres/transaction')(postgresModule);
 
-require('../promisify')(postgresModule, ['client', 'sessionStore', 'pool', 'transaction']);
+require('../promisify')(postgresModule, [
+    'client',
+    'sessionStore',
+    'pool',
+    'transaction',
+]);

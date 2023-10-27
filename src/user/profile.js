@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -15,8 +14,15 @@ const plugins = require('../plugins');
 module.exports = function (User) {
     User.updateProfile = async function (uid, data, extraFields) {
         let fields = [
-            'username', 'email', 'fullname', 'website', 'location',
-            'groupTitle', 'birthday', 'signature', 'aboutme',
+            'username',
+            'email',
+            'fullname',
+            'website',
+            'location',
+            'groupTitle',
+            'birthday',
+            'signature',
+            'aboutme',
         ];
         if (Array.isArray(extraFields)) {
             fields = _.uniq(fields.concat(extraFields));
@@ -38,22 +44,29 @@ module.exports = function (User) {
 
         const oldData = await User.getUserFields(updateUid, fields);
         const updateData = {};
-        await Promise.all(fields.map(async (field) => {
-            if (!(data[field] !== undefined && typeof data[field] === 'string')) {
-                return;
-            }
+        await Promise.all(
+            fields.map(async (field) => {
+                if (
+                    !(
+                        data[field] !== undefined &&
+                        typeof data[field] === 'string'
+                    )
+                ) {
+                    return;
+                }
 
-            data[field] = data[field].trim();
+                data[field] = data[field].trim();
 
-            if (field === 'email') {
-                return await updateEmail(updateUid, data.email);
-            } else if (field === 'username') {
-                return await updateUsername(updateUid, data.username);
-            } else if (field === 'fullname') {
-                return await updateFullname(updateUid, data.fullname);
-            }
-            updateData[field] = data[field];
-        }));
+                if (field === 'email') {
+                    return await updateEmail(updateUid, data.email);
+                } else if (field === 'username') {
+                    return await updateUsername(updateUid, data.username);
+                } else if (field === 'fullname') {
+                    return await updateFullname(updateUid, data.fullname);
+                }
+                updateData[field] = data[field];
+            })
+        );
 
         if (Object.keys(updateData).length) {
             await User.setUserFields(updateUid, updateData);
@@ -67,8 +80,12 @@ module.exports = function (User) {
         });
 
         return await User.getUserFields(updateUid, [
-            'email', 'username', 'userslug',
-            'picture', 'icon:text', 'icon:bgColor',
+            'email',
+            'username',
+            'userslug',
+            'picture',
+            'icon:text',
+            'icon:bgColor',
         ]);
     };
 
@@ -138,7 +155,7 @@ module.exports = function (User) {
             throw error;
         }
     }
-    User.checkUsername = async username => isUsernameAvailable({ username });
+    User.checkUsername = async (username) => isUsernameAvailable({ username });
 
     async function isWebsiteValid(callerUid, data) {
         if (!data.website) {
@@ -154,8 +171,13 @@ module.exports = function (User) {
         if (!data.aboutme) {
             return;
         }
-        if (data.aboutme !== undefined && data.aboutme.length > meta.config.maximumAboutMeLength) {
-            throw new Error(`[[error:about-me-too-long, ${meta.config.maximumAboutMeLength}]]`);
+        if (
+            data.aboutme !== undefined &&
+            data.aboutme.length > meta.config.maximumAboutMeLength
+        ) {
+            throw new Error(
+                `[[error:about-me-too-long, ${meta.config.maximumAboutMeLength}]]`
+            );
         }
 
         await User.checkMinReputation(callerUid, data.uid, 'min:rep:aboutme');
@@ -167,19 +189,27 @@ module.exports = function (User) {
         }
         const signature = data.signature.replace(/\r\n/g, '\n');
         if (signature.length > meta.config.maximumSignatureLength) {
-            throw new Error(`[[error:signature-too-long, ${meta.config.maximumSignatureLength}]]`);
+            throw new Error(
+                `[[error:signature-too-long, ${meta.config.maximumSignatureLength}]]`
+            );
         }
         await User.checkMinReputation(callerUid, data.uid, 'min:rep:signature');
     }
 
     function isFullnameValid(data) {
-        if (data.fullname && (validator.isURL(data.fullname) || data.fullname.length > 255)) {
+        if (
+            data.fullname &&
+            (validator.isURL(data.fullname) || data.fullname.length > 255)
+        ) {
             throw new Error('[[error:invalid-fullname]]');
         }
     }
 
     function isLocationValid(data) {
-        if (data.location && (validator.isURL(data.location) || data.location.length > 255)) {
+        if (
+            data.location &&
+            (validator.isURL(data.location) || data.location.length > 255)
+        ) {
             throw new Error('[[error:invalid-location]]');
         }
     }
@@ -197,7 +227,10 @@ module.exports = function (User) {
 
     function isGroupTitleValid(data) {
         function checkTitle(title) {
-            if (title === 'registered-users' || groups.isPrivilegeGroup(title)) {
+            if (
+                title === 'registered-users' ||
+                groups.isPrivilegeGroup(title)
+            ) {
                 throw new Error('[[error:invalid-group-title]]');
             }
         }
@@ -210,7 +243,7 @@ module.exports = function (User) {
             if (!Array.isArray(groupTitles)) {
                 throw new Error('[[error:invalid-group-title]]');
             }
-            groupTitles.forEach(title => checkTitle(title));
+            groupTitles.forEach((title) => checkTitle(title));
         } else {
             groupTitles = [data.groupTitle];
             checkTitle(data.groupTitle);
@@ -227,7 +260,11 @@ module.exports = function (User) {
         }
         const reputation = await User.getUserField(uid, 'reputation');
         if (reputation < meta.config[setting]) {
-            throw new Error(`[[error:not-enough-reputation-${setting.replace(/:/g, '-')}, ${meta.config[setting]}]]`);
+            throw new Error(
+                `[[error:not-enough-reputation-${setting.replace(/:/g, '-')}, ${
+                    meta.config[setting]
+                }]]`
+            );
         }
     };
 
@@ -240,10 +277,16 @@ module.exports = function (User) {
 
         // 👉 Looking for email change logic? src/user/email.js (UserEmail.confirmByUid)
         if (newEmail) {
-            await User.email.sendValidationEmail(uid, {
-                email: newEmail,
-                force: 1,
-            }).catch(err => winston.error(`[user.create] Validation email failed to send\n[emailer.send] ${err.stack}`));
+            await User.email
+                .sendValidationEmail(uid, {
+                    email: newEmail,
+                    force: 1,
+                })
+                .catch((err) =>
+                    winston.error(
+                        `[user.create] Validation email failed to send\n[emailer.send] ${err.stack}`
+                    )
+                );
         }
     }
 
@@ -251,7 +294,10 @@ module.exports = function (User) {
         if (!newUsername) {
             return;
         }
-        const userData = await User.getUserFields(uid, ['username', 'userslug']);
+        const userData = await User.getUserFields(uid, [
+            'username',
+            'userslug',
+        ]);
         if (userData.username === newUsername) {
             return;
         }
@@ -260,10 +306,21 @@ module.exports = function (User) {
         await Promise.all([
             updateUidMapping('username', uid, newUsername, userData.username),
             updateUidMapping('userslug', uid, newUserslug, userData.userslug),
-            db.sortedSetAdd(`user:${uid}:usernames`, now, `${newUsername}:${now}`),
+            db.sortedSetAdd(
+                `user:${uid}:usernames`,
+                now,
+                `${newUsername}:${now}`
+            ),
         ]);
-        await db.sortedSetRemove('username:sorted', `${userData.username.toLowerCase()}:${uid}`);
-        await db.sortedSetAdd('username:sorted', 0, `${newUsername.toLowerCase()}:${uid}`);
+        await db.sortedSetRemove(
+            'username:sorted',
+            `${userData.username.toLowerCase()}:${uid}`
+        );
+        await db.sortedSetAdd(
+            'username:sorted',
+            0,
+            `${newUsername.toLowerCase()}:${uid}`
+        );
     }
 
     async function updateUidMapping(field, uid, value, oldValue) {
@@ -282,10 +339,17 @@ module.exports = function (User) {
         await updateUidMapping('fullname', uid, newFullname, fullname);
         if (newFullname !== fullname) {
             if (fullname) {
-                await db.sortedSetRemove('fullname:sorted', `${fullname.toLowerCase()}:${uid}`);
+                await db.sortedSetRemove(
+                    'fullname:sorted',
+                    `${fullname.toLowerCase()}:${uid}`
+                );
             }
             if (newFullname) {
-                await db.sortedSetAdd('fullname:sorted', 0, `${newFullname.toLowerCase()}:${uid}`);
+                await db.sortedSetAdd(
+                    'fullname:sorted',
+                    0,
+                    `${newFullname.toLowerCase()}:${uid}`
+                );
             }
         }
     }
@@ -311,7 +375,11 @@ module.exports = function (User) {
         }
 
         if (isSelf && hasPassword) {
-            const correct = await User.isPasswordCorrect(data.uid, data.currentPassword, data.ip);
+            const correct = await User.isPasswordCorrect(
+                data.uid,
+                data.currentPassword,
+                data.ip
+            );
             if (!correct) {
                 throw new Error('[[user:change_password_error_wrong_current]]');
             }
@@ -330,6 +398,9 @@ module.exports = function (User) {
             User.email.expireValidation(data.uid),
         ]);
 
-        plugins.hooks.fire('action:password.change', { uid: uid, targetUid: data.uid });
+        plugins.hooks.fire('action:password.change', {
+            uid: uid,
+            targetUid: data.uid,
+        });
     };
 };
