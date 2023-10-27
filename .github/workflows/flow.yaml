@@ -1,0 +1,27 @@
+name: Flow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  flow:
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install Flow
+        run: npm install --save-dev flow-bin
+
+      - name: Run Flow
+        run: npm run flow
