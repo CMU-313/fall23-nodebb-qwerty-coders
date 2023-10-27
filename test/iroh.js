@@ -1,12 +1,21 @@
-// create a listener
+const Iroh = require("iroh");
+
+// Define the code you want to analyze
+const code = `
+  var foo = 42;
+`;
+
+// Create a stage to analyze the code
+let stage = new Iroh.Stage(code);
+
+// Create a listener on the stage
 let listener = stage.addListener(Iroh.VAR);
-// jump in *after* the variable got created
+
+// Jump in *after* the variable got created
 listener.on("after", (e) => {
-  // this logs the variable's 'name' and 'value'
-  console.log(e.name, "=>", e.value); // prints "foo => 42"
+  // This logs the variable's 'name' and 'value'
+  console.log(e.name, "=>", e.value);  // Prints "foo => 42"
 });
 
-
-// the stage object holds the patched version of our code
-// we just use eval here to keep things simple
+// Run the stage script to perform the analysis
 eval(stage.script);
