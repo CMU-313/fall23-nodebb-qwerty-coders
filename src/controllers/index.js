@@ -291,6 +291,7 @@ Controllers.robots = function (req, res) {
         res.send(meta.config['robots:txt']);
     } else {
         res.send(
+            // eslint-disable-next-line no-useless-concat
             `${'User-agent: *\n' + 'Disallow: '}${nconf.get(
                 'relative_path'
             )}/admin/\n` +
