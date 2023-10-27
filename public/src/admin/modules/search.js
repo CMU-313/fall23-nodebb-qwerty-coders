@@ -1,47 +1,70 @@
 'use strict';
 
-define('admin/modules/search', ['mousetrap', 'alerts'], function (mousetrap, alerts) {
+define('admin/modules/search', ['mousetrap', 'alerts'], function (
+    mousetrap,
+    alerts
+) {
     const search = {};
 
     function find(dict, term) {
-        const html = dict.filter(function (elem) {
-            return elem.translations.toLowerCase().includes(term);
-        }).map(function (params) {
-            const namespace = params.namespace;
-            const translations = params.translations;
-            let title = params.title;
-            const escaped = utils.escapeRegexChars(term);
+        const html = dict
+            .filter(function (elem) {
+                return elem.translations.toLowerCase().includes(term);
+            })
+            .map(function (params) {
+                const namespace = params.namespace;
+                const translations = params.translations;
+                let title = params.title;
+                const escaped = utils.escapeRegexChars(term);
 
-            const results = translations
-            // remove all lines without a match
-                .replace(new RegExp('^(?:(?!' + escaped + ').)*$', 'gmi'), '')
-            // remove lines that only match the title
-                .replace(new RegExp('(^|\\n).*?' + title + '.*?(\\n|$)', 'g'), '')
-            // get up to 25 characters of context on both sides of the match
-            // and wrap the match in a `.search-match` element
-                .replace(
-                    new RegExp('^[\\s\\S]*?(.{0,25})(' + escaped + ')(.{0,25})[\\s\\S]*?$', 'gmi'),
-                    '...$1<span class="search-match">$2</span>$3...<br>'
-                )
-            // collapse whitespace
-                .replace(/(?:\n ?)+/g, '\n')
-                .trim();
+                const results = translations
+                    // remove all lines without a match
+                    .replace(
+                        new RegExp('^(?:(?!' + escaped + ').)*$', 'gmi'),
+                        ''
+                    )
+                    // remove lines that only match the title
+                    .replace(
+                        new RegExp('(^|\\n).*?' + title + '.*?(\\n|$)', 'g'),
+                        ''
+                    )
+                    // get up to 25 characters of context on both sides of the match
+                    // and wrap the match in a `.search-match` element
+                    .replace(
+                        new RegExp(
+                            '^[\\s\\S]*?(.{0,25})(' +
+                                escaped +
+                                ')(.{0,25})[\\s\\S]*?$',
+                            'gmi'
+                        ),
+                        '...$1<span class="search-match">$2</span>$3...<br>'
+                    )
+                    // collapse whitespace
+                    .replace(/(?:\n ?)+/g, '\n')
+                    .trim();
 
-            title = title.replace(
-                new RegExp('(^.*?)(' + escaped + ')(.*?$)', 'gi'),
-                '$1<span class="search-match">$2</span>$3'
-            );
+                title = title.replace(
+                    new RegExp('(^.*?)(' + escaped + ')(.*?$)', 'gi'),
+                    '$1<span class="search-match">$2</span>$3'
+                );
 
-            return '<li role="presentation" class="result">' +
-                '<a role= "menuitem" href= "' + config.relative_path + '/' + namespace + '" >' +
+                return (
+                    '<li role="presentation" class="result">' +
+                    '<a role= "menuitem" href= "' +
+                    config.relative_path +
+                    '/' +
+                    namespace +
+                    '" >' +
                     title +
-                    '<br>' + (!results ? '' :
-                ('<small><code>' +
-                        results +
-                    '</small></code>')) +
-                '</a>' +
-            '</li>';
-        }).join('');
+                    '<br>' +
+                    (!results
+                        ? ''
+                        : '<small><code>' + results + '</small></code>') +
+                    '</a>' +
+                    '</li>'
+                );
+            })
+            .join('');
         return html;
     }
 
@@ -73,22 +96,30 @@ define('admin/modules/search', ['mousetrap', 'alerts'], function (mousetrap, ale
             dropdown.addClass('open');
         });
 
-        $('#acp-search').parents('form').on('submit', function (ev) {
-            const query = input.val();
-            const selected = menu.get(0).querySelector('li.result > a.focus') || menu.get(0).querySelector('li.result > a');
-            const href = selected ? selected.getAttribute('href') : config.relative_path + '/search?in=titlesposts&term=' + escape(query);
+        $('#acp-search')
+            .parents('form')
+            .on('submit', function (ev) {
+                const query = input.val();
+                const selected =
+                    menu.get(0).querySelector('li.result > a.focus') ||
+                    menu.get(0).querySelector('li.result > a');
+                const href = selected
+                    ? selected.getAttribute('href')
+                    : config.relative_path +
+                      '/search?in=titlesposts&term=' +
+                      escape(query);
 
-            ajaxify.go(href.replace(/^\//, ''));
+                ajaxify.go(href.replace(/^\//, ''));
 
-            setTimeout(function () {
-                dropdown.removeClass('open');
-                input.blur();
-                dropdown.attr('data-text', query || placeholderText);
-            }, 150);
+                setTimeout(function () {
+                    dropdown.removeClass('open');
+                    input.blur();
+                    dropdown.attr('data-text', query || placeholderText);
+                }, 150);
 
-            ev.preventDefault();
-            return false;
-        });
+                ev.preventDefault();
+                return false;
+            });
 
         mousetrap.bind('/', function (ev) {
             input.select();
@@ -98,23 +129,37 @@ define('admin/modules/search', ['mousetrap', 'alerts'], function (mousetrap, ale
         mousetrap(input[0]).bind(['up', 'down'], function (ev, key) {
             let next;
             if (key === 'up') {
-                next = menu.find('li.result > a.focus').removeClass('focus').parent().prev('.result')
+                next = menu
+                    .find('li.result > a.focus')
+                    .removeClass('focus')
+                    .parent()
+                    .prev('.result')
                     .children();
                 if (!next.length) {
                     next = menu.find('li.result > a').last();
                 }
                 next.addClass('focus');
-                if (menu[0].getBoundingClientRect().top > next[0].getBoundingClientRect().top) {
+                if (
+                    menu[0].getBoundingClientRect().top >
+                    next[0].getBoundingClientRect().top
+                ) {
                     next[0].scrollIntoView(true);
                 }
             } else if (key === 'down') {
-                next = menu.find('li.result > a.focus').removeClass('focus').parent().next('.result')
+                next = menu
+                    .find('li.result > a.focus')
+                    .removeClass('focus')
+                    .parent()
+                    .next('.result')
                     .children();
                 if (!next.length) {
                     next = menu.find('li.result > a').first();
                 }
                 next.addClass('focus');
-                if (menu[0].getBoundingClientRect().bottom < next[0].getBoundingClientRect().bottom) {
+                if (
+                    menu[0].getBoundingClientRect().bottom <
+                    next[0].getBoundingClientRect().bottom
+                ) {
                     next[0].scrollIntoView(false);
                 }
             }
@@ -151,7 +196,12 @@ define('admin/modules/search', ['mousetrap', 'alerts'], function (mousetrap, ale
                 menu.find('.search-forum')
                     .not('.divider')
                     .find('a')
-                    .attr('href', config.relative_path + '/search?in=titlesposts&term=' + escape(value))
+                    .attr(
+                        'href',
+                        config.relative_path +
+                            '/search?in=titlesposts&term=' +
+                            escape(value)
+                    )
                     .find('strong')
                     .text(value);
             } else {

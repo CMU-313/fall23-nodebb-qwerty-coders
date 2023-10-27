@@ -1,6 +1,5 @@
 'use strict';
 
-
 define('coverPhoto', [
     'alerts',
     'vendor/jquery/draggable-background/backgroundDraggable',
@@ -43,7 +42,10 @@ define('coverPhoto', [
 
         if (files.length && files[0].type.match('image.*')) {
             reader.onload = function (e) {
-                coverPhoto.coverEl.css('background-image', 'url(' + e.target.result + ')');
+                coverPhoto.coverEl.css(
+                    'background-image',
+                    'url(' + e.target.result + ')'
+                );
                 coverPhoto.newCover = e.target.result;
             };
 
@@ -53,11 +55,10 @@ define('coverPhoto', [
     };
 
     function enableDragging(coverEl) {
-        coverEl.toggleClass('active', 1)
-            .backgroundDraggable({
-                axis: 'y',
-                units: 'percent',
-            });
+        coverEl.toggleClass('active', 1).backgroundDraggable({
+            axis: 'y',
+            units: 'percent',
+        });
 
         alerts.alert({
             alert_id: 'drag_start',
@@ -70,19 +71,23 @@ define('coverPhoto', [
     coverPhoto.save = function () {
         coverPhoto.coverEl.addClass('saving');
 
-        coverPhoto.saveFn(coverPhoto.newCover || undefined, coverPhoto.coverEl.css('background-position'), function (err) {
-            if (!err) {
-                coverPhoto.coverEl.toggleClass('active', 0);
-                coverPhoto.coverEl.backgroundDraggable('disable');
-                coverPhoto.coverEl.off('dragover', coverPhoto.onDragOver);
-                coverPhoto.coverEl.off('drop', coverPhoto.onDrop);
-                alerts.success('[[modules:cover.saved]]');
-            } else {
-                alerts.error(err);
-            }
+        coverPhoto.saveFn(
+            coverPhoto.newCover || undefined,
+            coverPhoto.coverEl.css('background-position'),
+            function (err) {
+                if (!err) {
+                    coverPhoto.coverEl.toggleClass('active', 0);
+                    coverPhoto.coverEl.backgroundDraggable('disable');
+                    coverPhoto.coverEl.off('dragover', coverPhoto.onDragOver);
+                    coverPhoto.coverEl.off('drop', coverPhoto.onDrop);
+                    alerts.success('[[modules:cover.saved]]');
+                } else {
+                    alerts.error(err);
+                }
 
-            coverPhoto.coverEl.removeClass('saving');
-        });
+                coverPhoto.coverEl.removeClass('saving');
+            }
+        );
     };
 
     return coverPhoto;

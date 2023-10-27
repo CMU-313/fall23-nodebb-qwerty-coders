@@ -8,10 +8,13 @@ define('settings/select', function () {
             const optionData = options[i];
             const value = optionData.text || optionData.value;
             delete optionData.text;
-            element.append($(Settings.helper.createElement('option', optionData)).text(value));
+            element.append(
+                $(Settings.helper.createElement('option', optionData)).text(
+                    value
+                )
+            );
         }
     }
-
 
     const SettingsSelect = {
         types: ['select'],

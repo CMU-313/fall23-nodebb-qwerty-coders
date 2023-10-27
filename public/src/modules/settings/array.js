@@ -10,10 +10,16 @@ define('settings/array', function () {
      @returns JQuery The created remove-button.
      */
     function createRemoveButton(elements) {
-        const rm = $(helper.createElement('button', {
-            class: 'btn btn-xs btn-primary remove',
-            title: 'Remove Item',
-        }, '-'));
+        const rm = $(
+            helper.createElement(
+                'button',
+                {
+                    class: 'btn btn-xs btn-primary remove',
+                    title: 'Remove Item',
+                },
+                '-'
+            )
+        );
         rm.click(function (event) {
             event.preventDefault();
             elements.remove();
@@ -38,10 +44,19 @@ define('settings/array', function () {
      @param separator The separator to use.
      @param insertCb The callback to insert the elements.
      */
-    function addArrayChildElement(field, key, attributes, value, separator, insertCb) {
+    function addArrayChildElement(
+        field,
+        key,
+        attributes,
+        value,
+        separator,
+        insertCb
+    ) {
         attributes = helper.deepClone(attributes);
         const type = attributes['data-type'] || attributes.type || 'text';
-        const element = $(helper.createElementOfType(type, attributes.tagName, attributes));
+        const element = $(
+            helper.createElementOfType(type, attributes.tagName, attributes)
+        );
         element.attr('data-parent', '_' + key);
         delete attributes['data-type'];
         delete attributes.tagName;
@@ -75,20 +90,32 @@ define('settings/array', function () {
     function addAddButton(element, key, attributes, separator) {
         const addSpace = $(document.createTextNode(' '));
         const newValue = element.data('new') || '';
-        const add = $(helper.createElement('button', {
-            class: 'btn btn-sm btn-primary add',
-            title: 'Expand Array',
-        }, '+'));
+        const add = $(
+            helper.createElement(
+                'button',
+                {
+                    class: 'btn btn-sm btn-primary add',
+                    title: 'Expand Array',
+                },
+                '+'
+            )
+        );
         add.click(function (event) {
             event.preventDefault();
-            addArrayChildElement(element, key, attributes, newValue, separator.clone(), function (el) {
-                addSpace.before(el);
-            });
+            addArrayChildElement(
+                element,
+                key,
+                attributes,
+                newValue,
+                separator.clone(),
+                function (el) {
+                    addSpace.before(el);
+                }
+            );
         });
         element.append(addSpace);
         element.append(add);
     }
-
 
     const SettingsArray = {
         types: ['array', 'div'],
@@ -108,7 +135,7 @@ define('settings/array', function () {
                 } catch (_error) {
                     return $(document.createTextNode(separator));
                 }
-            }());
+            })();
             if (typeof attributes !== 'object') {
                 attributes = {};
             }
@@ -117,9 +144,16 @@ define('settings/array', function () {
                 value = [];
             }
             for (let i = 0; i < value.length; i += 1) {
-                addArrayChildElement(element, key, attributes, value[i], separator.clone(), function (el) {
-                    element.append(el);
-                });
+                addArrayChildElement(
+                    element,
+                    key,
+                    attributes,
+                    value[i],
+                    separator.clone(),
+                    function (el) {
+                        element.append(el);
+                    }
+                );
             }
             addAddButton(element, key, attributes, separator);
         },
@@ -131,7 +165,10 @@ define('settings/array', function () {
                 child = $(child);
                 const val = helper.readValue(child);
                 const empty = helper.isTrue(child.data('empty'));
-                if (empty || (val !== undefined && (val == null || val.length !== 0))) {
+                if (
+                    empty ||
+                    (val !== undefined && (val == null || val.length !== 0))
+                ) {
                     return values.push(val);
                 }
             });

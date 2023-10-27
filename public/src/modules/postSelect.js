@@ -1,6 +1,5 @@
 'use strict';
 
-
 define('postSelect', ['components'], function (components) {
     const PostSelect = {};
     let onSelect;
@@ -14,15 +13,24 @@ define('postSelect', ['components'], function (components) {
         onSelect = _onSelect;
         options = options || {};
         allowMainPostSelect = options.allowMainPostSelect || false;
-        $('#content').on('click', '[component="topic"] [component="post"]', onPostClicked);
+        $('#content').on(
+            'click',
+            '[component="topic"] [component="post"]',
+            onPostClicked
+        );
         disableClicksOnPosts();
     };
 
     function onPostClicked(ev) {
         ev.stopPropagation();
         const pidClicked = $(this).attr('data-pid');
-        const postEls = $('[component="topic"] [data-pid="' + pidClicked + '"]');
-        if (!allowMainPostSelect && parseInt($(this).attr('data-index'), 10) === 0) {
+        const postEls = $(
+            '[component="topic"] [data-pid="' + pidClicked + '"]'
+        );
+        if (
+            !allowMainPostSelect &&
+            parseInt($(this).attr('data-index'), 10) === 0
+        ) {
             return;
         }
         PostSelect.togglePostSelection(postEls, pidClicked);
@@ -33,7 +41,11 @@ define('postSelect', ['components'], function (components) {
             components.get('post', 'pid', pid).toggleClass('bg-success', false);
         });
 
-        $('#content').off('click', '[component="topic"] [component="post"]', onPostClicked);
+        $('#content').off(
+            'click',
+            '[component="topic"] [component="post"]',
+            onPostClicked
+        );
         enableClicksOnPosts();
     };
 
@@ -49,7 +61,9 @@ define('postSelect', ['components'], function (components) {
             }
 
             if (PostSelect.pids.length) {
-                PostSelect.pids.sort(function (a, b) { return a - b; });
+                PostSelect.pids.sort(function (a, b) {
+                    return a - b;
+                });
             }
             if (typeof onSelect === 'function') {
                 onSelect();
@@ -62,11 +76,19 @@ define('postSelect', ['components'], function (components) {
     }
 
     function disableClicksOnPosts() {
-        $('#content').on('click', '[component="post"] button, [component="post"] a', disableClicks);
+        $('#content').on(
+            'click',
+            '[component="post"] button, [component="post"] a',
+            disableClicks
+        );
     }
 
     function enableClicksOnPosts() {
-        $('#content').off('click', '[component="post"] button, [component="post"] a', disableClicks);
+        $('#content').off(
+            'click',
+            '[component="post"] button, [component="post"] a',
+            disableClicks
+        );
     }
 
     return PostSelect;

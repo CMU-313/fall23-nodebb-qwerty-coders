@@ -1,6 +1,10 @@
 'use strict';
 
-define('categoryFilter', ['categorySearch', 'api', 'hooks'], function (categorySearch, api, hooks) {
+define('categoryFilter', ['categorySearch', 'api', 'hooks'], function (
+    categorySearch,
+    api,
+    hooks
+) {
     const categoryFilter = {};
 
     categoryFilter.init = function (el, options) {
@@ -8,19 +12,28 @@ define('categoryFilter', ['categorySearch', 'api', 'hooks'], function (categoryS
             return;
         }
         options = options || {};
-        options.states = options.states || ['watching', 'notwatching', 'ignoring'];
+        options.states = options.states || [
+            'watching',
+            'notwatching',
+            'ignoring',
+        ];
         options.template = 'partials/category-filter';
 
-        hooks.fire('action:category.filter.options', { el: el, options: options });
+        hooks.fire('action:category.filter.options', {
+            el: el,
+            options: options,
+        });
 
         categorySearch.init(el, options);
 
         let selectedCids = [];
         let initialCids = [];
         if (Array.isArray(options.selectedCids)) {
-            selectedCids = options.selectedCids.map(cid => parseInt(cid, 10));
+            selectedCids = options.selectedCids.map((cid) => parseInt(cid, 10));
         } else if (Array.isArray(ajaxify.data.selectedCids)) {
-            selectedCids = ajaxify.data.selectedCids.map(cid => parseInt(cid, 10));
+            selectedCids = ajaxify.data.selectedCids.map((cid) =>
+                parseInt(cid, 10)
+            );
         }
         initialCids = selectedCids.slice();
 
@@ -35,7 +48,10 @@ define('categoryFilter', ['categorySearch', 'api', 'hooks'], function (categoryS
                 updateFilterButton(el, selectedCids);
             }
             if (options.onHidden) {
-                options.onHidden({ changed: changed, selectedCids: selectedCids.slice() });
+                options.onHidden({
+                    changed: changed,
+                    selectedCids: selectedCids.slice(),
+                });
                 return;
             }
             if (changed) {
@@ -70,9 +86,14 @@ define('categoryFilter', ['categorySearch', 'api', 'hooks'], function (categoryS
             options.selectedCids = selectedCids;
 
             icon.toggleClass('invisible');
-            listEl.find('li[data-all="all"] i').toggleClass('invisible', !!selectedCids.length);
+            listEl
+                .find('li[data-all="all"] i')
+                .toggleClass('invisible', !!selectedCids.length);
             if (options.onSelect) {
-                options.onSelect({ cid: cid, selectedCids: selectedCids.slice() });
+                options.onSelect({
+                    cid: cid,
+                    selectedCids: selectedCids.slice(),
+                });
             }
             return false;
         });
@@ -91,11 +112,17 @@ define('categoryFilter', ['categorySearch', 'api', 'hooks'], function (categoryS
             renderButton();
         }
         function renderButton(category) {
-            app.parseAndTranslate('partials/category-filter-content', {
-                selectedCategory: category,
-            }, function (html) {
-                el.find('button').replaceWith($('<div/>').html(html).find('button'));
-            });
+            app.parseAndTranslate(
+                'partials/category-filter-content',
+                {
+                    selectedCategory: category,
+                },
+                function (html) {
+                    el.find('button').replaceWith(
+                        $('<div/>').html(html).find('button')
+                    );
+                }
+            );
         }
     }
 

@@ -1,6 +1,5 @@
 'use strict';
 
-
 define('forum/reset_code', ['alerts', 'zxcvbn'], function (alerts, zxcvbn) {
     const ResetCode = {};
 
@@ -16,21 +15,31 @@ define('forum/reset_code', ['alerts', 'zxcvbn'], function (alerts, zxcvbn) {
                 utils.assertPasswordValidity(password.val(), zxcvbn);
 
                 if (password.val() !== repeat.val()) {
-                    throw new Error('[[reset_password:passwords_do_not_match]]');
+                    throw new Error(
+                        '[[reset_password:passwords_do_not_match]]'
+                    );
                 }
 
-                resetEl.prop('disabled', true).translateHtml('<i class="fa fa-spin fa-refresh"></i> [[reset_password:changing_password]]');
-                socket.emit('user.reset.commit', {
-                    code: reset_code,
-                    password: password.val(),
-                }, function (err) {
-                    if (err) {
-                        ajaxify.refresh();
-                        return alerts.error(err);
-                    }
+                resetEl
+                    .prop('disabled', true)
+                    .translateHtml(
+                        '<i class="fa fa-spin fa-refresh"></i> [[reset_password:changing_password]]'
+                    );
+                socket.emit(
+                    'user.reset.commit',
+                    {
+                        code: reset_code,
+                        password: password.val(),
+                    },
+                    function (err) {
+                        if (err) {
+                            ajaxify.refresh();
+                            return alerts.error(err);
+                        }
 
-                    window.location.href = config.relative_path + '/login';
-                });
+                        window.location.href = config.relative_path + '/login';
+                    }
+                );
             } catch (err) {
                 $('#notice').removeClass('hidden');
                 $('#notice strong').translateText(err.message);

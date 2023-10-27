@@ -41,13 +41,12 @@ define('settings/key', function () {
      @returns Key | null The Key-Object the focused element should be set to.
      */
     function getKey(event) {
-        const anyModChange = (
+        const anyModChange =
             event.ctrlKey !== lastKey.c ||
             event.altKey !== lastKey.a ||
             event.shiftKey !== lastKey.s ||
-            event.metaKey !== lastKey.m
-        );
-        const modChange = (
+            event.metaKey !== lastKey.m;
+        const modChange =
             event.ctrlKey +
             event.altKey +
             event.shiftKey +
@@ -55,8 +54,7 @@ define('settings/key', function () {
             lastKey.c -
             lastKey.a -
             lastKey.s -
-            lastKey.m
-        );
+            lastKey.m;
         const key = new Key();
         key.c = event.ctrlKey;
         key.a = event.altKey;
@@ -91,7 +89,7 @@ define('settings/key', function () {
         } else if (code >= 112 && code <= 123) {
             return 'F' + (code - 111);
         }
-        return keyMap[code] || ('#' + code);
+        return keyMap[code] || '#' + code;
     }
 
     /**
@@ -154,34 +152,33 @@ define('settings/key', function () {
         for (let i = 0; i < parts.length; i += 1) {
             const part = parts[i];
             switch (part) {
-            case 'C':
-            case 'Ctrl':
-                key.c = true;
-                break;
-            case 'A':
-            case 'Alt':
-                key.a = true;
-                break;
-            case 'S':
-            case 'Shift':
-                key.s = true;
-                break;
-            case 'M':
-            case 'Meta':
-                key.m = true;
-                break;
-            default: {
-                const num = /\d+/.exec(part);
-                if (num != null) {
-                    key.code = num[0];
+                case 'C':
+                case 'Ctrl':
+                    key.c = true;
+                    break;
+                case 'A':
+                case 'Alt':
+                    key.a = true;
+                    break;
+                case 'S':
+                case 'Shift':
+                    key.s = true;
+                    break;
+                case 'M':
+                case 'Meta':
+                    key.m = true;
+                    break;
+                default: {
+                    const num = /\d+/.exec(part);
+                    if (num != null) {
+                        key.code = num[0];
+                    }
+                    key.char = convertKeyCodeToChar(key.code);
                 }
-                key.char = convertKeyCodeToChar(key.code);
-            }
             }
         }
         return key;
     }
-
 
     const SettingsKey = {
         types: ['key'],
@@ -189,15 +186,18 @@ define('settings/key', function () {
             helper = this.helper;
         },
         init: function (element) {
-            element.focus(function () {
-                oldKey = element.data('keyData') || new Key();
-                lastKey = new Key();
-            }).keydown(function (event) {
-                event.preventDefault();
-                handleEvent(element, event);
-            }).keyup(function (event) {
-                handleEvent(element, event);
-            });
+            element
+                .focus(function () {
+                    oldKey = element.data('keyData') || new Key();
+                    lastKey = new Key();
+                })
+                .keydown(function (event) {
+                    event.preventDefault();
+                    handleEvent(element, event);
+                })
+                .keyup(function (event) {
+                    handleEvent(element, event);
+                });
             return element;
         },
         set: function (element, value) {
@@ -212,7 +212,8 @@ define('settings/key', function () {
         },
         get: function (element, trim, empty) {
             const key = element.data('keyData');
-            const separator = element.data('split') || element.data('separator') || '+';
+            const separator =
+                element.data('split') || element.data('separator') || '+';
             const short = !helper.isFalse(element.data('short'));
             if (trim) {
                 if (empty || (key != null && key.char)) {

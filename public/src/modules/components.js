@@ -6,7 +6,11 @@ define('components', function () {
     components.core = {
         'topic/teaser': function (tid) {
             if (tid) {
-                return $('[component="category/topic"][data-tid="' + tid + '"] [component="topic/teaser"]');
+                return $(
+                    '[component="category/topic"][data-tid="' +
+                        tid +
+                        '"] [component="topic/teaser"]'
+                );
             }
             return $('[component="topic/teaser"]');
         },
@@ -17,19 +21,39 @@ define('components', function () {
             return $('[component="post"][data-' + name + '="' + value + '"]');
         },
         'post/content': function (pid) {
-            return $('[component="post"][data-pid="' + pid + '"] [component="post/content"]');
+            return $(
+                '[component="post"][data-pid="' +
+                    pid +
+                    '"] [component="post/content"]'
+            );
         },
         'post/header': function (pid) {
-            return $('[component="post"][data-pid="' + pid + '"] [component="post/header"]');
+            return $(
+                '[component="post"][data-pid="' +
+                    pid +
+                    '"] [component="post/header"]'
+            );
         },
         'post/anchor': function (index) {
-            return $('[component="post"][data-index="' + index + '"] [component="post/anchor"]');
+            return $(
+                '[component="post"][data-index="' +
+                    index +
+                    '"] [component="post/anchor"]'
+            );
         },
         'post/vote-count': function (pid) {
-            return $('[component="post"][data-pid="' + pid + '"] [component="post/vote-count"]');
+            return $(
+                '[component="post"][data-pid="' +
+                    pid +
+                    '"] [component="post/vote-count"]'
+            );
         },
         'post/bookmark-count': function (pid) {
-            return $('[component="post"][data-pid="' + pid + '"] [component="post/bookmark-count"]');
+            return $(
+                '[component="post"][data-pid="' +
+                    pid +
+                    '"] [component="post/bookmark-count"]'
+            );
         },
 
         'user/postcount': function (uid) {
@@ -40,23 +64,43 @@ define('components', function () {
         },
 
         'category/topic': function (name, value) {
-            return $('[component="category/topic"][data-' + name + '="' + value + '"]');
+            return $(
+                '[component="category/topic"][data-' +
+                    name +
+                    '="' +
+                    value +
+                    '"]'
+            );
         },
 
         'categories/category': function (name, value) {
-            return $('[component="categories/category"][data-' + name + '="' + value + '"]');
+            return $(
+                '[component="categories/category"][data-' +
+                    name +
+                    '="' +
+                    value +
+                    '"]'
+            );
         },
 
         'chat/message': function (messageId) {
-            return $('[component="chat/message"][data-mid="' + messageId + '"]');
+            return $(
+                '[component="chat/message"][data-mid="' + messageId + '"]'
+            );
         },
 
         'chat/message/body': function (messageId) {
-            return $('[component="chat/message"][data-mid="' + messageId + '"] [component="chat/message/body"]');
+            return $(
+                '[component="chat/message"][data-mid="' +
+                    messageId +
+                    '"] [component="chat/message/body"]'
+            );
         },
 
         'chat/recent/room': function (roomid) {
-            return $('[component="chat/recent/room"][data-roomid="' + roomid + '"]');
+            return $(
+                '[component="chat/recent/room"][data-roomid="' + roomid + '"]'
+            );
         },
     };
 

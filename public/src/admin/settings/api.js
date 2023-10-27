@@ -1,6 +1,10 @@
 'use strict';
 
-define('admin/settings/api', ['settings', 'alerts', 'hooks'], function (settings, alerts, hooks) {
+define('admin/settings/api', ['settings', 'alerts', 'hooks'], function (
+    settings,
+    alerts,
+    hooks
+) {
     const ACP = {};
 
     ACP.init = function () {

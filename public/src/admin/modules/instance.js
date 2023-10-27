@@ -1,8 +1,6 @@
 'use strict';
 
-define('admin/modules/instance', [
-    'alerts',
-], function (alerts) {
+define('admin/modules/instance', ['alerts'], function (alerts) {
     const instance = {};
 
     instance.rebuildAndRestart = function (callback) {
@@ -10,7 +8,8 @@ define('admin/modules/instance', [
             alert_id: 'instance_rebuild_and_restart',
             type: 'info',
             title: 'Rebuilding... <i class="fa fa-spin fa-refresh"></i>',
-            message: 'NodeBB is rebuilding front-end assets (css, javascript, etc).',
+            message:
+                'NodeBB is rebuilding front-end assets (css, javascript, etc).',
         });
 
         $(window).one('action:reconnected', function () {

@@ -1,6 +1,5 @@
 'use strict';
 
-
 define('uploadHelpers', ['alerts'], function (alerts) {
     const uploadHelpers = {};
 
@@ -102,7 +101,11 @@ define('uploadHelpers', ['alerts'], function (alerts) {
     uploadHelpers.handlePaste = function (options) {
         const container = options.container;
         container.on('paste', function (event) {
-            const items = (event.clipboardData || event.originalEvent.clipboardData || {}).items;
+            const items = (
+                event.clipboardData ||
+                event.originalEvent.clipboardData ||
+                {}
+            ).items;
             const files = [];
             const fileNames = [];
             let formData = null;
@@ -136,12 +139,17 @@ define('uploadHelpers', ['alerts'], function (alerts) {
 
         for (let i = 0; i < files.length; ++i) {
             const isImage = files[i].type.match(/image./);
-            if ((isImage && !app.user.privileges['upload:post:image']) || (!isImage && !app.user.privileges['upload:post:file'])) {
+            if (
+                (isImage && !app.user.privileges['upload:post:image']) ||
+                (!isImage && !app.user.privileges['upload:post:file'])
+            ) {
                 return alerts.error('[[error:no-privileges]]');
             }
             if (files[i].size > parseInt(config.maximumFileSize, 10) * 1024) {
                 options.uploadForm[0].reset();
-                return alerts.error('[[error:file-too-big, ' + config.maximumFileSize + ']]');
+                return alerts.error(
+                    '[[error:file-too-big, ' + config.maximumFileSize + ']]'
+                );
             }
         }
         const alert_id = Date.now();
@@ -154,8 +162,11 @@ define('uploadHelpers', ['alerts'], function (alerts) {
                 clearForm: true,
                 formData: options.upload.formData,
                 error: function (xhr) {
-                    let errorMsg = (xhr.responseJSON &&
-                        (xhr.responseJSON.error || (xhr.responseJSON.status && xhr.responseJSON.status.message))) ||
+                    let errorMsg =
+                        (xhr.responseJSON &&
+                            (xhr.responseJSON.error ||
+                                (xhr.responseJSON.status &&
+                                    xhr.responseJSON.status.message))) ||
                         '[[error:parse-error]]';
 
                     if (xhr && xhr.status === 413) {
@@ -168,7 +179,8 @@ define('uploadHelpers', ['alerts'], function (alerts) {
                 uploadProgress: function (event, position, total, percent) {
                     alerts.alert({
                         alert_id: alert_id,
-                        message: '[[modules:composer.uploading, ' + percent + '%]]',
+                        message:
+                            '[[modules:composer.uploading, ' + percent + '%]]',
                     });
                 },
 

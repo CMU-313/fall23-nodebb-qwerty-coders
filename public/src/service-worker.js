@@ -9,11 +9,13 @@ self.addEventListener('fetch', function (event) {
         return;
     }
 
-    event.respondWith(caches.match(event.request).then(function (response) {
-        if (!response) {
-            return fetch(event.request);
-        }
+    event.respondWith(
+        caches.match(event.request).then(function (response) {
+            if (!response) {
+                return fetch(event.request);
+            }
 
-        return response;
-    }));
+            return response;
+        })
+    );
 });

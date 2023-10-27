@@ -1,7 +1,11 @@
 'use strict';
 
-
-define('forum/ip-blacklist', ['Chart', 'benchpress', 'bootbox', 'alerts'], function (Chart, Benchpress, bootbox, alerts) {
+define('forum/ip-blacklist', [
+    'Chart',
+    'benchpress',
+    'bootbox',
+    'alerts',
+], function (Chart, Benchpress, bootbox, alerts) {
     const Blacklist = {};
 
     Blacklist.init = function () {
@@ -25,17 +29,24 @@ define('forum/ip-blacklist', ['Chart', 'benchpress', 'bootbox', 'alerts'], funct
         });
 
         $('[data-action="test"]').on('click', function () {
-            socket.emit('blacklist.validate', {
-                rules: blacklist.val(),
-            }, function (err, data) {
-                if (err) {
-                    return alerts.error(err);
-                }
+            socket.emit(
+                'blacklist.validate',
+                {
+                    rules: blacklist.val(),
+                },
+                function (err, data) {
+                    if (err) {
+                        return alerts.error(err);
+                    }
 
-                Benchpress.render('admin/partials/blacklist-validate', data).then(function (html) {
-                    bootbox.alert(html);
-                });
-            });
+                    Benchpress.render(
+                        'admin/partials/blacklist-validate',
+                        data
+                    ).then(function (html) {
+                        bootbox.alert(html);
+                    });
+                }
+            );
         });
 
         Blacklist.setupAnalytics();
@@ -47,9 +58,12 @@ define('forum/ip-blacklist', ['Chart', 'benchpress', 'bootbox', 'alerts'], funct
         const hourlyLabels = utils.getHoursArray().map(function (text, idx) {
             return idx % 3 ? '' : text;
         });
-        const dailyLabels = utils.getDaysArray().slice(-7).map(function (text, idx) {
-            return idx % 3 ? '' : text;
-        });
+        const dailyLabels = utils
+            .getDaysArray()
+            .slice(-7)
+            .map(function (text, idx) {
+                return idx % 3 ? '' : text;
+            });
 
         if (utils.isMobile()) {
             Chart.defaults.global.tooltips.enabled = false;
@@ -101,11 +115,13 @@ define('forum/ip-blacklist', ['Chart', 'benchpress', 'bootbox', 'alerts'], funct
                     display: false,
                 },
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
+                    yAxes: [
+                        {
+                            ticks: {
+                                beginAtZero: true,
+                            },
                         },
-                    }],
+                    ],
                 },
             },
         });
@@ -120,11 +136,13 @@ define('forum/ip-blacklist', ['Chart', 'benchpress', 'bootbox', 'alerts'], funct
                     display: false,
                 },
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
+                    yAxes: [
+                        {
+                            ticks: {
+                                beginAtZero: true,
+                            },
                         },
-                    }],
+                    ],
                 },
             },
         });

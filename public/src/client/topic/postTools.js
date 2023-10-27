@@ -1,6 +1,5 @@
 'use strict';
 
-
 define('forum/topic/postTools', [
     'share',
     'navigator',
@@ -11,7 +10,17 @@ define('forum/topic/postTools', [
     'bootbox',
     'alerts',
     'hooks',
-], function (share, navigator, components, translator, votes, api, bootbox, alerts, hooks) {
+], function (
+    share,
+    navigator,
+    components,
+    translator,
+    votes,
+    api,
+    bootbox,
+    alerts,
+    hooks
+) {
     const PostTools = {};
 
     let staleReplyAnyway = false;
@@ -31,45 +40,72 @@ define('forum/topic/postTools', [
     };
 
     function renderMenu() {
-        $('[component="topic"]').on('show.bs.dropdown', '.moderator-tools', function () {
-            const $this = $(this);
-            const dropdownMenu = $this.find('.dropdown-menu');
-            if (dropdownMenu.html()) {
-                return;
-            }
-            const postEl = $this.parents('[data-pid]');
-            const pid = postEl.attr('data-pid');
-            const index = parseInt(postEl.attr('data-index'), 10);
-
-            socket.emit('posts.loadPostTools', { pid: pid, cid: ajaxify.data.cid }, async (err, data) => {
-                if (err) {
-                    return alerts.error(err);
+        $('[component="topic"]').on(
+            'show.bs.dropdown',
+            '.moderator-tools',
+            function () {
+                const $this = $(this);
+                const dropdownMenu = $this.find('.dropdown-menu');
+                if (dropdownMenu.html()) {
+                    return;
                 }
-                data.posts.display_move_tools = data.posts.display_move_tools && index !== 0;
+                const postEl = $this.parents('[data-pid]');
+                const pid = postEl.attr('data-pid');
+                const index = parseInt(postEl.attr('data-index'), 10);
 
-                const html = await app.parseAndTranslate('partials/topic/post-menu-list', data);
-                const clipboard = require('clipboard');
+                socket.emit(
+                    'posts.loadPostTools',
+                    { pid: pid, cid: ajaxify.data.cid },
+                    async (err, data) => {
+                        if (err) {
+                            return alerts.error(err);
+                        }
+                        data.posts.display_move_tools =
+                            data.posts.display_move_tools && index !== 0;
 
-                dropdownMenu.html(html);
-                dropdownMenu.get(0).classList.toggle('hidden', false);
-                new clipboard('[data-clipboard-text]');
+                        const html = await app.parseAndTranslate(
+                            'partials/topic/post-menu-list',
+                            data
+                        );
+                        const clipboard = require('clipboard');
 
-                hooks.fire('action:post.tools.load', {
-                    element: dropdownMenu,
-                });
-            });
-        });
+                        dropdownMenu.html(html);
+                        dropdownMenu.get(0).classList.toggle('hidden', false);
+                        new clipboard('[data-clipboard-text]');
+
+                        hooks.fire('action:post.tools.load', {
+                            element: dropdownMenu,
+                        });
+                    }
+                );
+            }
+        );
     }
 
     PostTools.toggle = function (pid, isDeleted) {
         const postEl = components.get('post', 'pid', pid);
 
-        postEl.find('[component="post/quote"], [component="post/bookmark"], [component="post/reply"], [component="post/flag"], [component="user/chat"]')
+        postEl
+            .find(
+                '[component="post/quote"], [component="post/bookmark"], [component="post/reply"], [component="post/flag"], [component="user/chat"]'
+            )
             .toggleClass('hidden', isDeleted);
 
-        postEl.find('[component="post/delete"]').toggleClass('hidden', isDeleted).parent().attr('hidden', isDeleted ? '' : null);
-        postEl.find('[component="post/restore"]').toggleClass('hidden', !isDeleted).parent().attr('hidden', !isDeleted ? '' : null);
-        postEl.find('[component="post/purge"]').toggleClass('hidden', !isDeleted).parent().attr('hidden', !isDeleted ? '' : null);
+        postEl
+            .find('[component="post/delete"]')
+            .toggleClass('hidden', isDeleted)
+            .parent()
+            .attr('hidden', isDeleted ? '' : null);
+        postEl
+            .find('[component="post/restore"]')
+            .toggleClass('hidden', !isDeleted)
+            .parent()
+            .attr('hidden', !isDeleted ? '' : null);
+        postEl
+            .find('[component="post/purge"]')
+            .toggleClass('hidden', !isDeleted)
+            .parent()
+            .attr('hidden', !isDeleted ? '' : null);
 
         PostTools.removeMenu(postEl);
     };
@@ -103,14 +139,27 @@ define('forum/topic/postTools', [
             onReplyClicked($(this), tid);
         });
 
-        $('.topic').on('click', '[component="topic/reply-as-topic"]', function () {
-            translator.translate('[[topic:link_back, ' + ajaxify.data.titleRaw + ', ' + config.relative_path + '/topic/' + ajaxify.data.slug + ']]', function (body) {
-                hooks.fire('action:composer.topic.new', {
-                    cid: ajaxify.data.cid,
-                    body: body,
-                });
-            });
-        });
+        $('.topic').on(
+            'click',
+            '[component="topic/reply-as-topic"]',
+            function () {
+                translator.translate(
+                    '[[topic:link_back, ' +
+                        ajaxify.data.titleRaw +
+                        ', ' +
+                        config.relative_path +
+                        '/topic/' +
+                        ajaxify.data.slug +
+                        ']]',
+                    function (body) {
+                        hooks.fire('action:composer.topic.new', {
+                            cid: ajaxify.data.cid,
+                            body: body,
+                        });
+                    }
+                );
+            }
+        );
 
         postContainer.on('click', '[component="post/endorse"]', function () {
             onEndorseClicked($(this), getData($(this), 'data-pid'));
@@ -152,46 +201,79 @@ define('forum/topic/postTools', [
             });
         });
 
-        postContainer.on('click', '[component="post/flagResolve"]', function () {
-            const flagId = $(this).attr('data-flagId');
-            require(['flags'], function (flags) {
-                flags.resolve(flagId);
-            });
-        });
+        postContainer.on(
+            'click',
+            '[component="post/flagResolve"]',
+            function () {
+                const flagId = $(this).attr('data-flagId');
+                require(['flags'], function (flags) {
+                    flags.resolve(flagId);
+                });
+            }
+        );
 
         postContainer.on('click', '[component="post/edit"]', function () {
             const btn = $(this);
 
             const timestamp = parseInt(getData(btn, 'data-timestamp'), 10);
-            const postEditDuration = parseInt(ajaxify.data.postEditDuration, 10);
+            const postEditDuration = parseInt(
+                ajaxify.data.postEditDuration,
+                10
+            );
 
-            if (checkDuration(postEditDuration, timestamp, 'post-edit-duration-expired')) {
+            if (
+                checkDuration(
+                    postEditDuration,
+                    timestamp,
+                    'post-edit-duration-expired'
+                )
+            ) {
                 hooks.fire('action:composer.post.edit', {
                     pid: getData(btn, 'data-pid'),
                 });
             }
         });
 
-        if (config.enablePostHistory && ajaxify.data.privileges['posts:history']) {
-            postContainer.on('click', '[component="post/view-history"], [component="post/edit-indicator"]', function () {
-                const btn = $(this);
-                require(['forum/topic/diffs'], function (diffs) {
-                    diffs.open(getData(btn, 'data-pid'));
-                });
-            });
+        if (
+            config.enablePostHistory &&
+            ajaxify.data.privileges['posts:history']
+        ) {
+            postContainer.on(
+                'click',
+                '[component="post/view-history"], [component="post/edit-indicator"]',
+                function () {
+                    const btn = $(this);
+                    require(['forum/topic/diffs'], function (diffs) {
+                        diffs.open(getData(btn, 'data-pid'));
+                    });
+                }
+            );
         }
 
         postContainer.on('click', '[component="post/delete"]', function () {
             const btn = $(this);
             const timestamp = parseInt(getData(btn, 'data-timestamp'), 10);
-            const postDeleteDuration = parseInt(ajaxify.data.postDeleteDuration, 10);
-            if (checkDuration(postDeleteDuration, timestamp, 'post-delete-duration-expired')) {
+            const postDeleteDuration = parseInt(
+                ajaxify.data.postDeleteDuration,
+                10
+            );
+            if (
+                checkDuration(
+                    postDeleteDuration,
+                    timestamp,
+                    'post-delete-duration-expired'
+                )
+            ) {
                 togglePostDelete($(this));
             }
         });
 
         function checkDuration(duration, postTimestamp, languageKey) {
-            if (!ajaxify.data.privileges.isAdminOrMod && duration && Date.now() - postTimestamp > duration * 1000) {
+            if (
+                !ajaxify.data.privileges.isAdminOrMod &&
+                duration &&
+                Date.now() - postTimestamp > duration * 1000
+            ) {
                 const numDays = Math.floor(duration / 86400);
                 const numHours = Math.floor((duration % 86400) / 3600);
                 const numMinutes = Math.floor(((duration % 86400) % 3600) / 60);
@@ -199,21 +281,57 @@ define('forum/topic/postTools', [
                 let msg = '[[error:' + languageKey + ', ' + duration + ']]';
                 if (numDays) {
                     if (numHours) {
-                        msg = '[[error:' + languageKey + '-days-hours, ' + numDays + ', ' + numHours + ']]';
+                        msg =
+                            '[[error:' +
+                            languageKey +
+                            '-days-hours, ' +
+                            numDays +
+                            ', ' +
+                            numHours +
+                            ']]';
                     } else {
-                        msg = '[[error:' + languageKey + '-days, ' + numDays + ']]';
+                        msg =
+                            '[[error:' +
+                            languageKey +
+                            '-days, ' +
+                            numDays +
+                            ']]';
                     }
                 } else if (numHours) {
                     if (numMinutes) {
-                        msg = '[[error:' + languageKey + '-hours-minutes, ' + numHours + ', ' + numMinutes + ']]';
+                        msg =
+                            '[[error:' +
+                            languageKey +
+                            '-hours-minutes, ' +
+                            numHours +
+                            ', ' +
+                            numMinutes +
+                            ']]';
                     } else {
-                        msg = '[[error:' + languageKey + '-hours, ' + numHours + ']]';
+                        msg =
+                            '[[error:' +
+                            languageKey +
+                            '-hours, ' +
+                            numHours +
+                            ']]';
                     }
                 } else if (numMinutes) {
                     if (numSeconds) {
-                        msg = '[[error:' + languageKey + '-minutes-seconds, ' + numMinutes + ', ' + numSeconds + ']]';
+                        msg =
+                            '[[error:' +
+                            languageKey +
+                            '-minutes-seconds, ' +
+                            numMinutes +
+                            ', ' +
+                            numSeconds +
+                            ']]';
                     } else {
-                        msg = '[[error:' + languageKey + '-minutes, ' + numMinutes + ']]';
+                        msg =
+                            '[[error:' +
+                            languageKey +
+                            '-minutes, ' +
+                            numMinutes +
+                            ']]';
                     }
                 }
                 alerts.error(msg);
@@ -237,12 +355,16 @@ define('forum/topic/postTools', [
             });
         });
 
-        postContainer.on('click', '[component="post/change-owner"]', function () {
-            const btn = $(this);
-            require(['forum/topic/change-owner'], function (changeOwner) {
-                changeOwner.init(btn.parents('[data-pid]'));
-            });
-        });
+        postContainer.on(
+            'click',
+            '[component="post/change-owner"]',
+            function () {
+                const btn = $(this);
+                require(['forum/topic/change-owner'], function (changeOwner) {
+                    changeOwner.init(btn.parents('[data-pid]'));
+                });
+            }
+        );
 
         postContainer.on('click', '[component="post/ban-ip"]', function () {
             const ip = $(this).attr('data-ip');
@@ -264,12 +386,18 @@ define('forum/topic/postTools', [
 
         showStaleWarning(async function () {
             let username = await getUserSlug(button);
-            if (getData(button, 'data-uid') === '0' || !getData(button, 'data-userslug')) {
+            if (
+                getData(button, 'data-uid') === '0' ||
+                !getData(button, 'data-userslug')
+            ) {
                 username = '';
             }
 
-            const toPid = button.is('[component="post/reply"]') ? getData(button, 'data-pid') : null;
-            const isQuoteToPid = !toPid || !selectedNode.pid || toPid === selectedNode.pid;
+            const toPid = button.is('[component="post/reply"]')
+                ? getData(button, 'data-pid')
+                : null;
+            const isQuoteToPid =
+                !toPid || !selectedNode.pid || toPid === selectedNode.pid;
 
             if (selectedNode.text && isQuoteToPid) {
                 username = username || selectedNode.username;
@@ -286,7 +414,9 @@ define('forum/topic/postTools', [
                     tid: tid,
                     pid: toPid,
                     topicName: ajaxify.data.titleRaw,
-                    text: username ? username + ' ' : ($('[component="topic/quickreply/text"]').val() || ''),
+                    text: username
+                        ? username + ' '
+                        : $('[component="topic/quickreply/text"]').val() || '',
                 });
             }
         });
@@ -294,7 +424,8 @@ define('forum/topic/postTools', [
 
     async function onEndorseClicked(button, pid) {
         const isEndorsed = button.attr('data-endorsed');
-        const method = isEndorsed === 'false' || isEndorsed === '' ? 'put' : 'del';
+        const method =
+            isEndorsed === 'false' || isEndorsed === '' ? 'put' : 'del';
         api[method](`/posts/${pid}/endorse`, undefined, function (err) {
             if (err) {
                 return alerts.error(err);
@@ -339,11 +470,18 @@ define('forum/topic/postTools', [
         let selectedText = '';
         let selectedPid;
         let username = '';
-        const selection = window.getSelection ? window.getSelection() : document.selection.createRange();
+        const selection = window.getSelection
+            ? window.getSelection()
+            : document.selection.createRange();
         const postContents = $('[component="post"] [component="post/content"]');
         let content;
         postContents.each(function (index, el) {
-            if (selection && selection.containsNode && el && selection.containsNode(el, true)) {
+            if (
+                selection &&
+                selection.containsNode &&
+                el &&
+                selection.containsNode(el, true)
+            ) {
                 content = el;
             }
         });
@@ -369,7 +507,8 @@ define('forum/topic/postTools', [
     }
 
     function bookmarkPost(button, pid) {
-        const method = button.attr('data-bookmarked') === 'false' ? 'put' : 'del';
+        const method =
+            button.attr('data-bookmarked') === 'false' ? 'put' : 'del';
 
         api[method](`/posts/${pid}/bookmark`, undefined, function (err) {
             if (err) {
@@ -403,7 +542,11 @@ define('forum/topic/postTools', [
                             slug = '[[global:guest]]';
                         }
                     }
-                    if (slug && slug !== '[[global:former_user]]' && slug !== '[[global:guest]]') {
+                    if (
+                        slug &&
+                        slug !== '[[global:former_user]]' &&
+                        slug !== '[[global:guest]]'
+                    ) {
                         slug = '@' + slug;
                     }
                     resolve(slug);
@@ -428,20 +571,26 @@ define('forum/topic/postTools', [
     }
 
     async function postAction(action, pid) {
-        ({ action } = await hooks.fire(`static:post.${action}`, { action, pid }));
+        ({ action } = await hooks.fire(`static:post.${action}`, {
+            action,
+            pid,
+        }));
         if (!action) {
             return;
         }
 
-        bootbox.confirm('[[topic:post_' + action + '_confirm]]', function (confirm) {
-            if (!confirm) {
-                return;
-            }
+        bootbox.confirm(
+            '[[topic:post_' + action + '_confirm]]',
+            function (confirm) {
+                if (!confirm) {
+                    return;
+                }
 
-            const route = action === 'purge' ? '' : '/state';
-            const method = action === 'restore' ? 'put' : 'del';
-            api[method](`/posts/${pid}${route}`).catch(alerts.error);
-        });
+                const route = action === 'purge' ? '' : '/state';
+                const method = action === 'restore' ? 'put' : 'del';
+                api[method](`/posts/${pid}${route}`).catch(alerts.error);
+            }
+        );
     }
 
     function openChat(button) {
@@ -454,8 +603,10 @@ define('forum/topic/postTools', [
     }
 
     function showStaleWarning(callback) {
-        const staleThreshold =
-            Math.min(Date.now() - (1000 * 60 * 60 * 24 * ajaxify.data.topicStaleDays), 8640000000000000);
+        const staleThreshold = Math.min(
+            Date.now() - 1000 * 60 * 60 * 24 * ajaxify.data.topicStaleDays,
+            8640000000000000
+        );
         if (staleReplyAnyway || ajaxify.data.lastposttime >= staleThreshold) {
             return callback();
         }
@@ -476,13 +627,22 @@ define('forum/topic/postTools', [
                     label: '[[topic:stale.create]]',
                     className: 'btn-primary',
                     callback: function () {
-                        translator.translate('[[topic:link_back, ' + ajaxify.data.title + ', ' + config.relative_path + '/topic/' + ajaxify.data.slug + ']]', function (body) {
-                            hooks.fire('action:composer.topic.new', {
-                                cid: ajaxify.data.cid,
-                                body: body,
-                                fromStaleTopic: true,
-                            });
-                        });
+                        translator.translate(
+                            '[[topic:link_back, ' +
+                                ajaxify.data.title +
+                                ', ' +
+                                config.relative_path +
+                                '/topic/' +
+                                ajaxify.data.slug +
+                                ']]',
+                            function (body) {
+                                hooks.fire('action:composer.topic.new', {
+                                    cid: ajaxify.data.cid,
+                                    body: body,
+                                    fromStaleTopic: true,
+                                });
+                            }
+                        );
                     },
                 },
             },
@@ -500,7 +660,9 @@ define('forum/topic/postTools', [
 
         hooks.onPage('action:posts.loaded', delayedTooltip);
 
-        $(document).off('selectionchange', selectionChangeFn).on('selectionchange', selectionChangeFn);
+        $(document)
+            .off('selectionchange', selectionChangeFn)
+            .on('selectionchange', selectionChangeFn);
     }
 
     function selectionChange() {
@@ -521,12 +683,20 @@ define('forum/topic/postTools', [
         }
 
         const selection = window.getSelection();
-        if (selection.focusNode && selection.type === 'Range' && ajaxify.data.template.topic) {
+        if (
+            selection.focusNode &&
+            selection.type === 'Range' &&
+            ajaxify.data.template.topic
+        ) {
             const focusNode = $(selection.focusNode);
             const anchorNode = $(selection.anchorNode);
             const firstPid = anchorNode.parents('[data-pid]').attr('data-pid');
             const lastPid = focusNode.parents('[data-pid]').attr('data-pid');
-            if (firstPid !== lastPid || !focusNode.parents('[component="post/content"]').length || !anchorNode.parents('[component="post/content"]').length) {
+            if (
+                firstPid !== lastPid ||
+                !focusNode.parents('[component="post/content"]').length ||
+                !anchorNode.parents('[component="post/content"]').length
+            ) {
                 return;
             }
             const postEl = focusNode.parents('[data-pid]');
@@ -538,13 +708,25 @@ define('forum/topic/postTools', [
             const lastRect = rects[rects.length - 1];
 
             if (!selectionTooltip.length) {
-                selectionTooltip = await app.parseAndTranslate('partials/topic/selection-tooltip', ajaxify.data);
+                selectionTooltip = await app.parseAndTranslate(
+                    'partials/topic/selection-tooltip',
+                    ajaxify.data
+                );
                 selectionTooltip.addClass('hidden').appendTo('body');
             }
-            selectionTooltip.off('click').on('click', '[component="selection/tooltip/quote"]', function () {
-                selectionTooltip.addClass('hidden');
-                onQuoteClicked(postEl.find('[component="post/quote"]'), ajaxify.data.tid);
-            });
+            selectionTooltip
+                .off('click')
+                .on(
+                    'click',
+                    '[component="selection/tooltip/quote"]',
+                    function () {
+                        selectionTooltip.addClass('hidden');
+                        onQuoteClicked(
+                            postEl.find('[component="post/quote"]'),
+                            ajaxify.data.tid
+                        );
+                    }
+                );
             selectionTooltip.removeClass('hidden');
             $(window).one('action:ajaxify.start', function () {
                 selectionTooltip.attr('data-ajaxify', 1).addClass('hidden');
@@ -553,7 +735,10 @@ define('forum/topic/postTools', [
             const tooltipWidth = selectionTooltip.outerWidth(true);
             selectionTooltip.css({
                 top: lastRect.bottom + $(window).scrollTop(),
-                left: tooltipWidth > lastRect.width ? lastRect.left : lastRect.left + lastRect.width - tooltipWidth,
+                left:
+                    tooltipWidth > lastRect.width
+                        ? lastRect.left
+                        : lastRect.left + lastRect.width - tooltipWidth,
             });
         }
     }

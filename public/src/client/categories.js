@@ -1,7 +1,10 @@
 'use strict';
 
-
-define('forum/categories', ['components', 'categorySelector', 'hooks'], function (components, categorySelector, hooks) {
+define('forum/categories', [
+    'components',
+    'categorySelector',
+    'hooks',
+], function (components, categorySelector, hooks) {
     const categories = {};
 
     $(window).on('action:ajaxify.start', function (ev, data) {
@@ -45,26 +48,36 @@ define('forum/categories', ['components', 'categorySelector', 'hooks'], function
 
         const recentPosts = category.find('[component="category/posts"]');
 
-        app.parseAndTranslate('partials/categories/lastpost', 'posts', { posts: [post] }, function (html) {
-            html.find('.post-content img:not(.not-responsive)').addClass('img-responsive');
-            html.hide();
-            if (recentPosts.length === 0) {
-                html.appendTo(category);
-            } else {
-                html.insertBefore(recentPosts.first());
+        app.parseAndTranslate(
+            'partials/categories/lastpost',
+            'posts',
+            { posts: [post] },
+            function (html) {
+                html.find('.post-content img:not(.not-responsive)').addClass(
+                    'img-responsive'
+                );
+                html.hide();
+                if (recentPosts.length === 0) {
+                    html.appendTo(category);
+                } else {
+                    html.insertBefore(recentPosts.first());
+                }
+
+                html.fadeIn();
+
+                app.createUserTooltips(html);
+                html.find('.timeago').timeago();
+
+                if (
+                    category.find('[component="category/posts"]').length >
+                    parseInt(numRecentReplies, 10)
+                ) {
+                    recentPosts.last().remove();
+                }
+
+                hooks.fire('action:posts.loaded', { posts: [post] });
             }
-
-            html.fadeIn();
-
-            app.createUserTooltips(html);
-            html.find('.timeago').timeago();
-
-            if (category.find('[component="category/posts"]').length > parseInt(numRecentReplies, 10)) {
-                recentPosts.last().remove();
-            }
-
-            hooks.fire('action:posts.loaded', { posts: [post] });
-        });
+        );
     }
 
     return categories;

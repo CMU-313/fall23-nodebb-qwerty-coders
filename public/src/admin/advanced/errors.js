@@ -1,7 +1,10 @@
 'use strict';
 
-
-define('admin/advanced/errors', ['bootbox', 'alerts', 'Chart'], function (bootbox, alerts, Chart) {
+define('admin/advanced/errors', ['bootbox', 'alerts', 'Chart'], function (
+    bootbox,
+    alerts,
+    Chart
+) {
     const Errors = {};
 
     Errors.init = function () {
@@ -11,18 +14,23 @@ define('admin/advanced/errors', ['bootbox', 'alerts', 'Chart'], function (bootbo
     };
 
     Errors.clear404 = function () {
-        bootbox.confirm('[[admin/advanced/errors:clear404-confirm]]', function (ok) {
-            if (ok) {
-                socket.emit('admin.errors.clear', {}, function (err) {
-                    if (err) {
-                        return alerts.error(err);
-                    }
+        bootbox.confirm(
+            '[[admin/advanced/errors:clear404-confirm]]',
+            function (ok) {
+                if (ok) {
+                    socket.emit('admin.errors.clear', {}, function (err) {
+                        if (err) {
+                            return alerts.error(err);
+                        }
 
-                    ajaxify.refresh();
-                    alerts.success('[[admin/advanced/errors:clear404-success]]');
-                });
+                        ajaxify.refresh();
+                        alerts.success(
+                            '[[admin/advanced/errors:clear404-success]]'
+                        );
+                    });
+                }
             }
-        });
+        );
     };
 
     Errors.setupCharts = function () {
@@ -81,11 +89,13 @@ define('admin/advanced/errors', ['bootbox', 'alerts', 'Chart'], function (bootbo
                     display: false,
                 },
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
+                    yAxes: [
+                        {
+                            ticks: {
+                                beginAtZero: true,
+                            },
                         },
-                    }],
+                    ],
                 },
             },
         });
@@ -99,11 +109,13 @@ define('admin/advanced/errors', ['bootbox', 'alerts', 'Chart'], function (bootbo
                     display: false,
                 },
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
+                    yAxes: [
+                        {
+                            ticks: {
+                                beginAtZero: true,
+                            },
                         },
-                    }],
+                    ],
                 },
             },
         });

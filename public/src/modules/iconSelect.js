@@ -1,13 +1,16 @@
 'use strict';
 
-
 define('iconSelect', ['benchpress', 'bootbox'], function (Benchpress, bootbox) {
     const iconSelect = {};
 
     iconSelect.init = function (el, onModified) {
         onModified = onModified || function () {};
         const doubleSize = el.hasClass('fa-2x');
-        let selected = el.attr('class').replace('fa-2x', '').replace('fa', '').replace(/\s+/g, '');
+        let selected = el
+            .attr('class')
+            .replace('fa-2x', '')
+            .replace('fa', '')
+            .replace(/\s+/g, '');
 
         $('#icons .selected').removeClass('selected');
 
@@ -34,7 +37,10 @@ define('iconSelect', ['benchpress', 'bootbox'], function (Benchpress, bootbox) {
                         label: 'No Icon',
                         className: 'btn-default',
                         callback: function () {
-                            el.attr('class', 'fa ' + (doubleSize ? 'fa-2x ' : ''));
+                            el.attr(
+                                'class',
+                                'fa ' + (doubleSize ? 'fa-2x ' : '')
+                            );
                             el.val('');
                             el.attr('value', '');
 
@@ -45,13 +51,23 @@ define('iconSelect', ['benchpress', 'bootbox'], function (Benchpress, bootbox) {
                         label: 'Select',
                         className: 'btn-primary',
                         callback: function () {
-                            const iconClass = $('.bootbox .selected').attr('class') || `fa fa-${$('.bootbox #fa-filter').val()}`;
-                            const categoryIconClass = $('<div></div>').addClass(iconClass).removeClass('fa').removeClass('selected')
+                            const iconClass =
+                                $('.bootbox .selected').attr('class') ||
+                                `fa fa-${$('.bootbox #fa-filter').val()}`;
+                            const categoryIconClass = $('<div></div>')
+                                .addClass(iconClass)
+                                .removeClass('fa')
+                                .removeClass('selected')
                                 .attr('class');
                             const searchElVal = picker.find('input').val();
 
                             if (categoryIconClass) {
-                                el.attr('class', 'fa ' + (doubleSize ? 'fa-2x ' : '') + categoryIconClass);
+                                el.attr(
+                                    'class',
+                                    'fa ' +
+                                        (doubleSize ? 'fa-2x ' : '') +
+                                        categoryIconClass
+                                );
                                 el.val(categoryIconClass);
                                 el.attr('value', categoryIconClass);
                             } else if (searchElVal) {
@@ -66,15 +82,17 @@ define('iconSelect', ['benchpress', 'bootbox'], function (Benchpress, bootbox) {
                 },
             });
 
-            picker.on('show.bs.modal', function () {
-                const modalEl = $(this);
-                const searchEl = modalEl.find('input');
+            picker
+                .on('show.bs.modal', function () {
+                    const modalEl = $(this);
+                    const searchEl = modalEl.find('input');
 
-                if (selected) {
-                    modalEl.find('.' + selected).addClass('selected');
-                    searchEl.val(selected.replace('fa-', ''));
-                }
-            }).modal('show');
+                    if (selected) {
+                        modalEl.find('.' + selected).addClass('selected');
+                        searchEl.val(selected.replace('fa-', ''));
+                    }
+                })
+                .modal('show');
 
             picker.on('shown.bs.modal', function () {
                 const modalEl = $(this);
@@ -99,7 +117,12 @@ define('iconSelect', ['benchpress', 'bootbox'], function (Benchpress, bootbox) {
                 searchEl.selectRange(0, searchEl.val().length);
 
                 modalEl.find('.icon-container').on('click', 'i', function () {
-                    searchEl.val($(this).attr('class').replace('fa fa-', '').replace('selected', ''));
+                    searchEl.val(
+                        $(this)
+                            .attr('class')
+                            .replace('fa fa-', '')
+                            .replace('selected', '')
+                    );
                     changeSelection($(this));
                 });
 
@@ -108,7 +131,13 @@ define('iconSelect', ['benchpress', 'bootbox'], function (Benchpress, bootbox) {
                         // Filter
                         icons.show();
                         icons.each(function (idx, el) {
-                            if (!el.className.match(new RegExp('^fa fa-.*' + searchEl.val() + '.*$'))) {
+                            if (
+                                !el.className.match(
+                                    new RegExp(
+                                        '^fa fa-.*' + searchEl.val() + '.*$'
+                                    )
+                                )
+                            ) {
                                 $(el).hide();
                             }
                         });

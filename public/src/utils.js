@@ -9,11 +9,14 @@ const utils = { ...require('./utils.common') };
 utils.getLanguage = function () {
     let lang = 'en-GB';
     if (typeof window === 'object' && window.config && window.utils) {
-        lang = utils.params().lang || config.userLang || config.defaultLang || 'en-GB';
+        lang =
+            utils.params().lang ||
+            config.userLang ||
+            config.defaultLang ||
+            'en-GB';
     }
     return lang;
 };
-
 
 utils.makeNumbersHumanReadable = function (elements) {
     elements.each(function () {

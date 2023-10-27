@@ -75,7 +75,9 @@ define('storage', function () {
             return storage;
         } catch (e) {
             console.warn(e);
-            console.warn('sessionStorage failed, falling back on memory storage');
+            console.warn(
+                'sessionStorage failed, falling back on memory storage'
+            );
 
             // return an object implementing mock methods
             return new Storage();

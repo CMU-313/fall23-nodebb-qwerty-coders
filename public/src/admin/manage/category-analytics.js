@@ -1,6 +1,5 @@
 'use strict';
 
-
 define('admin/manage/category-analytics', ['Chart'], function (Chart) {
     const CategoryAnalytics = {};
 
@@ -98,12 +97,14 @@ define('admin/manage/category-analytics', ['Chart'], function (Chart) {
                     display: false,
                 },
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
-                            precision: 0,
+                    yAxes: [
+                        {
+                            ticks: {
+                                beginAtZero: true,
+                                precision: 0,
+                            },
                         },
-                    }],
+                    ],
                 },
             },
         });
@@ -118,12 +119,14 @@ define('admin/manage/category-analytics', ['Chart'], function (Chart) {
                     display: false,
                 },
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
-                            precision: 0,
+                    yAxes: [
+                        {
+                            ticks: {
+                                beginAtZero: true,
+                                precision: 0,
+                            },
                         },
-                    }],
+                    ],
                 },
             },
         });
@@ -138,12 +141,14 @@ define('admin/manage/category-analytics', ['Chart'], function (Chart) {
                     display: false,
                 },
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
-                            precision: 0,
+                    yAxes: [
+                        {
+                            ticks: {
+                                beginAtZero: true,
+                                precision: 0,
+                            },
                         },
-                    }],
+                    ],
                 },
             },
         });
@@ -158,12 +163,14 @@ define('admin/manage/category-analytics', ['Chart'], function (Chart) {
                     display: false,
                 },
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
-                            precision: 0,
+                    yAxes: [
+                        {
+                            ticks: {
+                                beginAtZero: true,
+                                precision: 0,
+                            },
                         },
-                    }],
+                    ],
                 },
             },
         });

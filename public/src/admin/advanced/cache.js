@@ -21,11 +21,15 @@ define('admin/advanced/cache', ['alerts'], function (alerts) {
             const input = $(this).find('input');
             const flag = input.is(':checked');
             const name = $(this).attr('data-name');
-            socket.emit('admin.cache.toggle', { name: name, enabled: flag }, function (err) {
-                if (err) {
-                    return alerts.error(err);
+            socket.emit(
+                'admin.cache.toggle',
+                { name: name, enabled: flag },
+                function (err) {
+                    if (err) {
+                        return alerts.error(err);
+                    }
                 }
-            });
+            );
         });
     };
     return Cache;

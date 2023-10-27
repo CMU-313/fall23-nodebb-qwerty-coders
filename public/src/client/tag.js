@@ -1,6 +1,8 @@
 'use strict';
 
-define('forum/tag', ['topicList', 'forum/infinitescroll'], function (topicList) {
+define('forum/tag', ['topicList', 'forum/infinitescroll'], function (
+    topicList
+) {
     const Tag = {};
 
     Tag.init = function () {

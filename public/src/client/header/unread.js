@@ -14,15 +14,21 @@ define('forum/header/unread', function () {
         function onNewPost(data) {
             if (data && data.posts && data.posts.length && unreadTopics) {
                 const post = data.posts[0];
-                if (parseInt(post.uid, 10) === parseInt(app.user.uid, 10) ||
-                    (!post.topic.isFollowing && post.categoryWatchState !== watchStates.watching)
+                if (
+                    parseInt(post.uid, 10) === parseInt(app.user.uid, 10) ||
+                    (!post.topic.isFollowing &&
+                        post.categoryWatchState !== watchStates.watching)
                 ) {
                     return;
                 }
 
                 const tid = post.topic.tid;
-                if (!unreadTopics[''][tid] || !unreadTopics.new[tid] ||
-                    !unreadTopics.watched[tid] || !unreadTopics.unreplied[tid]) {
+                if (
+                    !unreadTopics[''][tid] ||
+                    !unreadTopics.new[tid] ||
+                    !unreadTopics.watched[tid] ||
+                    !unreadTopics.unreplied[tid]
+                ) {
                     markTopicsUnread(tid);
                 }
 
@@ -30,7 +36,9 @@ define('forum/header/unread', function () {
                     increaseUnreadCount('');
                     unreadTopics[''][tid] = true;
                 }
-                const isNewTopic = post.isMain && parseInt(post.uid, 10) !== parseInt(app.user.uid, 10);
+                const isNewTopic =
+                    post.isMain &&
+                    parseInt(post.uid, 10) !== parseInt(app.user.uid, 10);
                 if (isNewTopic && !unreadTopics.new[tid]) {
                     increaseUnreadCount('new');
                     unreadTopics.new[tid] = true;
@@ -50,7 +58,17 @@ define('forum/header/unread', function () {
 
         function increaseUnreadCount(filter) {
             const unreadUrl = '/unread' + (filter ? '?filter=' + filter : '');
-            const newCount = 1 + parseInt($('a[href="' + config.relative_path + unreadUrl + '"].navigation-link i').attr('data-content'), 10);
+            const newCount =
+                1 +
+                parseInt(
+                    $(
+                        'a[href="' +
+                            config.relative_path +
+                            unreadUrl +
+                            '"].navigation-link i'
+                    ).attr('data-content'),
+                    10
+                );
             updateUnreadTopicCount(unreadUrl, newCount);
         }
 
@@ -75,8 +93,14 @@ define('forum/header/unread', function () {
     function updateUnreadCounters(data) {
         updateUnreadTopicCount('/unread', data.unreadTopicCount);
         updateUnreadTopicCount('/unread?filter=new', data.unreadNewTopicCount);
-        updateUnreadTopicCount('/unread?filter=watched', data.unreadWatchedTopicCount);
-        updateUnreadTopicCount('/unread?filter=unreplied', data.unreadUnrepliedTopicCount);
+        updateUnreadTopicCount(
+            '/unread?filter=watched',
+            data.unreadWatchedTopicCount
+        );
+        updateUnreadTopicCount(
+            '/unread?filter=unreplied',
+            data.unreadUnrepliedTopicCount
+        );
     }
 
     function updateUnreadTopicCount(url, count) {
@@ -88,7 +112,10 @@ define('forum/header/unread', function () {
             .toggleClass('unread-count', count > 0)
             .attr('data-content', count > 99 ? '99+' : count);
 
-        $('#mobile-menu [data-unread-url="' + url + '"]').attr('data-content', count > 99 ? '99+' : count);
+        $('#mobile-menu [data-unread-url="' + url + '"]').attr(
+            'data-content',
+            count > 99 ? '99+' : count
+        );
     }
     unread.updateUnreadTopicCount = updateUnreadTopicCount;
 

@@ -1,21 +1,26 @@
 'use strict';
 
-
-define('admin/advanced/events', ['bootbox', 'alerts'], function (bootbox, alerts) {
+define('admin/advanced/events', ['bootbox', 'alerts'], function (
+    bootbox,
+    alerts
+) {
     const Events = {};
 
     Events.init = function () {
         $('[data-action="clear"]').on('click', function () {
-            bootbox.confirm('[[admin/advanced/events:confirm-delete-all-events]]', (confirm) => {
-                if (confirm) {
-                    socket.emit('admin.deleteAllEvents', function (err) {
-                        if (err) {
-                            return alerts.error(err);
-                        }
-                        $('.events-list').empty();
-                    });
+            bootbox.confirm(
+                '[[admin/advanced/events:confirm-delete-all-events]]',
+                (confirm) => {
+                    if (confirm) {
+                        socket.emit('admin.deleteAllEvents', function (err) {
+                            if (err) {
+                                return alerts.error(err);
+                            }
+                            $('.events-list').empty();
+                        });
+                    }
                 }
-            });
+            );
         });
 
         $('.delete-event').on('click', function () {

@@ -1,6 +1,9 @@
 'use strict';
 
-define('admin/appearance/customise', ['admin/settings', 'ace/ace'], function (Settings, ace) {
+define('admin/appearance/customise', ['admin/settings', 'ace/ace'], function (
+    Settings,
+    ace
+) {
     const Customise = {};
 
     Customise.init = function () {

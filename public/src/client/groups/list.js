@@ -1,7 +1,11 @@
 'use strict';
 
 define('forum/groups/list', [
-    'forum/infinitescroll', 'benchpress', 'api', 'bootbox', 'alerts',
+    'forum/infinitescroll',
+    'benchpress',
+    'api',
+    'bootbox',
+    'alerts',
 ], function (infinitescroll, Benchpress, api, bootbox, alerts) {
     const Groups = {};
 
@@ -14,9 +18,11 @@ define('forum/groups/list', [
                 if (name && name.length) {
                     api.post('/groups', {
                         name: name,
-                    }).then((res) => {
-                        ajaxify.go('groups/' + res.slug);
-                    }).catch(alerts.error);
+                    })
+                        .then((res) => {
+                            ajaxify.go('groups/' + res.slug);
+                        })
+                        .catch(alerts.error);
                 }
             });
         });
@@ -36,25 +42,34 @@ define('forum/groups/list', [
             return;
         }
 
-        infinitescroll.loadMore('groups.loadMore', {
-            sort: $('#search-sort').val(),
-            after: $('[component="groups/container"]').attr('data-nextstart'),
-        }, function (data, done) {
-            if (data && data.groups.length) {
-                Benchpress.render('partials/groups/list', {
-                    groups: data.groups,
-                }).then(function (html) {
-                    $('#groups-list').append(html);
+        infinitescroll.loadMore(
+            'groups.loadMore',
+            {
+                sort: $('#search-sort').val(),
+                after: $('[component="groups/container"]').attr(
+                    'data-nextstart'
+                ),
+            },
+            function (data, done) {
+                if (data && data.groups.length) {
+                    Benchpress.render('partials/groups/list', {
+                        groups: data.groups,
+                    }).then(function (html) {
+                        $('#groups-list').append(html);
+                        done();
+                    });
+                } else {
                     done();
-                });
-            } else {
-                done();
-            }
+                }
 
-            if (data && data.nextStart) {
-                $('[component="groups/container"]').attr('data-nextstart', data.nextStart);
+                if (data && data.nextStart) {
+                    $('[component="groups/container"]').attr(
+                        'data-nextstart',
+                        data.nextStart
+                    );
+                }
             }
-        });
+        );
     };
 
     Groups.search = function () {
@@ -62,27 +77,34 @@ define('forum/groups/list', [
         const queryEl = $('#search-text');
         const sortEl = $('#search-sort');
 
-        socket.emit('groups.search', {
-            query: queryEl.val(),
-            options: {
-                sort: sortEl.val(),
-                filterHidden: true,
-                showMembers: true,
-                hideEphemeralGroups: true,
+        socket.emit(
+            'groups.search',
+            {
+                query: queryEl.val(),
+                options: {
+                    sort: sortEl.val(),
+                    filterHidden: true,
+                    showMembers: true,
+                    hideEphemeralGroups: true,
+                },
             },
-        }, function (err, groups) {
-            if (err) {
-                return alerts.error(err);
+            function (err, groups) {
+                if (err) {
+                    return alerts.error(err);
+                }
+                groups = groups.filter(function (group) {
+                    return (
+                        group.name !== 'registered-users' &&
+                        group.name !== 'guests'
+                    );
+                });
+                Benchpress.render('partials/groups/list', {
+                    groups: groups,
+                }).then(function (html) {
+                    groupsEl.empty().append(html);
+                });
             }
-            groups = groups.filter(function (group) {
-                return group.name !== 'registered-users' && group.name !== 'guests';
-            });
-            Benchpress.render('partials/groups/list', {
-                groups: groups,
-            }).then(function (html) {
-                groupsEl.empty().append(html);
-            });
-        });
+        );
         return false;
     };
 

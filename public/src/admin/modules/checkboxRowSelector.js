@@ -21,9 +21,13 @@ define('admin/modules/checkboxRowSelector', function () {
         if (self.toggling) {
             return;
         }
-        const checkboxes = $checkboxEl.closest('tr').find('input:not([disabled]):visible').toArray();
+        const checkboxes = $checkboxEl
+            .closest('tr')
+            .find('input:not([disabled]):visible')
+            .toArray();
         const $toggler = $(checkboxes.shift());
-        const rowState = checkboxes.length && checkboxes.every(el => el.checked);
+        const rowState =
+            checkboxes.length && checkboxes.every((el) => el.checked);
         $toggler.prop('checked', rowState);
     };
 
@@ -35,13 +39,16 @@ define('admin/modules/checkboxRowSelector', function () {
     function toggleAll($checkboxEl) {
         self.toggling = true;
         const state = $checkboxEl.prop('checked');
-        $checkboxEl.closest('tr').find('input:not(.checkbox-helper):visible').each((idx, el) => {
-            const $checkbox = $(el);
-            if ($checkbox.prop('checked') === state) {
-                return;
-            }
-            $checkbox.click();
-        });
+        $checkboxEl
+            .closest('tr')
+            .find('input:not(.checkbox-helper):visible')
+            .each((idx, el) => {
+                const $checkbox = $(el);
+                if ($checkbox.prop('checked') === state) {
+                    return;
+                }
+                $checkbox.click();
+            });
         self.toggling = false;
     }
 
